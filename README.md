@@ -1,1 +1,15 @@
-# IFJ_IAL_proj0_2017
+## Projekt IFJ/IAL
+
+Implementácia prekladača imperatívneho jazyka IFJ12
+
+## Motivation
+
+## Instalation
+
+## Contributors
+
+xkelem01
+
+xlakat01
+
+## License
