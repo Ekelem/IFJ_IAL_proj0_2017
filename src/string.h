@@ -1,3 +1,7 @@
+#ifndef STRING_H
+#define STRING_H
+
+
 typedef struct
 {
 	char *str;
@@ -17,3 +21,5 @@ int str_len(String *s);
 
 void print_error();
 void print_string_info(String *s);
+
+#endif
