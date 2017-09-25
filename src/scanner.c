@@ -288,7 +288,7 @@ int get_token(FILE *f, token *t)
 					free_string(&ascii_seq);
 					state = STRING_LITERAL_BEGINS;
 				}
-				else { //example: \01a
+				else {
 					return save_token(t, NULL, LEXICAL_ERROR);
 				}
 				break;
