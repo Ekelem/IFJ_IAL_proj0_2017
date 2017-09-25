@@ -1,5 +1,5 @@
 Scope 'Hlavni telo programu
 	Dim s1 As String
 
-	s1 = !"Toto je nejaky text";
-	s1 = s1 + !", ktery jeste trochu obohatime";
+	s1 = !"Toto je nejaky text"; 2e2 ; !"\097 zkouska ascii_seq"
+	s1 = s1 + !", ktery jeste trochu obohatime"; 11 ; 1.245 ; 4.4e2
