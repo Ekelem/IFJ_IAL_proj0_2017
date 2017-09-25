@@ -1,4 +1,4 @@
-/' Zajisteni zakladni kompatibility IFJ17->FreeBASIC '/
+/' Zajisteni zakladni kompatibility IFJ17-> FreeBASIC '/
 
 Function Length(s As String) As Integer
   Return Len(s)
