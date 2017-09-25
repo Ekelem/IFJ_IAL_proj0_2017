@@ -17,8 +17,8 @@
 #include "string.h"
 
 char *key_words[] = { "as", "asc", "declare", "dim", "do", "double", "else", "end", "chr", "function",
-										"if", "input", "integer", "length", "loop", "print", "return", "scope", "string",
-										"substr", "then", "while" };
+					  "if", "input", "integer", "length", "loop", "print", "return", "scope", "string",
+					  "substr", "then", "while"};
 
 
 bool is_keyword(char *str)
@@ -80,7 +80,7 @@ int save_token(token *t, String *str, int type)
 			case KEY_WORD:
 			case STRING_VALUE:
 				t->attr.string_value = str->str;
-				free_string(str);
+
 				break;
 		}
 	}
@@ -91,18 +91,12 @@ int get_token(FILE *f, token *t)
 {
 	int state = 0;
 	int c;
-	bool saved_last = false;
+
+	String ascii_seq;
 	String s;
 
-	while(42)
+	while( (c = fgetc(f)) != EOF)
 	{
-		c =fgetc(f);
-		if (c == EOF){
-			if (saved_last)
-				return save_token(t, NULL, EOF);
-			saved_last = true;
-		}
-
 		switch (state)
 		{
 			case WHITE_SPACE:
@@ -114,29 +108,32 @@ int get_token(FILE *f, token *t)
 						state = IDENTIFICATOR;
 					}
 					else if (isdigit(c)) {
-						state = NUMBER;
 						init_string(&s);
 						append_char_to_str(&s, c);
+						state = NUMBER;
 					}
-					else {
+					else
+					{
 						switch (c)
 						{
 							case '+':  return save_token(t, NULL, ADD);
 							case '-':  return save_token(t, NULL, SUB);
 							case '*':  return save_token(t, NULL, MUL);
+							case '_':  state = IDENTIFICATOR; break;
 							case '/':  state = DIV_OR_COMMENT; break;
 							case '\\': return save_token(t, NULL, DIV2);
 							case ';':  return save_token(t, NULL, SEMICOLON);
 							case '<':  state = COMPARE_LESS; break;
 							case '>':  state = COMPARE_GREATER; break;
 							case '=':  return save_token(t, NULL, EQUALS);
-							case '(':  return save_token(t, NULL, LEFT_PARANTHESIS); break;
-							case ')':  return save_token(t, NULL, RIGHT_PARANTHESIS); break;
+							case '(':  return save_token(t, NULL, LEFT_PARANTHESIS);
+							case ')':  return save_token(t, NULL, RIGHT_PARANTHESIS);
 							case '!':  state = EXCLAMATION_MARK; break;
 							case '.':  state = DOUBLE_1; break;
 							case '\"': return save_token(t, NULL, LEXICAL_ERROR);
 							case ',':  return save_token(t, NULL, COMA);
 							case '\'': state = LINE_COMMENT; break;
+							case '\n': state = WHITE_SPACE; break;
 						}
 					}
 				}
@@ -187,7 +184,7 @@ int get_token(FILE *f, token *t)
 					ungetc(c, f);
 					return save_token(t, &s, DOUBLE_WITH_EXP);
 				}
-
+				break;
 
 			case IDENTIFICATOR:
 				if (isalpha(c) || isdigit(c) || c == '_') {
@@ -196,8 +193,6 @@ int get_token(FILE *f, token *t)
 				else {
 					if (is_keyword(s.str)) {
 						ungetc(c, f);
-						/*** TEST ***/
-						printf("%s ", s.str);
 						return save_token(t, &s, KEY_WORD);
 					}
 					else if ( is_validID(s.str)) {
@@ -219,7 +214,6 @@ int get_token(FILE *f, token *t)
 					ungetc(c,f);
 					return save_token(t, NULL, LESS_THAN);
 				}
-				break;
 
 			case COMPARE_GREATER:
 				if ( c == '=')
@@ -233,7 +227,6 @@ int get_token(FILE *f, token *t)
 				if (c == '"') {
 					state = STRING_LITERAL_BEGINS;
 					init_string(&s);
-					break;
 				}
 				else {
 					return save_token(t, NULL, LEXICAL_ERROR);
@@ -272,8 +265,31 @@ int get_token(FILE *f, token *t)
 					state = STRING_LITERAL_BEGINS;
 					append_char_to_str(&s, '\\');
 				}
+				else if (isdigit(c)){ //ASCII sequence
+					ungetc(c, f);
+					init_string(&ascii_seq);
+					state = UNUSUAL_CHAR_2;
+				}
 				else {
-					// TODO
+					return save_token(t, NULL, LEXICAL_ERROR);
+				}
+				break;
+
+			case UNUSUAL_CHAR_2:
+				if (isdigit(c)){
+					append_char_to_str(&ascii_seq, c);
+					state = UNUSUAL_CHAR_2;
+				}
+				else if (str_len(&ascii_seq) > 3 || c == ' ') {
+					if (c == ' ')
+						ungetc(c, f);
+
+					append_char_to_str(&s, atoi(ascii_seq.str));
+					free_string(&ascii_seq);
+					state = STRING_LITERAL_BEGINS;
+				}
+				else { //example: \01a
+					return save_token(t, NULL, LEXICAL_ERROR);
 				}
 				break;
 
@@ -308,10 +324,8 @@ int get_token(FILE *f, token *t)
 				}
 				break;
 
-			default:
-				return LEXICAL_ERROR;
 		}
 	}
 
-	return 0;
+	return save_token(t, NULL, EOF);
 }
