@@ -281,8 +281,8 @@ int get_token(FILE *f, token *t)
 					state = UNUSUAL_CHAR_2;
 				}
 				else if (str_len(&ascii_seq) == 3 || c == ' ' || c == '"' || c == '\\')
-                {
-                    if (c == ' ' || c == '"' || c == '\\')
+                		{
+                    			if (c == ' ' || c == '"' || c == '\\')
 						ungetc(c, f);
 
 					append_char_to_str(&s, atoi(ascii_seq.str));
