@@ -10,7 +10,7 @@
 #include "error.h"
 
 /* For testing purposes */
-void print_token(int token);
+void print_token(int tk, token *t);
 
 int main(int argc, char const *argv[])
 {
@@ -38,8 +38,10 @@ int main(int argc, char const *argv[])
 	int state = 0;
 	while ( state != EOF) {
 		token t;
+		t.attr.string_value = NULL;
 		state = get_token(f, &t);
-		print_token(state);
+		print_token(state, &t);
+
 	}
 
 	printf("\n");
@@ -49,16 +51,17 @@ int main(int argc, char const *argv[])
 }
 
 /*** Testing lexical analysis ***/
-void print_token(int token)
+void print_token(int tk, token *t)
 {
-	switch (token)
+	switch (tk)
 	{
 		case ADD : printf("ADD "); break;
 		case SUB : printf("SUB "); break;
 		case DIV : printf("DIV "); break;
 		case DIV2 : printf("DIV2 "); break;
 		case MUL: printf("MUL "); break;
-		case IDENTIFICATOR : printf("IDENTIFICATOR "); break;
+		case IDENTIFICATOR : printf("IDENTIFICATOR :%s: ", t->attr.string_value); break;
+		case KEY_WORD: printf("KEY_WORD :%s: ", t->attr.string_value); break;
 		case SEMICOLON : printf("SEMICOLON "); break;
 		case LESS_THAN: printf("LESS_THAN "); break;
 		case GREATER_THAN : printf("GREATER_THAN "); break;
@@ -68,11 +71,11 @@ void print_token(int token)
 		case NOT_EQUALS : printf("NOT_EQUALS "); break;
 		case LEFT_PARANTHESIS : printf("LEFT_PARANTHESIS "); break;
 		case RIGHT_PARANTHESIS : printf("RIGTH_PARANTHESIS "); break;
-		case DOUBLEE : printf("DOUBLE "); break;
-		case INT_WITH_EXP : printf("INT_WITH_EXP "); break;
-		case DOUBLE_WITH_EXP : printf("DOUBLE_WITH_EXP "); break;
-		case INT_VALUE : printf("INT_VALUE "); break;
-		case STRING_VALUE : printf("STRING_VALUE "); break;
+		case DOUBLEE : printf("DOUBLE :%f: ", t->attr.double_value); break;
+		case INT_WITH_EXP : printf("INT_WITH_EXP :%f: ", t->attr.double_value); break;
+		case DOUBLE_WITH_EXP : printf("DOUBLE_WITH_EXP :%f: ", t->attr.double_value); break;
+		case INT_VALUE : printf("INT_VALUE :%d :", t->attr.int_value); break;
+		case STRING_VALUE : printf("STRING_VALUE :%s: ", t->attr.string_value); break;
 		case LEXICAL_ERROR: printf("LEXICAL_ERROR "); break;
 		case COMA : printf("COMA "); break;
 		case EOF : printf("EOF"); break;
