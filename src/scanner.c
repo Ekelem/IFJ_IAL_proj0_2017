@@ -92,6 +92,8 @@ int get_token(FILE *f, token *t)
 	int state = 0;
 	int c;
 
+	bool exponent = false;
+
 	String ascii_seq;
 	String s;
 
@@ -169,8 +171,15 @@ int get_token(FILE *f, token *t)
 				break;
 
 			case DOUBLE_2:
-				if (isdigit(c))
+				if (isdigit(c)) {
 					append_char_to_str(&s, c);
+				}
+				else if (c == '+' || c == '-'){
+					if (exponent)
+						return save_token(t, NULL, LEXICAL_ERROR);
+					exponent = true;
+					append_char_to_str(&s, c);
+				}
 				else {
 					ungetc(c, f);
 					return save_token(t, &s, INT_WITH_EXP);
@@ -178,8 +187,15 @@ int get_token(FILE *f, token *t)
 				break;
 
 			case DOUBLE_3:
-				if (isdigit(c))
+				if (isdigit(c)) {
 					append_char_to_str(&s, c);
+				}
+				else if (c == '+' || c == '-'){
+					if (exponent)
+						return save_token(t, NULL, LEXICAL_ERROR);
+					exponent = true;
+					append_char_to_str(&s, c);
+				}
 				else {
 					ungetc(c, f);
 					return save_token(t, &s, DOUBLE_WITH_EXP);
@@ -275,7 +291,7 @@ int get_token(FILE *f, token *t)
 				}
 				break;
 
-			case UNUSUAL_CHAR_2: //Ascii sequence
+			case UNUSUAL_CHAR_2:
 				if (isdigit(c)){
 					append_char_to_str(&ascii_seq, c);
 					state = UNUSUAL_CHAR_2;
