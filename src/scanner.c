@@ -292,7 +292,7 @@ int get_token(FILE *f, token *t)
 				break;
 
 			case UNUSUAL_CHAR_2:
-				if (isdigit(c)){
+				if (isdigit(c)){ //ASCII sequence
 					append_char_to_str(&ascii_seq, c);
 					state = UNUSUAL_CHAR_2;
 				}
