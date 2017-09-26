@@ -174,6 +174,9 @@ int get_token(FILE *f, token *t)
 				if (isdigit(c)) {
 					append_char_to_str(&s, c);
 				}
+				else if (isalpha(c)){
+					return save_token(t, NULL, LEXICAL_ERROR);
+				}
 				else if (c == '+' || c == '-'){
 					if (exponent)
 						return save_token(t, NULL, LEXICAL_ERROR);
@@ -189,6 +192,9 @@ int get_token(FILE *f, token *t)
 			case DOUBLE_3:
 				if (isdigit(c)) {
 					append_char_to_str(&s, c);
+				}
+				else if (isalpha(c)){
+					return save_token(t, NULL, LEXICAL_ERROR);
 				}
 				else if (c == '+' || c == '-'){
 					if (exponent)
