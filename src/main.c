@@ -14,26 +14,18 @@ void print_token(int tk, token *t);
 
 int main(int argc, char const *argv[])
 {
-	//TODO: check argument
-
-	//TODO: open file (safely) for scanner
-
-	//TODO: symbol table
-
-	//TODO: scanner (lexical analysis) + parser (semantic, syntax)
-
-	/*
-	error_msg(ERR_CODE_INTERN, "line %d, missing operand.\n", 15); */
 
 	if (argc != 2) {
 		fprintf(stderr, "Wrong arguments\n");
-		exit(100);
+		return 100;
 	}
 
 	FILE *f;
 	if ((f = fopen(argv[1], "r")) == NULL) {
 		fprintf(stderr, "We could not open the file: %s\n", argv[1]);
+		return 100;
 	}
+	htab_t * symtable=htab_init(1024);
 
 	int state = 0;
 	while ( state != EOF) {
@@ -47,6 +39,7 @@ int main(int argc, char const *argv[])
 	printf("\n");
 
 	fclose(f);
+	htab_free(symtable);
 	return 0;
 }
 
