@@ -9,7 +9,7 @@ CC=gcc
 
 CFLAGS=-O2 -std=c11 -Wall -pedantic -lm
 
-MODULES=error string scanner
+MODULES=error string scanner symtable
 
 OBJS = $(addprefix obj/, $(addsuffix .o,$(MODULES)))
 
