@@ -19,14 +19,14 @@ all: $(TARGET)
 .PHONY: clean, dokumentace
 
 $(TARGET) : $(OBJS)
-  $(CC) $(CFLAGS) $(OBJS) src/main.c -o $@
+	$(CC) $(CFLAGS) $(OBJS) src/main.c -o $@
 
 obj/%.o : src/%.c src/%.h
-  mkdir -p obj
-  $(CC) $(CFLAGS) -c -o $@ $<
+	mkdir -p obj
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-  rm -f ./obj/*.o $(TARGET)
+	rm -f ./obj/*.o $(TARGET)
 
 dokumentace: doc/dokumentace.tex
-  pdflatex doc/dokumentace.tex
+	pdflatex doc/dokumentace.tex

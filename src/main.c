@@ -8,6 +8,7 @@
 #include "scanner.h"
 #include "string.h"
 #include "error.h"
+#include "symtable.h"
 
 /* For testing purposes */
 void print_token(int tk, token *t);
