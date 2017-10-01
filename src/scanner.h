@@ -7,19 +7,9 @@
 #define SCANNER_H
 
 #include "string.h"
+#include "tokens.h"
 
 #define KEYWORD_COUNT 22
-
-typedef union attribute {
-	int int_value;
-	double double_value;
-	char *string_value;
-} attribute;
-
-typedef struct {
-	int type;
-	attribute attr;
-} token;
 
 
 typedef enum {
