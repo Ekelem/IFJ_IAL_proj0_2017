@@ -18,7 +18,7 @@ OBJS = $(addprefix obj/, $(addsuffix .o,$(MODULES)))
 all: $(TARGET)
 .PHONY: clean, dokumentace
 
-$(TARGET) : $(OBJS)
+$(TARGET) : $(OBJS) src/main.c
 	$(CC) $(CFLAGS) $(OBJS) src/main.c -o $@
 
 obj/%.o : src/%.c src/%.h
