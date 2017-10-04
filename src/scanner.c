@@ -118,23 +118,24 @@ int get_token(FILE *f, token *t)
 					{
 						switch (c)
 						{
+							case '/':  state = DIV_OR_COMMENT; 	 break;
+							case '<':  state = COMPARE_LESS; 	 break;
+							case '>':  state = COMPARE_GREATER;  break;
+							case '!':  state = EXCLAMATION_MARK; break;
+							case '.':  state = DOUBLE_1; 		 break;
+							case '\'': state = LINE_COMMENT; 	 break;
+							case '\n': state = WHITE_SPACE; 	 break;
 							case '+':  return save_token(t, NULL, ADD);
 							case '-':  return save_token(t, NULL, SUB);
 							case '*':  return save_token(t, NULL, MUL);
-							case '/':  state = DIV_OR_COMMENT; break;
 							case '\\': return save_token(t, NULL, DIV2);
-							case ';':  return save_token(t, NULL, SEMICOLON);
-							case '<':  state = COMPARE_LESS; break;
-							case '>':  state = COMPARE_GREATER; break;
+							case ',':  return save_token(t, NULL, COMA);
 							case '=':  return save_token(t, NULL, EQUALS);
+							case ';':  return save_token(t, NULL, SEMICOLON);
 							case '(':  return save_token(t, NULL, LEFT_PARANTHESIS);
 							case ')':  return save_token(t, NULL, RIGHT_PARANTHESIS);
-							case '!':  state = EXCLAMATION_MARK; break;
-							case '.':  state = DOUBLE_1; break;
 							case '\"': return save_token(t, NULL, LEXICAL_ERROR);
-							case ',':  return save_token(t, NULL, COMA);
-							case '\'': state = LINE_COMMENT; break;
-							case '\n': state = WHITE_SPACE; break;
+							case '#':  return save_token(t, NULL, LEXICAL_ERROR);
 						}
 					}
 				}
@@ -297,15 +298,20 @@ int get_token(FILE *f, token *t)
 				break;
 
 			case UNUSUAL_CHAR_2:
-				if (isdigit(c)){
+				if ( ascii_seq.len	== 3)
+				{
+					ungetc(c,f);
+					append_char_to_str(&s, atoi(ascii_seq.str));
+					free_string(&ascii_seq);
+					state = STRING_LITERAL_BEGINS;
+				}
+				else if (isdigit(c)){
 					append_char_to_str(&ascii_seq, c);
 					state = UNUSUAL_CHAR_2;
 				}
-				else if (str_len(&ascii_seq) == 3 || c == ' ' || c == '"' || c == '\\')
-                		{
-                    			if (c == ' ' || c == '"' || c == '\\')
-						ungetc(c, f);
-
+				else if ( isalpha(c) || c == ' ' || c == '"' || c == '\\')
+				{
+					ungetc(c, f);
 					append_char_to_str(&s, atoi(ascii_seq.str));
 					free_string(&ascii_seq);
 					state = STRING_LITERAL_BEGINS;
