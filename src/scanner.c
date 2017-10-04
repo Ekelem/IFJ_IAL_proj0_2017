@@ -312,8 +312,8 @@ int get_token(FILE *f, token *t)
 				else if ( isalpha(c) || c == ' ' || c == '"' || c == '\\')
 				{
 					if (ascii_seq.len < 3)
-                        return save_token(t, NULL, LEXICAL_ERROR);
-                    ungetc(c, f);
+                        			return save_token(t, NULL, LEXICAL_ERROR);
+                    			ungetc(c, f);
 					append_char_to_str(&s, atoi(ascii_seq.str));
 					free_string(&ascii_seq);
 					state = STRING_LITERAL_BEGINS;
