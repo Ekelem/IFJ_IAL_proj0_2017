@@ -118,13 +118,13 @@ int get_token(FILE *f, token *t)
 					{
 						switch (c)
 						{
-							case '/':  state = DIV_OR_COMMENT; 	 break;
-							case '<':  state = COMPARE_LESS; 	 break;
+							case '/':  state = DIV_OR_COMMENT;   break;
+							case '<':  state = COMPARE_LESS;     break;
 							case '>':  state = COMPARE_GREATER;  break;
 							case '!':  state = EXCLAMATION_MARK; break;
-							case '.':  state = DOUBLE_1; 		 break;
-							case '\'': state = LINE_COMMENT; 	 break;
-							case '\n': state = WHITE_SPACE; 	 break;
+							case '.':  state = DOUBLE_1;         break;
+							case '\'': state = LINE_COMMENT;     break;
+							case '\n': state = WHITE_SPACE;      break;
 							case '+':  return save_token(t, NULL, ADD);
 							case '-':  return save_token(t, NULL, SUB);
 							case '*':  return save_token(t, NULL, MUL);
@@ -298,7 +298,7 @@ int get_token(FILE *f, token *t)
 				break;
 
 			case UNUSUAL_CHAR_2:
-				if ( ascii_seq.len	== 3)
+				if ( ascii_seq.len == 3)
 				{
 					ungetc(c,f);
 					append_char_to_str(&s, atoi(ascii_seq.str));
@@ -311,7 +311,9 @@ int get_token(FILE *f, token *t)
 				}
 				else if ( isalpha(c) || c == ' ' || c == '"' || c == '\\')
 				{
-					ungetc(c, f);
+					if (ascii_seq.len < 3)
+                        return save_token(t, NULL, LEXICAL_ERROR);
+                    ungetc(c, f);
 					append_char_to_str(&s, atoi(ascii_seq.str));
 					free_string(&ascii_seq);
 					state = STRING_LITERAL_BEGINS;
