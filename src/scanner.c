@@ -104,7 +104,7 @@ int get_token(FILE *f, token *t)
 			case WHITE_SPACE:
 				if(!isspace(c))
 				{
-					if(isalpha(c)) {
+					if(isalpha(c) || c == '_') {
 						init_string(&s);
 						append_char_to_str(&s, c);
 						state = IDENTIFICATOR;
@@ -121,7 +121,6 @@ int get_token(FILE *f, token *t)
 							case '+':  return save_token(t, NULL, ADD);
 							case '-':  return save_token(t, NULL, SUB);
 							case '*':  return save_token(t, NULL, MUL);
-							case '_':  state = IDENTIFICATOR; break;
 							case '/':  state = DIV_OR_COMMENT; break;
 							case '\\': return save_token(t, NULL, DIV2);
 							case ';':  return save_token(t, NULL, SEMICOLON);
