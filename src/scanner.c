@@ -89,7 +89,7 @@ int save_token(token *t, String *str, int type)
 
 int get_token(FILE *f, token *t)
 {
-	int state = 0;
+	int state = WHITE_SPACE;
 	int c;
 
 	bool exponent = false;
@@ -97,8 +97,9 @@ int get_token(FILE *f, token *t)
 	String ascii_seq;
 	String s;
 
-	while( (c = fgetc(f)) != EOF)
+	while(42)
 	{
+		c = fgetc(f);
 		switch (state)
 		{
 			case WHITE_SPACE:
@@ -355,8 +356,9 @@ int get_token(FILE *f, token *t)
 					state = BLOCK_COMMENT;
 				}
 				break;
-
 		}
+		if (c == EOF)
+			break;
 	}
 
 	return save_token(t, NULL, EOF);
