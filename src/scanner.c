@@ -97,7 +97,7 @@ int get_token(FILE *f, token *t)
 	String ascii_seq;
 	String s;
 
-	while(42)
+	do
 	{
 		c = fgetc(f);
 		switch (state)
@@ -359,7 +359,8 @@ int get_token(FILE *f, token *t)
 		}
 		if (c == EOF)
 			break;
-	}
+
+	}while(c != EOF);
 
 	return save_token(t, NULL, EOF);
 }
