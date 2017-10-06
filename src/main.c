@@ -72,6 +72,7 @@ void print_token(int tk, token *t)
 		case STRING_VALUE : printf("STRING_VALUE :%s: ", t->attr.string_value); break;
 		case LEXICAL_ERROR: printf("LEXICAL_ERROR "); break;
 		case COMA : printf("COMA "); break;
+		case NEW_LINE: printf("NEW_LINE\n"); break;
 		case EOF : printf("EOF "); break;
 	}
 }

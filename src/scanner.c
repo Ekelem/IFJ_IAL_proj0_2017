@@ -124,7 +124,6 @@ int get_token(FILE *f, token *t)
 							case '!':  state = EXCLAMATION_MARK; break;
 							case '.':  state = DOUBLE_1;         break;
 							case '\'': state = LINE_COMMENT;     break;
-							case '\n': state = WHITE_SPACE;      break;
 							case '+':  return save_token(t, NULL, ADD);
 							case '-':  return save_token(t, NULL, SUB);
 							case '*':  return save_token(t, NULL, MUL);
@@ -138,6 +137,9 @@ int get_token(FILE *f, token *t)
 							case '#':  return save_token(t, NULL, LEXICAL_ERROR);
 						}
 					}
+				}
+				else if (c == '\n') {
+					return save_token(t, NULL, NEW_LINE);
 				}
 				break;
 			case NUMBER:
@@ -325,7 +327,7 @@ int get_token(FILE *f, token *t)
 
 			case LINE_COMMENT:
 				if (c == '\n') {
-					state = WHITE_SPACE;
+					return save_token(t, NULL, NEW_LINE);
 				}
 				break;
 
