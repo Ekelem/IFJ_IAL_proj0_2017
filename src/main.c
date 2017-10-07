@@ -10,6 +10,12 @@
 #include "error.h"
 #include "symtable.h"
 
+
+// AFTER TESTING LEXICAL_ANALYSIS THIS CAN BE REMOVED
+char *key_words2[] = { "as", "asc", "declare", "dim", "do", "double", "else", "end", "chr", "function",
+					  "if", "input", "integer", "length", "loop", "print", "return", "scope", "string",
+					  "substr", "then", "while"};
+
 /* For testing purposes */
 void print_token(int tk, token *t);
 
@@ -55,7 +61,7 @@ void print_token(int tk, token *t)
 		case DIV2 : printf("DIV2 "); break;
 		case MUL: printf("MUL "); break;
 		case IDENTIFICATOR : printf("IDENTIFICATOR :%s: ", t->attr.string_value); break;
-		case KEY_WORD: printf("KEY_WORD :%s: ", t->attr.string_value); break;
+		default : printf("KEY_WORD :%s: ", key_words2[t->type - 2]); break;
 		case SEMICOLON : printf("SEMICOLON "); break;
 		case LESS_THAN: printf("LESS_THAN "); break;
 		case GREATER_THAN : printf("GREATER_THAN "); break;

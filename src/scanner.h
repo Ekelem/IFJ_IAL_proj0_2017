@@ -40,7 +40,7 @@ typedef enum {
 		DOUBLEE, INT_WITH_EXP, DOUBLE_WITH_EXP, INT_VALUE, STRING_VALUE, COMA, KEY_WORD, NEW_LINE
 } token_type ;
 
-bool is_keyword(char *str);
+bool is_keyword(char *str, token *t);
 bool is_validID(char *str);
 
 int get_token(FILE *f, token *t);

@@ -21,7 +21,7 @@ char *key_words[] = { "as", "asc", "declare", "dim", "do", "double", "else", "en
 					  "substr", "then", "while"};
 
 
-bool is_keyword(char *str)
+bool is_keyword(char *str, token *t)
 {
 	if (strlen(str) > 8)
 		return false;
@@ -31,8 +31,10 @@ bool is_keyword(char *str)
 	str_low[strlen(str)+1] = '\0';
 	for (int i = 0; i < 22; i++)
 	{
-		if(strcmp(key_words[i], str_low) == 0)
+		if(strcmp(key_words[i], str_low) == 0) {
+			t->type = i + 2;
 			return true;
+		}
 	}
 	return false;
 }
@@ -57,7 +59,8 @@ bool is_validID(char *str)
 
 int save_token(token *t, String *str, int type)
 {
-	t->type = type;
+	if (type != KEY_WORD)
+		t->type = type;
 	if (str == NULL) {
 		return type;
 	}
@@ -77,10 +80,8 @@ int save_token(token *t, String *str, int type)
 				break;
 
 			case IDENTIFIER:
-			case KEY_WORD:
 			case STRING_VALUE:
 				t->attr.string_value = str->str;
-
 				break;
 		}
 	}
@@ -216,9 +217,10 @@ int get_token(FILE *f, token *t)
 					append_char_to_str(&s, c);
 				}
 				else {
-					if (is_keyword(s.str)) {
+					if (is_keyword(s.str, t)) {
 						ungetc(c, f);
-						return save_token(t, &s, KEY_WORD);
+						free_string(&s);
+						return save_token(t, NULL, KEY_WORD);
 					}
 					else if ( is_validID(s.str)) {
 						ungetc(c, f);
