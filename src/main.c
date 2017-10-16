@@ -80,5 +80,9 @@ void print_token(int tk, token *t)
 		case COMA : printf("COMA "); break;
 		case NEW_LINE: printf("NEW_LINE\n"); break;
 		case EOF : printf("EOF "); break;
+		case INT_2: printf("BINARY :%d: ", t->attr.int_value); break;
+		case INT_8: printf("OCTAL :%d: ", t->attr.int_value); break;
+		case INT_16: printf("HEXADECIMAL :%d: ", t->attr.int_value); break;	
 	}
 }
+

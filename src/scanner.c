@@ -21,6 +21,17 @@ char *key_words[] = { "as", "asc", "declare", "dim", "do", "double", "else", "en
 					  "substr", "then", "while"};
 
 
+int base_to_int(char *str, int base) {
+	int sum = 0, tmp, power = 1;
+
+	for (int i = (int)strlen(str)-1; i >= 0; i--) {
+		tmp = (str[i] >= '0' && str[i] <= '9') ? (str[i] - '0') * power : (str[i] - 'A' + 10)*power ;
+		power *= base;
+		sum += tmp;
+	}
+	return sum;
+}
+
 bool is_keyword(char *str, token *t)
 {
 	if (strlen(str) > 8)
@@ -59,8 +70,9 @@ bool is_validID(char *str)
 
 int save_token(token *t, String *str, int type)
 {
-	if (type != KEY_WORD)
+	if (type != KEY_WORD){
 		t->type = type;
+	}
 	if (str == NULL) {
 		return type;
 	}
@@ -69,6 +81,18 @@ int save_token(token *t, String *str, int type)
 		{
 			case INT_VALUE:
 				t->attr.int_value = atoi(str->str);
+				free_string(str);
+				break;
+			case INT_2:
+				t->attr.int_value = base_to_int(str->str, 2);
+				free_string(str);
+				break;
+			case INT_8:
+				t->attr.int_value = base_to_int(str->str, 8);
+				free_string(str);
+				break;
+			case INT_16:
+				t->attr.int_value = base_to_int(str->str, 16);
 				free_string(str);
 				break;
 
@@ -126,6 +150,7 @@ int get_token(FILE *f, token *t)
 							case '!':  state = EXCLAMATION_MARK; break;
 							case '.':  state = DOUBLE_1;         break;
 							case '\'': state = LINE_COMMENT;     break;
+							case '&':  state = BASE;			 break;
 							case '+':  return save_token(t, NULL, ADD);
 							case '-':  return save_token(t, NULL, SUB);
 							case '*':  return save_token(t, NULL, MUL);
@@ -356,6 +381,57 @@ int get_token(FILE *f, token *t)
 				}
 				else {
 					state = BLOCK_COMMENT;
+				}
+				break;
+
+			case BASE:
+				if (toupper(c) == 'B') {
+					state = BASE_2;
+					init_string(&s);
+				}
+				else if (toupper(c) == 'O') {
+					init_string(&s);
+					state = BASE_8;
+				}
+				else if (toupper(c) == 'H') {
+					init_string(&s);
+					state = BASE_16;
+				}
+				else
+					return save_token(t, NULL, LEXICAL_ERROR);
+				break;
+
+			case BASE_2:
+				if (c >= '0' &&  c <= '1'){
+					append_char_to_str(&s, c);
+				}
+				else if ((c >= '2' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f') ) {
+					return save_token(t, NULL, LEXICAL_ERROR);
+				}
+				else {
+					ungetc(c, f);
+					return save_token (t, &s, INT_2);
+				}
+				break;
+
+			case BASE_8:
+				if (c >= '0' &&  c <= '7')
+					append_char_to_str(&s, c);
+				else if ((c >= '8' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')) {
+					return save_token(t, NULL, LEXICAL_ERROR);
+				}
+				else {
+					ungetc(c, f);
+					return save_token (t, &s, INT_8);
+				}
+				break;
+
+			case BASE_16:
+				if ((c >= '0' &&  c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f'))
+					append_char_to_str(&s, toupper(c));
+				else {
+					ungetc(c, f);
+					return save_token (t, &s, INT_16);
 				}
 				break;
 		}
