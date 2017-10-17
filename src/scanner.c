@@ -85,14 +85,20 @@ int save_token(token *t, String *str, int type)
 				break;
 			case INT_2:
 				t->attr.int_value = base_to_int(str->str, 2);
+				t->type = INT_VALUE;
+				type = INT_VALUE;
 				free_string(str);
 				break;
 			case INT_8:
 				t->attr.int_value = base_to_int(str->str, 8);
+				t->type = INT_VALUE;
+				type = INT_VALUE;
 				free_string(str);
 				break;
 			case INT_16:
 				t->attr.int_value = base_to_int(str->str, 16);
+				t->type = INT_VALUE;
+				type = INT_VALUE;
 				free_string(str);
 				break;
 
