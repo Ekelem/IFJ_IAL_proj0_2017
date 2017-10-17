@@ -154,7 +154,7 @@ int get_token(FILE *f, token *t)
 							case '<':  state = COMPARE_LESS;     break;
 							case '>':  state = COMPARE_GREATER;  break;
 							case '!':  state = EXCLAMATION_MARK; break;
-							case '.':  state = DOUBLE_1;         break;
+							case '.':  state = DOUBLE_1; init_string(&s);        break;
 							case '\'': state = LINE_COMMENT;     break;
 							case '&':  state = BASE;			 break;
 							case '+':  return save_token(t, NULL, ADD);
@@ -174,6 +174,8 @@ int get_token(FILE *f, token *t)
 				else if (c == '\n') {
 					return save_token(t, NULL, NEW_LINE);
 				}
+				if (state == WHITE_SPACE && !isspace(c) && c != EOF)
+					return save_token(t, NULL, LEXICAL_ERROR);
 				break;
 			case NUMBER:
 				if ( isdigit(c))
