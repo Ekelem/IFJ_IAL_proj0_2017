@@ -40,13 +40,15 @@ int main(int argc, char const *argv[])
 		t.attr.string_value = NULL;
 		state = get_token(f, &t);
 		print_token(state, &t);
+		if (t.type == IDENTIFIER || t.type == STRING_VALUE)
+			free(t.attr.string_value);
 
 	}
 
 	printf("\n");
-
-	fclose(f);
 	htab_free(symtable);
+	fclose(f);
+
 	return 0;
 }
 
