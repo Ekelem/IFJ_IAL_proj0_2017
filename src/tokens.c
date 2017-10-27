@@ -51,3 +51,11 @@ token * token_buffer_get_token(token_buffer *t)
 	else
 		return NULL;
 }
+
+token * token_buffer_peek_token(token_buffer *t)
+{
+	if ((t->actual) < t->len)
+		return t->arr[(t->actual)];
+	else
+		return NULL;
+}

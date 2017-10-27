@@ -20,5 +20,6 @@ void add_token(token_buffer *t, token *elem);
 void free_tokens(token_buffer *t);
 
 token * token_buffer_get_token(token_buffer *t);
+token * token_buffer_peek_token(token_buffer *t);
 
 #endif
