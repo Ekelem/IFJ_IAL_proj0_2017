@@ -19,9 +19,13 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_declaration(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_code);
+void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_code);
+void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal_code);
+void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 
 unsigned int neterm_type(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 
-//void expected_token(FILE * fptr, int tok_type);	//maybe later
+void expected_token(token_buffer * token_buff, int tok_type);
+bool is_peek_token(token_buffer * token_buff, int tok_type);
 
 #endif
