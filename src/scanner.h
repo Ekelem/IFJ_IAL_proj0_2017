@@ -7,9 +7,26 @@
 #define SCANNER_H
 
 #include "string.h"
-#include "tokens.h"
+//#include "tokens.h"
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdlib.h>
 
 #define KEYWORD_COUNT 22
+
+typedef union attribute {
+	int int_value;
+	double double_value;
+	char *string_value;
+} attribute;
+
+typedef struct {
+	int type;
+	attribute attr;
+} token;
 
 
 typedef enum {
@@ -49,7 +66,7 @@ bool is_validID(char *str);
 
 int base_to_int(char *str, int base);
 
-int get_token(FILE *f, token *t);
-int save_token(token *t, String *str, int type);
+token * get_token(FILE *f);
+token * save_token(token *t, String *str, int type);
 
 #endif

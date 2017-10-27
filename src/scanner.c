@@ -7,14 +7,7 @@
 
 //Read tokens from input file (code)
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
-
 #include "scanner.h"
-#include "string.h"
 
 char *key_words[] = { "as", "asc", "declare", "dim", "do", "double", "else", "end", "chr", "function",
 					  "if", "input", "integer", "length", "loop", "print", "return", "scope", "string",
@@ -68,13 +61,13 @@ bool is_validID(char *str)
 	return false;
 }
 
-int save_token(token *t, String *str, int type)
+token * save_token(token *t, String *str, int type)
 {
 	if (type != KEY_WORD){
 		t->type = type;
 	}
 	if (str == NULL) {
-		return type;
+		return t;
 	}
 	else {
 		switch (type)
@@ -115,13 +108,14 @@ int save_token(token *t, String *str, int type)
 				break;
 		}
 	}
-	return type;
+	return t;
 }
 
-int get_token(FILE *f, token *t)
+token * get_token(FILE *f)
 {
 	int state = WHITE_SPACE;
 	int c;
+	token *t= malloc(sizeof(token));
 
 	bool exponent = false;
 

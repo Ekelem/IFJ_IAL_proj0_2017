@@ -12,6 +12,13 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+enum type
+{
+	INTEGER_TYPE = 1,
+	STRING_TYPE = 2,
+	DOUBLE_TYPE = 4,
+	BOOLEAN_TYPE = 8
+};
 
 typedef struct identifier_data
 {	
