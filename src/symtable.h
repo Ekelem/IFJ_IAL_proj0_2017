@@ -22,17 +22,10 @@ enum type
 
 typedef struct identifier_data
 {	
-	char type;
+	char type;		//
 	char flags;		//3-X,2-defined,1-declared,0-used)
+	
 }id_data;
-
-void set_id_type(id_data* data, unsigned int new_type);
-
-void set_id_used(id_data* data);
-
-void set_id_declared(id_data* data);
-
-void set_id_defined(id_data* data);
 
 
 
@@ -51,6 +44,25 @@ typedef struct htab_t
 	size_t n;
 	struct htab_listitem * buckets[];
 }htab_t;
+
+
+void set_id_type(struct htab_listitem * item, unsigned int new_type);
+
+void set_id_used(struct htab_listitem * item);
+
+void set_id_declared(struct htab_listitem * item);
+
+void set_id_defined(struct htab_listitem * item);
+
+bool id_is_function(struct htab_listitem * item);
+
+bool id_is_used(struct htab_listitem * item);
+
+bool id_is_declared(struct htab_listitem * item);
+
+bool id_is_defined(struct htab_listitem * item);
+
+
 
 unsigned int hash_function(const char *str);
 

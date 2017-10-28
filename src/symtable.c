@@ -14,24 +14,50 @@ unsigned int hash_function(const char *str)
 	return h;
 }
 
-void set_id_type(id_data* data, unsigned int new_type)
+void set_id_type(struct htab_listitem * item, unsigned int new_type)
 {
-	data->type= new_type;
+	item->data.type= new_type;
 }
 
-void set_id_used(id_data* data)
+void set_id_used(struct htab_listitem * item)
 {
-	data->flags|= 1;
+	item->data.flags|= 1;
 }
 
-void set_id_declared(id_data* data)
+void set_id_declared(struct htab_listitem * item)
 {
-	data->flags|= 2;
+	item->data.flags|= 2;
 }
 
-void set_id_defined(id_data* data)
+void set_id_defined(struct htab_listitem * item)
 {
-	data->flags|= 4;
+	item->data.flags|= 4;
+}
+
+void set_id_function(struct htab_listitem * item)
+{
+	item->data.flags|= 128;
+}
+
+
+bool id_is_function(struct htab_listitem * item)
+{
+	return (item->data.flags & 128);
+}
+
+bool id_is_used(struct htab_listitem * item)
+{
+	return (item->data.flags & 1);
+}
+
+bool id_is_declared(struct htab_listitem * item)
+{
+	return (item->data.flags & 2);
+}
+
+bool id_is_defined(struct htab_listitem * item)
+{
+	return (item->data.flags & 4);
 }
 
 size_t htab_bucket_count(struct htab_t *t)
