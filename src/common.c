@@ -28,3 +28,15 @@ htab_t * initialization(const char * file_path, token_buffer * token_buff)
 
 	return htab_init(token_buff->len);
 }
+
+void output_primal_code(const char * file_path, String * primal_code)
+{
+	FILE * output_file;
+	if ((output_file = fopen(file_path, "w")) == NULL) {
+		fprintf(stderr, "We could not open the file: %s\n", file_path);
+		exit(100);
+	}
+
+	fputs(primal_code->str, output_file);
+	fclose(output_file);
+}
