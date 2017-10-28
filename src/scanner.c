@@ -150,18 +150,17 @@ token * get_token(FILE *f)
 							case '!':  state = EXCLAMATION_MARK; break;
 							case '.':  state = DOUBLE_1; init_string(&s);        break;
 							case '\'': state = LINE_COMMENT;     break;
-							case '&':  state = BASE;			 break;
-							case '+':  return save_token(t, NULL, ADD);
-							case '-':  return save_token(t, NULL, SUB);
-							case '*':  return save_token(t, NULL, MUL);
-							case '\\': return save_token(t, NULL, DIV2);
+							case '&':  state = BASE;	break;
+							case '+':  state = ADD_EQ; 	break;
+							case '-':  state = SUB_EQ;	break;
+							case '*':  state = MUL_EQ;	break;
+							case '\\': state = DIV2_EQ; break;
 							case ',':  return save_token(t, NULL, COMA);
 							case '=':  return save_token(t, NULL, EQUALS);
 							case ';':  return save_token(t, NULL, SEMICOLON);
 							case '(':  return save_token(t, NULL, LEFT_PARANTHESIS);
 							case ')':  return save_token(t, NULL, RIGHT_PARANTHESIS);
 							case '\"': return save_token(t, NULL, LEXICAL_ERROR);
-							case '#':  return save_token(t, NULL, LEXICAL_ERROR);
 						}
 					}
 				}
@@ -366,8 +365,13 @@ token * get_token(FILE *f)
 					state = BLOCK_COMMENT;
 				}
 				else {
-					ungetc(c, f);
-					return save_token(t, NULL, DIV);
+					if (c == '='){
+						return save_token(t, NULL, DIV_EQUALS);
+					}
+					else {
+						ungetc(c, f);
+						return save_token(t, NULL, DIV);
+					}
 				}
 				break;
 
@@ -436,6 +440,47 @@ token * get_token(FILE *f)
 					return save_token (t, &s, INT_16);
 				}
 				break;
+
+			case ADD_EQ:
+				if (c == '=') {
+					return save_token(t, NULL, ADD_EQUALS);
+				}
+				else {
+					ungetc(c, f);
+					return save_token(t, NULL, ADD);
+				}
+				break;
+
+			case SUB_EQ:
+				if (c == '=') {
+					return save_token(t, NULL, SUB_EQUALS);
+				}
+				else {
+					ungetc(c, f);
+					return save_token(t, NULL, SUB);
+				}
+				break;
+
+			case MUL_EQ:
+				if (c == '=') {
+					return save_token(t, NULL, MUL_EQUALS);
+				}
+				else {
+					ungetc(c, f);
+					return save_token(t, NULL, MUL);
+				}
+				break;
+
+			case DIV2_EQ:
+				if (c == '=') {
+					return save_token(t, NULL, DIV2_EQUALS);
+				}
+				else {
+					ungetc(c, f);
+					return save_token(t, NULL, DIV2);
+				}
+				break;
+
 		}
 		if (c == EOF)
 			break;
