@@ -47,6 +47,8 @@ int main(int argc, char const *argv[])
 
 	translate(token_buff, symtable, &primal_code);
 
+	output_primal_code("out.ifj", &primal_code);
+
 	free_tokens(token_buff);
 	htab_free(symtable);
 	garbage_collect();
