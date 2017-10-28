@@ -3,7 +3,7 @@
 void translate(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	init_string(primal_code);
-	append_str_to_str(primal_code, ".IFJ17\n");		//Header
+	append_str_to_str(primal_code, ".IFJcode17\n");		//Header
 	neterm_start(token_buff, symtable, primal_code);
 }
 
@@ -43,12 +43,15 @@ void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_
 
 void neterm_scope(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	append_str_to_str(primal_code, "CREATEFRAME\n");
+	append_str_to_str(primal_code, "PUSHFRAME\n");
 	while (!is_peek_token(token_buff, END))
 	{
 		neterm_body(token_buff, symtable, primal_code);
 	}
 	expected_token(token_buff, END);
 	expected_token(token_buff, SCOPE);
+	append_str_to_str(primal_code, "POPFRAME\n");
 }
 
 void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * primal_code)
@@ -129,6 +132,9 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 		case INPUT :
 			body_input(token_buff, symtable, primal_code);
 			break;
+		case PRINT :
+			body_print(token_buff, symtable, primal_code);
+			break;
 		case IF :
 			body_if_then(token_buff, symtable, primal_code);
 			break;
@@ -154,16 +160,33 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 void body_declaration(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	token * actual_token = token_buffer_get_token(token_buff);
+	struct htab_listitem * found_record = NULL;
 	switch (actual_token->type){
 		case IDENTIFIER :
-			//check if exists -> error
+			found_record = htab_find(symtable, actual_token->attr.string_value);
+			if (found_record != NULL)
+			{
+				if (id_is_function(found_record))
+					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is function\n", found_record->key);
+				if (id_is_declared(found_record))
+					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' was declared before\n", found_record->key);
+			}
+			else
+			{
+				found_record = make_item(actual_token->attr.string_value);
+				htab_append(found_record, symtable);
+			}
 			break;
 		default :
 			syntax_error_unexpexted(actual_token->type, 1, IDENTIFIER);
 			break;
 	}
 	expected_token(token_buff, AS);
-	neterm_type(token_buff, symtable, primal_code);
+	set_id_type(found_record, neterm_type(token_buff, symtable, primal_code));
+	set_id_declared(found_record);
+	append_str_to_str(primal_code, "DEFVAR LF@");
+	append_str_to_str(primal_code, found_record->key);
+	append_char_to_str(primal_code, '\n');
 	//expression(token_buff, symtable, primal_code);
 	expected_token(token_buff, NEW_LINE);
 }
@@ -232,6 +255,16 @@ void body_assignment(token_buffer * token_buff, htab_t * symtable, String * prim
 	//Unary operators needed (Erik)
 	//expression
 	expected_token(token_buff, NEW_LINE);
+}
+
+void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_code)
+{
+	//expression
+	expected_token(token_buff, SEMICOLON);
+	if (is_peek_token(token_buff, NEW_LINE))
+		expected_token(token_buff, NEW_LINE);
+	else
+		body_print(token_buff, symtable, primal_code);
 }
 
 void expected_token(token_buffer * token_buff, int tok_type)

@@ -19,6 +19,7 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_declaration(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_code);
+void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code);
