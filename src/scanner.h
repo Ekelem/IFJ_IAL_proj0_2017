@@ -25,6 +25,7 @@ typedef union attribute {
 
 typedef struct {
 	int type;
+	int line, pos;
 	attribute attr;
 } token;
 
@@ -72,7 +73,7 @@ bool is_validID(char *str);
 
 int base_to_int(char *str, int base);
 
-token * get_token(FILE *f);
-token * save_token(token *t, String *str, int type);
+token * get_token(FILE *f, int *err_line, int *err_pos);
+token * save_token(token *t, String *str, int type, int line, int pos);
 
 #endif

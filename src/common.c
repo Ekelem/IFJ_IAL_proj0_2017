@@ -8,12 +8,18 @@ htab_t * initialization(const char * file_path, token_buffer * token_buff)
 		exit(ERR_CODE_LEXICAL);
 	}
 
+	int err_line = 1, err_pos = 0;
+
 	init_garbage_collector();
 
 	int state = 0;
 	while ( state != EOF) {
 		token * t;
-		t = get_token(input_file);
+		t = get_token(input_file, &err_line, &err_pos);
+		if (t->type == NEW_LINE) {
+			err_line += 1;
+			err_pos = 0;
+		}
 		add_token(token_buff, t);
 		state = t->type;
 	}

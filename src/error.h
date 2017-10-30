@@ -55,7 +55,7 @@
 
 void error_msg(int err_code, const char *fmt, ...);
 void warn_msg(const char *fmt, ...);
-void syntax_error_unexpexted(int unexpected_type, int numb, ...);
+void syntax_error_unexpexted(int line, int pos, int unexpected_type, int numb, ...);
 
 
 #endif

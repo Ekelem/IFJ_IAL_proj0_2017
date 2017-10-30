@@ -34,7 +34,7 @@ void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_
 				error_msg(ERR_CODE_OTHERS, "Scope block wasnt found\n");
 			break;
 		default :
-			syntax_error_unexpexted(actual_token->type, 3, SCOPE, DECLARE, FUNCTION);
+			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 3, SCOPE, DECLARE, FUNCTION);
 			break;
 	}
 
@@ -64,7 +64,7 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 			//check if exist
 			break;
 		default :
-			syntax_error_unexpexted(actual_token->type, 1, IDENTIFIER);
+			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			break;
 	}
 	expected_token(token_buff, LEFT_PARANTHESIS);
@@ -90,7 +90,7 @@ unsigned int neterm_type(token_buffer * token_buff, htab_t * symtable, String * 
 			return BOOLEAN_TYPE;
 			break;
 		default :
-			syntax_error_unexpexted(actual_token->type, 3, INTEGER, STRING, DOUBLE);
+			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 3, INTEGER, STRING, DOUBLE);
 			break;
 	}
 	return 0;
@@ -103,7 +103,7 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 		case IDENTIFIER :
 			break;
 		default :
-			syntax_error_unexpexted(actual_token->type, 1, IDENTIFIER);
+			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			break;
 	}
 	expected_token(token_buff, AS);
@@ -117,7 +117,7 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 		case RIGHT_PARANTHESIS :
 			break;
 		default :
-			syntax_error_unexpexted(actual_token->type, 2, COMA, RIGHT_PARANTHESIS);
+			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2, COMA, RIGHT_PARANTHESIS);
 			break;
 	}
 }
@@ -152,7 +152,7 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 			neterm_body(token_buff, symtable, primal_code);
 			break;
 		default :
-			syntax_error_unexpexted(actual_token->type, 6, DIM, INPUT, IF, DO, IDENTIFIER, RETURN);
+			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 6, DIM, INPUT, IF, DO, IDENTIFIER, RETURN);
 			break;
 	}
 }
@@ -178,7 +178,7 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 			}
 			break;
 		default :
-			syntax_error_unexpexted(actual_token->type, 1, IDENTIFIER);
+			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			break;
 	}
 	expected_token(token_buff, AS);
@@ -199,7 +199,7 @@ void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_co
 			//check if exists
 			break;
 		default :
-			syntax_error_unexpexted(actual_token->type, 1, IDENTIFIER);
+			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			break;
 	}
 
@@ -271,7 +271,7 @@ void expected_token(token_buffer * token_buff, int tok_type)
 {
 	token * actual_token = token_buffer_get_token(token_buff);
 	if (actual_token->type != tok_type)
-		syntax_error_unexpexted(actual_token->type, 1, tok_type);
+		syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, tok_type);
 }
 
 bool is_peek_token(token_buffer * token_buff, int tok_type)

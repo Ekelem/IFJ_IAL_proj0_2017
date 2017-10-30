@@ -1,3 +1,5 @@
-&b1001010
-&h4A
-&o112
+Scope
+
+	dim a as dsa
+	dim a as string
+end scope

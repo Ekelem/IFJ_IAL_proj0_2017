@@ -26,11 +26,11 @@ void warn_msg(const char *fmt, ...)
 	va_end(list);
 }
 
-void syntax_error_unexpexted(int unexpected_type, int numb, ...)
+void syntax_error_unexpexted(int line, int pos, int unexpected_type, int numb, ...)
 {
 	va_list list;
 	va_start(list, numb);
-	fprintf(stderr, "Error: unexpected symbol '%s', expected '%s'", tok_names[unexpected_type], tok_names[va_arg(list, int)]);
+	fprintf(stderr, "Error on line:%d from position:%d : unexpected symbol '%s', expected '%s'", line, pos,tok_names[unexpected_type], tok_names[va_arg(list, int)]);
 	for (int i = 0; i < (numb-1); ++i)
 	{
 		fprintf(stderr, " or '%s'", tok_names[va_arg(list, int)]);
