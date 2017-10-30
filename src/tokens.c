@@ -33,8 +33,8 @@ void free_tokens(token_buffer *t) {
 		for(unsigned i = 0; i < t->size; i++) {
 			if (t->arr[i] != NULL)
 			{
-				if (t->arr[i]->type == STRING_VALUE)
-				free(t->arr[i]->attr.string_value);
+				if (t->arr[i]->type == STRING_VALUE || t->arr[i]->type == IDENTIFIER)
+					free(t->arr[i]->attr.string_value);
 
 			free(t->arr[i]);
 			}

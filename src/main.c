@@ -52,6 +52,7 @@ int main(int argc, char const *argv[])
 	free_tokens(token_buff);
 	htab_free(symtable);
 	garbage_collect();
+	free_string(&primal_code);
 
 	return 0;
 }
