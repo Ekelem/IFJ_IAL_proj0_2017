@@ -124,6 +124,7 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 
 void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	struct htab_t * new_symtable;
 	token * actual_token = token_buffer_get_token(token_buff);
 	switch (actual_token->type){
 		case DIM :
@@ -147,6 +148,10 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 		case RETURN :
 			body_return(token_buff, symtable, primal_code);
 			break;*/
+		case SCOPE :
+			new_symtable = htab_move(symtable->arr_size, symtable);
+			neterm_scope(token_buff, new_symtable, primal_code);
+			htab_free(new_symtable);
 
 		case NEW_LINE :
 			neterm_body(token_buff, symtable, primal_code);
