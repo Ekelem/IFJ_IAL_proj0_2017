@@ -194,3 +194,32 @@ struct htab_listitem * htab_lookup_add(struct htab_t *t, const char * key)
 	}
 		return item;
 }
+
+struct htab_t *htab_move(long newsize, struct htab_t *t2) {
+	if (newsize < 1) {
+		fprintf(stderr, "Invalid parameter, newsize < 1\n");
+		return NULL;
+	}
+	if (t2 == NULL) {
+		fprintf(stderr, "Invalid parameter, t2\n");
+		return NULL;
+	}
+	struct htab_t *tmp = htab_init(newsize);
+	if (tmp == NULL)
+		return NULL;
+
+	size_t table_size = htab_bucket_count(t2);
+	for (unsigned long i = 0; i < table_size; i++) {
+		struct htab_listitem *help = t2->buckets[i];
+		while(help != NULL) {
+			struct htab_listitem *add = htab_lookup_add(tmp, help->key);
+			add->data = help->data;
+			help = help->next;
+		}
+	}
+
+	tmp->arr_size = newsize;
+	tmp->n = t2->n;
+
+	return tmp;
+}

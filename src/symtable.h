@@ -84,4 +84,6 @@ void htab_free(struct htab_t * t);
 
 struct htab_listitem * htab_lookup_add(struct htab_t *t, const char * key);
 
+struct htab_t *htab_move(long newsize, struct htab_t *t2);
+
 #endif
