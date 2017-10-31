@@ -149,12 +149,13 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 			body_return(token_buff, symtable, primal_code);
 			break;*/
 		case SCOPE :
-			new_symtable = htab_move(symtable->arr_size, symtable);
+			expected_token(token_buff, NEW_LINE);
+			new_symtable = htab_init(symtable->arr_size );
 			neterm_scope(token_buff, new_symtable, primal_code);
 			htab_free(new_symtable);
+			break;
 
 		case NEW_LINE :
-			neterm_body(token_buff, symtable, primal_code);
 			break;
 		default :
 			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 6, DIM, INPUT, IF, DO, IDENTIFIER, RETURN);
