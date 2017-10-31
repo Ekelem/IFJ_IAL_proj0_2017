@@ -24,7 +24,8 @@ void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_
 			neterm_start(token_buff, symtable, primal_code);
 			break;
 		case FUNCTION :
-			//neterm_function_def(token_buff, symtable, primal_code);
+			neterm_function_def(token_buff, symtable, primal_code);
+			neterm_start(token_buff, symtable, primal_code);
 			break;
 		case NEW_LINE :
 			neterm_start(token_buff, symtable, primal_code);
@@ -68,9 +69,44 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 			break;
 	}
 	expected_token(token_buff, LEFT_PARANTHESIS);
-	neterm_args(token_buff, symtable, primal_code);
+	while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
+	{
+		neterm_args(token_buff, symtable, primal_code);
+	}
+	expected_token(token_buff, RIGHT_PARANTHESIS);
 	expected_token(token_buff, AS);
 	neterm_type(token_buff, symtable, primal_code);
+}
+
+void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * primal_code)
+{
+	token * actual_token = token_buffer_get_token(token_buff);		//expect "IDENTIFIER"
+	switch (actual_token->type){
+		case IDENTIFIER :
+			//check if exist
+			break;
+		default :
+			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
+			break;
+	}
+	expected_token(token_buff, LEFT_PARANTHESIS);
+	while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
+	{
+		neterm_args(token_buff, symtable, primal_code);
+	}
+	expected_token(token_buff, RIGHT_PARANTHESIS);
+	expected_token(token_buff, AS);
+	neterm_type(token_buff, symtable, primal_code);
+	expected_token(token_buff, NEW_LINE);
+	struct htab_t * new_symtable = htab_init(symtable->arr_size);
+	while (!is_peek_token(token_buff, END))
+	{
+		neterm_body(token_buff, new_symtable, primal_code);
+	}
+	htab_free(new_symtable);
+	expected_token(token_buff, END);
+	expected_token(token_buff, FUNCTION);
+	expected_token(token_buff, NEW_LINE);
 }
 
 unsigned int neterm_type(token_buffer * token_buff, htab_t * symtable, String * primal_code)
@@ -109,10 +145,10 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 	expected_token(token_buff, AS);
 	neterm_type(token_buff, symtable, primal_code);
 
-	actual_token = token_buffer_get_token(token_buff);
+	actual_token = token_buffer_peek_token(token_buff);
 	switch (actual_token->type){
 		case COMA :
-			neterm_args(token_buff, symtable, primal_code);
+			expected_token(token_buff, COMA);
 			break;
 		case RIGHT_PARANTHESIS :
 			break;
@@ -150,7 +186,7 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 			break;*/
 		case SCOPE :
 			expected_token(token_buff, NEW_LINE);
-			new_symtable = htab_init(symtable->arr_size );
+			new_symtable = htab_move(symtable->arr_size, symtable);
 			neterm_scope(token_buff, new_symtable, primal_code);
 			htab_free(new_symtable);
 			break;
