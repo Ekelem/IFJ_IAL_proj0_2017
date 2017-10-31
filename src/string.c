@@ -29,9 +29,9 @@ void append_char_to_str(String *s, char c)
 
 void append_str_to_str(String *s, const char * append)
 {
-	if (s->len + strlen(append) >= s->alloc_size)
+	if ((s->len + strlen(append)) >= s->alloc_size)
 	{
-		if ((s->str = (char *) realloc(s->str, (s->len + DEFAULT_STR_ALLOC) * sizeof(char))) == NULL)
+		if ((s->str = (char *) realloc(s->str, (s->alloc_size + DEFAULT_STR_ALLOC) * sizeof(char))) == NULL)
 			print_error();
 		s->alloc_size += DEFAULT_STR_ALLOC;
 	}
