@@ -149,6 +149,7 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 	switch (actual_token->type){
 		case COMA :
 			expected_token(token_buff, COMA);
+			neterm_args(token_buff, symtable, primal_code);
 			break;
 		case RIGHT_PARANTHESIS :
 			break;
