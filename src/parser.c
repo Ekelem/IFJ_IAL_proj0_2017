@@ -60,9 +60,24 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 	expected_token(token_buff, FUNCTION);
 
 	token * actual_token = token_buffer_get_token(token_buff);		//expect "IDENTIFIER"
+	struct htab_listitem *found_record;
 	switch (actual_token->type){
 		case IDENTIFIER :
-			//check if exist
+			found_record = htab_find(symtable, actual_token->attr.string_value);
+			if (found_record != NULL)
+			{
+				if (id_is_function(found_record))
+					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' was declared before as function\n", found_record->key);
+				if (!id_is_declared(found_record))
+					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is a variable\n", found_record->key);
+			}
+			else
+			{
+				found_record = make_item(actual_token->attr.string_value);
+				set_id_declared(found_record);
+				set_id_function(found_record);
+				htab_append(found_record, symtable);
+			}
 			break;
 		default :
 			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);

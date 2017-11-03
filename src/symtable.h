@@ -54,6 +54,8 @@ void set_id_declared(struct htab_listitem * item);
 
 void set_id_defined(struct htab_listitem * item);
 
+void set_id_function(struct htab_listitem * item);
+
 bool id_is_function(struct htab_listitem * item);
 
 bool id_is_used(struct htab_listitem * item);
