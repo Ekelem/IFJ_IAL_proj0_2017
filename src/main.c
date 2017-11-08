@@ -21,7 +21,7 @@ struct dynamic_stack * GARBAGE_COLLECTOR = NULL;
 // AFTER TESTING LEXICAL_ANALYSIS THIS CAN BE REMOVED
 char *key_words2[] = { "as", "asc", "declare", "dim", "do", "double", "else", "end", "chr", "function",
 					  "if", "input", "integer", "length", "loop", "print", "return", "scope", "string",
-					  "substr", "then", "while"};
+					  "substr", "then", "while", "for" ,"next"};
 
 char * tok_names [] = {"LEXICAL_ERROR", "IDENTIFIER" , "AS", "ASC", "DECLARE", "DIM", "DO", "DOUBLE", "ELSE", "END", "CHR", "FUNCTION", "IF", "INPUT",
 		"INTEGER", "LENGTH", "LOOP", "PRINT", "RETURN", "SCOPE", "STRING", "SUBSTRING", "THEN", "WHILE", "AND", "BOOLEAN",
@@ -81,7 +81,7 @@ void print_token(int tk, token *t)
 		case DOUBLEE : printf("DOUBLE :%f: ", t->attr.double_value); break;
 		case INT_WITH_EXP : printf("INT_WITH_EXP :%f: ", t->attr.double_value); break;
 		case DOUBLE_WITH_EXP : printf("DOUBLE_WITH_EXP :%f: ", t->attr.double_value); break;
-		case INT_VALUE : printf("INT_VALUE :%d :", t->attr.int_value); break;
+		case INT_VALUE : printf("INT_VALUE :%d:", t->attr.int_value); break;
 		case STRING_VALUE : printf("STRING_VALUE :%s: ", t->attr.string_value); break;
 		case LEXICAL_ERROR: printf("LEXICAL_ERROR "); break;
 		case COMA : printf("COMA "); break;
