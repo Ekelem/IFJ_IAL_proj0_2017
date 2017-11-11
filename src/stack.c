@@ -20,6 +20,7 @@ void dynamic_stack_pop(struct dynamic_stack * stack)
 	if (!dynamic_stack_empty(stack))
 		stack->actual--;
 }
+
 void dynamic_stack_push(struct dynamic_stack * stack, void * value)
 {
 	if (dynamic_stack_full(stack))

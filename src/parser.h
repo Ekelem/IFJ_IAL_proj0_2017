@@ -5,6 +5,15 @@
 #include "symtable.h"
 #include "scanner.h"
 #include "tokens.h"
+#include "stack.h"
+
+enum label_names
+{
+	label_func,
+	label_if,
+	label_else,
+	label_end_if
+}typedef enum_label_names;
 
 void translate(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_code);
@@ -22,11 +31,16 @@ void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_co
 void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal_code);
-void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code);
+void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code, token * identifier);
+
+void neterm_expression(token_buffer * token_buff, htab_t * symtable, String * primal_code, token_type end_token);
 
 unsigned int neterm_type(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 
 void expected_token(token_buffer * token_buff, int tok_type);
 bool is_peek_token(token_buffer * token_buff, int tok_type);
+
+unsigned int generate_if_label_order();
+void generate_if_label(String * primal_code, enum_label_names prefix, unsigned int order);
 
 #endif

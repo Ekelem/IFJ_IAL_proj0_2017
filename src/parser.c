@@ -194,10 +194,10 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 		case DO :
 			body_do_while(token_buff, symtable, primal_code);
 			break;
-		/*case IDENTIFIER :
-			body_assignment(token_buff, symtable, primal_code);
+		case IDENTIFIER :
+			body_assignment(token_buff, symtable, primal_code, actual_token);
 			break;
-		case RETURN :
+		/*case RETURN :
 			body_return(token_buff, symtable, primal_code);
 			break;*/
 		case SCOPE :
@@ -269,6 +269,8 @@ void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_
 	//Expression
 	expected_token(token_buff, THEN);
 	expected_token(token_buff, NEW_LINE);
+	unsigned int order =generate_if_label_order();
+	generate_if_label(primal_code, label_if, order);
 	token * next_token = token_buffer_peek_token(token_buff);
 	while (next_token->type != ELSE && next_token->type != END)
 	{
@@ -279,6 +281,7 @@ void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_
 	case ELSE :
 		expected_token(token_buff, ELSE);
 		expected_token(token_buff, NEW_LINE);
+		generate_if_label(primal_code, label_else, order);
 
 		while (((next_token = token_buffer_peek_token(token_buff))->type) != END)
 		{
@@ -288,6 +291,7 @@ void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_
 		expected_token(token_buff, END);
 		expected_token(token_buff, IF);
 		expected_token(token_buff, NEW_LINE);
+		generate_if_label(primal_code, label_end_if, order);
 		break;
 	default :
 		break;
@@ -308,11 +312,13 @@ void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal
 	expected_token(token_buff, NEW_LINE);
 }
 
-void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code)
+void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code, token * identifier)
 {
-	//Unary operators needed (Erik)
-	//expression
+	neterm_expression(token_buff, symtable, primal_code, NEW_LINE);
 	expected_token(token_buff, NEW_LINE);
+	append_str_to_str(primal_code, "POPS ");
+	append_str_to_str(primal_code, identifier->attr.string_value);
+	append_char_to_str(primal_code, '\n');
 }
 
 void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_code)
@@ -339,4 +345,125 @@ bool is_peek_token(token_buffer * token_buff, int tok_type)
 		return 1;
 	else
 		return 0;
+}
+
+void neterm_expression(token_buffer * token_buff, htab_t * symtable, String * primal_code, token_type end_token)
+{
+	struct dynamic_stack * expr_stack=dynamic_stack_init();
+	token * actual_token;
+	char buffer[128];
+	while (!is_peek_token(token_buff, end_token))
+	{
+		actual_token = token_buffer_get_token(token_buff);
+		switch(actual_token->type)
+		{
+			case INT_VALUE:		//operand type int
+				//dynamic_stack_push(expr_stack, actual_token)
+				append_str_to_str(primal_code, "PUSHS int@");
+				snprintf(buffer, 128, "%d", actual_token->attr.int_value);
+				append_str_to_str(primal_code, buffer);
+				append_char_to_str(primal_code, '\n');
+				break;
+
+			case ADD:		//operator +
+				if (dynamic_stack_empty(expr_stack))	//rules postfix
+				{
+					dynamic_stack_push(expr_stack, actual_token);
+				}
+				else
+				{
+					token * previous_oper = dynamic_stack_top(expr_stack);
+					if (previous_oper->type <= ADD)
+					{
+						dynamic_stack_pop(expr_stack);
+						switch (previous_oper->type)
+						{
+							case ADD:
+								append_str_to_str(primal_code, "ADDS\n");
+								break;
+							default:
+								break;
+						}
+						dynamic_stack_push(expr_stack, actual_token);
+					}
+					else
+					{
+
+					}
+
+				}
+		}
+	}
+	if (!dynamic_stack_empty(expr_stack))
+	{
+		actual_token = dynamic_stack_top(expr_stack);
+		switch (actual_token->type)
+		{
+		case ADD:
+			append_str_to_str(primal_code, "ADDS\n");
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+//void expression_operator_push()
+
+unsigned int generate_if_label_order()
+{
+	static unsigned int counter = 0;
+	return counter++;
+}
+
+void generate_if_label(String * primal_code, enum_label_names prefix, unsigned int order)
+{
+	char buffer[4] = "0000";
+	append_str_to_str(primal_code, "LABEL ");
+	switch (prefix)
+	{
+		case label_if:
+			snprintf(buffer, 4, "%d", order);
+			append_str_to_str(primal_code, buffer);
+			append_str_to_str(primal_code, "IF\n");
+			break;
+		case label_else:
+			snprintf(buffer, 4, "%d", order);
+			append_str_to_str(primal_code, buffer);
+			append_str_to_str(primal_code, "ELSE\n");
+			break;
+		case label_end_if:
+			snprintf(buffer, 4, "%d", order);
+			append_str_to_str(primal_code, buffer);
+			append_str_to_str(primal_code, "ENDIF\n");
+			break;
+		default:
+			break;
+	}
+}
+
+void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned int order)
+{
+	char buffer[4] = "0000";
+	append_str_to_str(primal_code, "JUMP ");
+	switch (prefix)
+	{
+		case label_if:
+			snprintf(buffer, 4, "%d", order);
+			append_str_to_str(primal_code, buffer);
+			append_str_to_str(primal_code, "IF\n");
+			break;
+		case label_else:
+			snprintf(buffer, 4, "%d", order);
+			append_str_to_str(primal_code, buffer);
+			append_str_to_str(primal_code, "ELSE\n");
+			break;
+		case label_end_if:
+			snprintf(buffer, 4, "%d", order);
+			append_str_to_str(primal_code, buffer);
+			append_str_to_str(primal_code, "ENDIF\n");
+			break;
+		default:
+			break;
+	}
 }
