@@ -44,4 +44,6 @@ bool is_peek_token(token_buffer * token_buff, int tok_type);
 unsigned int generate_if_label_order();
 void generate_if_label(String * primal_code, enum_label_names prefix, unsigned int order);
 
+void generate_func_label(String * primal_code, char* func_name);
+
 #endif

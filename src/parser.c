@@ -140,11 +140,13 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 	}
 	expected_token(token_buff, NEW_LINE);
 	struct htab_t * new_symtable = htab_init(symtable->arr_size);
+	generate_func_label(primal_code, found->key);
 	while (!is_peek_token(token_buff, END))
 	{
 		neterm_body(token_buff, new_symtable, primal_code);
 	}
 	htab_free(new_symtable);
+	append_str_to_str(primal_code, "RETURN\n");
 	expected_token(token_buff, END);
 	expected_token(token_buff, FUNCTION);
 	expected_token(token_buff, NEW_LINE);
@@ -550,4 +552,18 @@ void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned in
 		default:
 			break;
 	}
+}
+
+void generate_func_label(String * primal_code, char* func_name)
+{
+	append_str_to_str(primal_code, "LABEL %");
+	append_str_to_str(primal_code, func_name);
+	append_char_to_str(primal_code, '\n');
+}
+
+void generate_call_func(String * primal_code, char* func_name)
+{
+	append_str_to_str(primal_code, "CALL %");
+	append_str_to_str(primal_code, func_name);
+	append_char_to_str(primal_code, '\n');
 }
