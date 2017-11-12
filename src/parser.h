@@ -23,7 +23,8 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void neterm_scope(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 
-void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_code);
+void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record);
+void neterm_args_create(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * empty_func_record);
 
 void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_declaration(token_buffer * token_buff, htab_t * symtable, String * primal_code);

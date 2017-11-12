@@ -60,7 +60,7 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 	expected_token(token_buff, FUNCTION);
 
 	token * actual_token = token_buffer_get_token(token_buff);		//expect "IDENTIFIER"
-	struct htab_listitem *found_record;
+	struct htab_listitem *found_record = NULL;
 	switch (actual_token->type){
 		case IDENTIFIER :
 			found_record = htab_find(symtable, actual_token->attr.string_value);
@@ -71,47 +71,73 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 				if (!id_is_declared(found_record))
 					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is a variable\n", found_record->key);
 			}
-			else
-			{
-				found_record = make_item(actual_token->attr.string_value);
-				set_id_declared(found_record);
-				set_id_function(found_record);
-				htab_append(found_record, symtable);
-			}
 			break;
 		default :
 			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			break;
 	}
 	expected_token(token_buff, LEFT_PARANTHESIS);
+	if (found_record == NULL)
+	{
+		found_record = make_item(actual_token->attr.string_value);
+		set_id_declared(found_record);
+		set_id_function(found_record);
+		htab_append(found_record, symtable);
+		set_func_par_count(found_record, 0);
+	}
 	while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
 	{
-		neterm_args(token_buff, symtable, primal_code);
+		neterm_args_create(token_buff, symtable, primal_code, found_record);
 	}
 	expected_token(token_buff, RIGHT_PARANTHESIS);
 	expected_token(token_buff, AS);
-	neterm_type(token_buff, symtable, primal_code);
+	found_record->data.type = neterm_type(token_buff, symtable, primal_code);
 }
 
 void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	token * actual_token = token_buffer_get_token(token_buff);		//expect "IDENTIFIER"
+	struct htab_listitem * found;
 	switch (actual_token->type){
 		case IDENTIFIER :
-			//check if exist
+			found = htab_find(symtable, actual_token->attr.string_value);
+			if (id_is_defined(found))
+				error_msg(ERR_CODE_OTHERS, "redefinition of function %s.\n", found->key);
+			else
+				set_id_defined(found);
 			break;
 		default :
 			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			break;
 	}
 	expected_token(token_buff, LEFT_PARANTHESIS);
-	while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
+	if (found == NULL)	//implicit declaration
 	{
-		neterm_args(token_buff, symtable, primal_code);
+		found = make_item(actual_token->attr.string_value);
+		htab_append(found, symtable);
+		set_id_function(found);
+		set_id_declared(found);
+		set_id_defined(found);
+		set_func_par_count(found, 0);
+		while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
+		{
+			neterm_args_create(token_buff, symtable, primal_code, found);
+		}
+		expected_token(token_buff, RIGHT_PARANTHESIS);
+		expected_token(token_buff, AS);
+		found->data.type = neterm_type(token_buff, symtable, primal_code);
 	}
-	expected_token(token_buff, RIGHT_PARANTHESIS);
-	expected_token(token_buff, AS);
-	neterm_type(token_buff, symtable, primal_code);
+	else
+	{
+		while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
+		{
+			neterm_args(token_buff, symtable, primal_code, found);
+		}
+		expected_token(token_buff, RIGHT_PARANTHESIS);
+		expected_token(token_buff, AS);
+		if (found->data.type != neterm_type(token_buff, symtable, primal_code))
+			error_msg(ERR_CODE_OTHERS, "return type in function %s do not match declaration.\n", found->key);
+	}
 	expected_token(token_buff, NEW_LINE);
 	struct htab_t * new_symtable = htab_init(symtable->arr_size);
 	while (!is_peek_token(token_buff, END))
@@ -147,30 +173,88 @@ unsigned int neterm_type(token_buffer * token_buff, htab_t * symtable, String * 
 	return 0;
 }
 
-void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_code)
+void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record)
 {
-	token * actual_token = token_buffer_get_token(token_buff);
-	switch (actual_token->type){
-		case IDENTIFIER :
-			break;
-		default :
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
-			break;
-	}
-	expected_token(token_buff, AS);
-	neterm_type(token_buff, symtable, primal_code);
-
-	actual_token = token_buffer_peek_token(token_buff);
-	switch (actual_token->type){
-		case COMA :
+	struct func_par * actual_param = func_record->data.u_argconst.first_par;
+	unsigned int param_order = 0;
+	//printf("%d\n", func_record->data.par_count);
+	while (42)
+	{
+		token * actual_token = token_buffer_get_token(token_buff);
+		switch (actual_token->type){
+			case IDENTIFIER :
+				if (param_order < func_record->data.par_count)
+				{
+					if (strcmp(actual_token->attr.string_value, actual_param->par_name))
+					{
+						error_msg(ERR_CODE_OTHERS, "%d. param (%s) in function %s was declared before as %s.\n", param_order+1, actual_token->attr.string_value, func_record->key, actual_param->par_name);
+					}
+				}
+				else
+				{
+					error_msg(ERR_CODE_OTHERS, "function %s take only %d parameters.\n", func_record->key, func_record->data.par_count);
+				}
+				break;
+			default :
+				syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
+				break;
+		}
+		expected_token(token_buff, AS);
+		if (actual_param->par_type != neterm_type(token_buff, symtable, primal_code))
+			error_msg(ERR_CODE_OTHERS, "type of %d. parameter in function %s do not match type in declaration.\n", param_order+1, func_record->key);
+	
+		actual_token = token_buffer_peek_token(token_buff);
+		if (actual_token->type == COMA)
+		{
 			expected_token(token_buff, COMA);
-			neterm_args(token_buff, symtable, primal_code);
+			param_order++;
+			actual_param=actual_param->par_next;
+			continue;
+		}
+		else if (actual_token->type == RIGHT_PARANTHESIS)
+		{
+			if (++param_order != func_record->data.par_count)
+				error_msg(ERR_CODE_OTHERS, "function %s expect %d parameters.\n", func_record->key, func_record->data.par_count);
 			break;
-		case RIGHT_PARANTHESIS :
-			break;
-		default :
+		}
+		else
 			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2, COMA, RIGHT_PARANTHESIS);
+	}
+}
+
+void neterm_args_create(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * new_func_record)
+{
+	unsigned int param_order = 0;
+	struct func_par ** actual_param = &(new_func_record->data.u_argconst.first_par);
+
+	while (42)
+	{
+		token * actual_token = token_buffer_get_token(token_buff);
+		switch (actual_token->type){
+			case IDENTIFIER :
+				add_func_par_count(new_func_record);
+				*actual_param=malloc(sizeof(struct func_par));
+				(*actual_param)->par_name=actual_token->attr.string_value;
+				break;
+			default :
+				syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
+				break;
+		}
+		expected_token(token_buff, AS);
+		(*actual_param)->par_type=neterm_type(token_buff, symtable, primal_code);
+	
+		actual_token = token_buffer_peek_token(token_buff);
+		if (actual_token->type == COMA)
+		{
+			expected_token(token_buff, COMA);
+			param_order++;
+			actual_param=&((*actual_param)->par_next);
+			continue;
+		}
+		else if (actual_token->type == RIGHT_PARANTHESIS)
 			break;
+		else
+			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2, COMA, RIGHT_PARANTHESIS);
 	}
 }
 
@@ -316,7 +400,7 @@ void body_assignment(token_buffer * token_buff, htab_t * symtable, String * prim
 {
 	neterm_expression(token_buff, symtable, primal_code, NEW_LINE);
 	expected_token(token_buff, NEW_LINE);
-	append_str_to_str(primal_code, "POPS ");
+	append_str_to_str(primal_code, "POPS LF@");
 	append_str_to_str(primal_code, identifier->attr.string_value);
 	append_char_to_str(primal_code, '\n');
 }
