@@ -34,9 +34,30 @@ void set_id_defined(struct htab_listitem * item)
 	item->data.flags|= 4;
 }
 
+void set_id_constant(struct htab_listitem * item, token * constant)
+{
+	item->data.flags|= 8;
+	item->data.u_argconst.constant = constant;
+}
+
+void set_func_inline(struct htab_listitem * item)
+{
+	item->data.flags|= 8;
+}
+
 void set_id_function(struct htab_listitem * item)
 {
 	item->data.flags|= 128;
+}
+
+void set_func_par_count(struct htab_listitem * item, unsigned int value)
+{
+	item->data.par_count= value;
+}
+
+void add_func_par_count(struct htab_listitem * item)
+{
+	item->data.par_count+= 1;
 }
 
 

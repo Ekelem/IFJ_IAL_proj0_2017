@@ -12,22 +12,35 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+#include "scanner.h"
+
 enum type
 {
 	INTEGER_TYPE = 1,
 	STRING_TYPE = 2,
 	DOUBLE_TYPE = 4,
 	BOOLEAN_TYPE = 8
-};
+}typedef enum_type;
 
 typedef struct identifier_data
 {	
 	char type;		//
 	char flags;		//3-X,2-defined,1-declared,0-used)
+	unsigned int par_count;
+	union argconst
+	{
+		struct func_par * first_par;
+		token * constant;
+	}u_argconst;
 	
 }id_data;
 
-
+struct func_par
+{
+	char par_type;
+	char *par_name;
+	struct func_par *par_next;
+};
 
 struct htab_listitem
 {
@@ -55,6 +68,14 @@ void set_id_declared(struct htab_listitem * item);
 void set_id_defined(struct htab_listitem * item);
 
 void set_id_function(struct htab_listitem * item);
+
+void set_id_constant(struct htab_listitem * item, token * constant);
+
+void set_func_inline(struct htab_listitem * item);
+
+void set_func_par_count(struct htab_listitem * item, unsigned int value);
+
+void add_func_par_count(struct htab_listitem * item);
 
 bool id_is_function(struct htab_listitem * item);
 
