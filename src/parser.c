@@ -97,7 +97,7 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	token * actual_token = token_buffer_get_token(token_buff);		//expect "IDENTIFIER"
-	struct htab_listitem * found;
+	struct htab_listitem * found = NULL;
 	switch (actual_token->type){
 		case IDENTIFIER :
 			found = htab_find(symtable, actual_token->attr.string_value);
@@ -140,13 +140,11 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 	}
 	expected_token(token_buff, NEW_LINE);
 	struct htab_t * new_symtable = htab_init(symtable->arr_size);
-	generate_func_label(primal_code, found->key);
 	while (!is_peek_token(token_buff, END))
 	{
 		neterm_body(token_buff, new_symtable, primal_code);
 	}
 	htab_free(new_symtable);
-	append_str_to_str(primal_code, "RETURN\n");
 	expected_token(token_buff, END);
 	expected_token(token_buff, FUNCTION);
 	expected_token(token_buff, NEW_LINE);
@@ -326,13 +324,21 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 			break;
 	}
 	expected_token(token_buff, AS);
+	token *var_type = token_buffer_peek_token(token_buff);
 	set_id_type(found_record, neterm_type(token_buff, symtable, primal_code));
 	set_id_declared(found_record);
 	append_str_to_str(primal_code, "DEFVAR LF@");
 	append_str_to_str(primal_code, found_record->key);
 	append_char_to_str(primal_code, '\n');
-	//expression(token_buff, symtable, primal_code);
-	expected_token(token_buff, NEW_LINE);
+
+	actual_token = token_buffer_peek_token(token_buff);
+	if (actual_token->type == NEW_LINE){
+		//TODO: init var
+		expected_token(token_buff, NEW_LINE);
+	}
+	else {
+		expression_EQ(token_buff, symtable, primal_code, found_record->key, var_type->type);
+	}
 }
 
 void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_code)
@@ -352,8 +358,8 @@ void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_co
 
 void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
-	//Expression
-	expected_token(token_buff, THEN);
+	expression_EQ(token_buff, symtable, primal_code, NULL, e_if);
+
 	expected_token(token_buff, NEW_LINE);
 	unsigned int order =generate_if_label_order();
 	generate_if_label(primal_code, label_if, order);
@@ -387,8 +393,7 @@ void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_
 void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	expected_token(token_buff, WHILE);
-	//Expression
-	expected_token(token_buff, NEW_LINE);
+	expression_EQ(token_buff, symtable, primal_code, NULL, e_while);
 	while (!is_peek_token(token_buff, LOOP))
 	{
 		neterm_body(token_buff, symtable, primal_code);
@@ -400,11 +405,20 @@ void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal
 
 void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code, token * identifier)
 {
-	neterm_expression(token_buff, symtable, primal_code, NEW_LINE);
-	expected_token(token_buff, NEW_LINE);
-	append_str_to_str(primal_code, "POPS LF@");
-	append_str_to_str(primal_code, identifier->attr.string_value);
-	append_char_to_str(primal_code, '\n');
+	struct htab_listitem * found_record = htab_find(symtable, identifier->attr.string_value);
+	if (found_record == NULL)
+		error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is not declared\n", identifier->attr.string_value);
+
+	int type;
+	if (found_record->data.type == 1)
+		type = INTEGER;
+	else if (found_record->data.type == 2)
+		type = STRING;
+	else if (found_record->data.type == 4)
+		type = DOUBLE;
+	else
+		type = BOOLEAN;
+	expression_EQ(token_buff, symtable, primal_code, identifier->attr.string_value, type);
 }
 
 void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_code)
@@ -552,18 +566,4 @@ void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned in
 		default:
 			break;
 	}
-}
-
-void generate_func_label(String * primal_code, char* func_name)
-{
-	append_str_to_str(primal_code, "LABEL %");
-	append_str_to_str(primal_code, func_name);
-	append_char_to_str(primal_code, '\n');
-}
-
-void generate_call_func(String * primal_code, char* func_name)
-{
-	append_str_to_str(primal_code, "CALL %");
-	append_str_to_str(primal_code, func_name);
-	append_char_to_str(primal_code, '\n');
 }

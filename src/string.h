@@ -15,6 +15,7 @@ void append_str_to_str(String *s, const char * append);
 void clear_string(String *s);
 void free_string(String *s);
 void str_copy_str(String *s1, String *s2);
+void first_append_char_to_str(String *s, char c);
 
 int str_cmp_str(String *s1, String *s2);
 int str_cmp_conststr(String *s1, const char *s2);

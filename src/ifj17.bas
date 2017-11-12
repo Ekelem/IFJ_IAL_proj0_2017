@@ -1,5 +1,4 @@
 Scope
-
-	dim a as dsa
-	dim a as string
+	dim a as string = !"Hello" + !"World"
+	dim b as boolean = true or false
 end scope

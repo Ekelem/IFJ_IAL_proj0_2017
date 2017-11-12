@@ -6,6 +6,7 @@
 #include "scanner.h"
 #include "tokens.h"
 #include "stack.h"
+#include "expressions.h"
 
 enum label_names
 {
@@ -14,6 +15,13 @@ enum label_names
 	label_else,
 	label_end_if
 }typedef enum_label_names;
+
+typedef enum {
+	e_init,
+	e_assign,
+	e_if,
+	e_while
+} expr_states;
 
 void translate(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_code);

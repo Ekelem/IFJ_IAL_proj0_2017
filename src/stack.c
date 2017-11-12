@@ -64,3 +64,127 @@ bool dynamic_stack_full(struct dynamic_stack * stack)
 {
 	return (stack->actual == stack->size);
 }
+
+
+/********************************************/
+/****************EXPRESSSION*****************/
+/********************************************/
+
+void stack_init (TStack *s) {
+	s->First = NULL;
+	s->Last = NULL;
+}
+
+void push_expr_token (TStack *s, token *t) {
+	TSElem *new = malloc(sizeof(TSElem));
+	if (new == NULL)
+		error_msg(ERR_CODE_INTERN, "Could not allocate %d bytes", sizeof(TSElem));
+	new->t_elem = t;
+	new->is_valid = TRUE;
+	new->next = NULL;
+	new->prev = s->Last;
+	if (s->First == NULL) {
+		s->First = new;
+	}
+	else {
+		s->Last->next = new;
+	}
+	s->Last = new;
+}
+
+void pop_last_expr(TStack *s) {
+	if (s->Last != NULL) {
+		TSElem *tmp = s->Last;
+
+		if (s->First == s->Last) {
+			s->First = NULL;
+			s->Last = NULL;
+			free(tmp);
+		}
+		else {
+			s->Last->prev->next = NULL;
+			s->Last = s->Last->prev;
+			free(tmp);
+		}
+	}
+}
+
+void pop_first_expr(TStack *s) {
+	if (!SEmpty(s)) {
+		TSElem *tmp = s->First;
+
+
+		if (s->First == s->Last) {
+			s->First = NULL;
+			s->Last = NULL;
+			free(tmp);
+		}
+		else {
+			s->First->next->prev = NULL;
+			s->First = s->First->next;
+			free(tmp);
+		}
+	}
+}
+
+token *peek_last_expr(TStack *s) {
+	if (!(SEmpty(s))) {
+		return s->Last->t_elem;
+	}
+	return NULL;
+}
+
+token *peek_first_expr(TStack *s) {
+	if (!(SEmpty(s))) {
+		return s->First->t_elem;
+	}
+	return NULL;
+}
+
+
+bool SEmpty (TStack *s) {
+	return (s->First == NULL);
+}
+
+void print_stack(TStack *s) {
+	if (s->First == NULL)
+		printf("NULL\n");
+
+	TSElem *tmp = s->First;
+	while (tmp != NULL) {
+		printf("%d\n", tmp->t_elem->type);
+		tmp = tmp->next;
+	}
+}
+
+void delete_current_expr(TSElem *s) {
+	if (s != NULL) {
+		TSElem *tmp = s;
+		if (tmp->prev != NULL) {
+			tmp->prev->next = tmp->next;
+		}
+		if (tmp->next != NULL) {
+			tmp->next->prev = tmp->prev;
+		}
+		free(tmp);
+	}
+}
+
+int stack_counter(TStack *s) {
+	int counter = 0;
+	TSElem *tmp = s->First;
+	while (tmp != NULL) {
+		counter++;
+		tmp = tmp->next;
+	}
+	return counter;
+}
+
+void dealloc_tstack(TStack *s) {
+	TSElem *tmp = s->First;
+	while (tmp != NULL) {
+		s->First = s->First->next;
+		free(tmp);
+		tmp = s->First;
+	}
+}

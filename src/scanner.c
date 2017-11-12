@@ -11,7 +11,8 @@
 
 char *key_words[] = { "as", "asc", "declare", "dim", "do", "double", "else", "end", "chr", "function",
 					  "if", "input", "integer", "length", "loop", "print", "return", "scope", "string",
-					  "substr", "then", "while", "for", "next"};
+					  "substr", "then", "while", "and", "or", "boolean", "continue", "elseif", "exit", "false",
+					  "for", "next", "not", "shared", "static", "true"};
 
 
 int base_to_int(char *str, int base) {
@@ -33,7 +34,7 @@ bool is_keyword(char *str, token *t)
 	for (unsigned i = 0; i < strlen(str); i++)
 		str_low[i] = tolower(str[i]);
 	str_low[strlen(str)+1] = '\0';
-	for (int i = 0; i < 24; i++)
+	for (int i = 0; i < 35; i++)
 	{
 		if(strcmp(key_words[i], str_low) == 0) {
 			t->type = i + 2;

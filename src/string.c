@@ -27,6 +27,22 @@ void append_char_to_str(String *s, char c)
 	s->str[s->len] = '\0';
 }
 
+void first_append_char_to_str(String *s, char c)
+{
+	if (s->len + 1 >= s->alloc_size)
+	{
+		if ((s->str = (char *) realloc(s->str, (s->len + DEFAULT_STR_ALLOC) * sizeof(char))) == NULL)
+			print_error();
+		s->alloc_size += DEFAULT_STR_ALLOC;
+	}
+	for(int i = (int)s->len+1; i > 0; i--) {
+		s->str[i] = s->str[i-1];
+	}
+	s->str[0] = c;
+	s->len++;
+	s->str[s->len] = '\0';
+}
+
 void append_str_to_str(String *s, const char * append)
 {
 	if ((s->len + strlen(append)) >= s->alloc_size)
