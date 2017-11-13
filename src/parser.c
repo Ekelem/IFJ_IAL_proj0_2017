@@ -4,6 +4,7 @@ void translate(token_buffer * token_buff, htab_t * symtable, String * primal_cod
 {
 	init_string(primal_code);
 	append_str_to_str(primal_code, ".IFJcode17\n");		//Header
+	append_str_to_str(primal_code, "JUMP %MAIN\n");		//jump to scope
 	neterm_start(token_buff, symtable, primal_code);
 }
 
@@ -16,6 +17,7 @@ void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_
 			if (scope_found)
 				error_msg(ERR_CODE_OTHERS, "Scope block was already defined\n");
 			scope_found = 1;
+			append_str_to_str(primal_code, "LABEL %MAIN\n");
 			neterm_scope(token_buff, symtable, primal_code);
 			neterm_start(token_buff, symtable, primal_code);
 			break;
