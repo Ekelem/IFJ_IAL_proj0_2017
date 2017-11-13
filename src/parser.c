@@ -141,6 +141,10 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 			error_msg(ERR_CODE_OTHERS, "return type in function %s do not match declaration.\n", found->key);
 	}
 	expected_token(token_buff, NEW_LINE);
+	append_str_to_str(primal_code, "LABEL ");
+	append_str_to_str(primal_code, found->key);
+	append_char_to_str(primal_code, '\n');
+	append_str_to_str(primal_code, "DEFVAR LF@%returnval\n");
 	struct htab_t * new_symtable = htab_init(symtable->arr_size);
 	while (!is_peek_token(token_buff, END))
 	{
@@ -150,6 +154,7 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 	expected_token(token_buff, END);
 	expected_token(token_buff, FUNCTION);
 	expected_token(token_buff, NEW_LINE);
+	append_str_to_str(primal_code, "RETURN\n");
 }
 
 unsigned int neterm_type(token_buffer * token_buff, htab_t * symtable, String * primal_code)
