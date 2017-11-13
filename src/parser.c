@@ -519,7 +519,7 @@ unsigned int generate_if_label_order()
 void generate_if_label(String * primal_code, enum_label_names prefix, unsigned int order)
 {
 	char buffer[4] = "0000";
-	append_str_to_str(primal_code, "LABEL ");
+	append_str_to_str(primal_code, "LABEL %");
 	switch (prefix)
 	{
 		case label_if:

@@ -257,7 +257,9 @@ void get_expr_value(String * primal_code, TStack *s, int type, char *key) {
 					else if (next_token->next->t_elem->type == NOT){
 						append_str_to_str(primal_code, "NOTS\n");
 					}
-					else if (next_token->next->t_elem->type == LESS_THAN){
+					else if (next_token->next->t_elem->type == DIV2){
+						operand_module(primal_code, actual_token);
+					}else if (next_token->next->t_elem->type == LESS_THAN){
 						append_str_to_str(primal_code, "LTS\n");
 					}
 					else if (next_token->next->t_elem->type == GREATER_THAN){
@@ -404,4 +406,17 @@ void e_push(String *primal_code, TSElem *t, char *key, String *str) {
 		}
 		append_char_to_str(primal_code, '\n');
 	}
+}
+
+void operand_module(String *primal_code, TSElem *t) {
+	String str;
+	init_string(&str);
+
+	e_push(primal_code, t, NULL, &str);
+	append_str_to_str(primal_code, "INT2FLOATS\n");
+	e_push(primal_code, t->next, NULL, &str);
+	append_str_to_str(primal_code, "INT2FLOATS\nDIVS\n");
+	append_str_to_str(primal_code, "PUSHS float@0.5\nSUBS\nFLOAT2INTS\nMULS\nSUBS\n");
+
+	free_string(&str);
 }

@@ -48,5 +48,6 @@ void get_expr_value(String * primal_code, TStack *s, int type, char *key);
 int convert_operand_type(int operand);
 void e_move(String *primal_code, TSElem *t, char *key, String *str);
 void e_push(String *primal_code, TSElem *t, char *key, String *str);
+void operand_module(String *primal_code, TSElem *t);
 
 #endif
