@@ -49,9 +49,10 @@ bool has_higher_priority(t_expressions op1, t_expressions op2) {
 	return (precedence_tab[op1][op2]);
 }
 
-bool is_operand(int token_type, bool in_condition) {
-
-	switch(token_type) {
+bool is_operand(token *token_type, bool in_condition) {
+	if (token_type == NULL)
+		return false;
+	switch(token_type->type) {
 		case ADD:
 		case SUB:
 		case MUL:
@@ -60,7 +61,7 @@ bool is_operand(int token_type, bool in_condition) {
 			return true;
 	}
 	if (in_condition) {
-		switch(token_type) {
+		switch(token_type->type) {
 			case AND:
 			case OR:
 			case NOT:
@@ -76,8 +77,10 @@ bool is_operand(int token_type, bool in_condition) {
 	return false;
 }
 
-bool is_value(int token_type) {
-	switch(token_type) {
+bool is_value(token *token_type) {
+	if (token_type == NULL)
+		return false;
+	switch(token_type->type) {
 		case IDENTIFIER:
 		case DOUBLEE:
 		case INT_WITH_EXP:
@@ -148,11 +151,11 @@ TStack infix2postfix (token_buffer * token_buff, htab_t * symtable, String * pri
 		if (t->type == NEW_LINE || t->type == EOF || t->type == THEN)
 			break;
 
-		if ( is_operand(t->type, true)) {
+		if ( is_operand(t, true)) {
 			doOperation(&sTemp, &sOut, t);
 		}
 
-		else if(is_value(t->type)){
+		else if(is_value(t)){
 			push_expr_token(&sOut, t);
 		}
 
@@ -199,11 +202,20 @@ void get_expr_value(String * primal_code, TStack *s, int type, char *key) {
 	// 1.Search
 	// 2.Do operand
 	// 3.Delete
+	// print_stack(s);
 	while(stack_counter(s) != 1) {
 		switch (state) {
 			//step 1: Search
 			case E_SEARCH:
-				if (is_value(actual_token->t_elem->type) && is_value(next_token->t_elem->type) && is_operand(next_token->next->t_elem->type,true)) {
+				if (is_value(actual_token->t_elem) && is_token(next_token, NOT)) {
+					append_str_to_str(primal_code, "NOTS\n");
+					actual_token->is_valid = false;
+					delete_current_expr(next_token);
+					actual_token = s->First;
+					next_token = s->First->next;
+					state = E_SEARCH;
+				}
+				else if (is_value(actual_token->t_elem) && is_value(next_token->t_elem) && is_operand(next_token->next->t_elem,true)) {
 					state = E_OPERAND;
 				}
 				else {
@@ -217,9 +229,9 @@ void get_expr_value(String * primal_code, TStack *s, int type, char *key) {
 				if (type != STRING) {
 					e_push(primal_code, actual_token, key, &str);
 
-					e_push(primal_code, next_token, key, &str);
+					if (next_token->t_elem->type != NOT)
+						e_push(primal_code, next_token, key, &str);
 				}
-
 				if (type == STRING) {
 					if (next_token->next->t_elem->type == ADD) {
 						append_str_to_str(primal_code, "CONCAT ");
@@ -240,7 +252,6 @@ void get_expr_value(String * primal_code, TStack *s, int type, char *key) {
 						append_char_to_str(primal_code, '\n');
 					}
 				}
-
 				if (type != STRING) {
 					if (next_token->next->t_elem->type == ADD)
 						append_str_to_str(primal_code, "ADDS\n");
@@ -254,9 +265,6 @@ void get_expr_value(String * primal_code, TStack *s, int type, char *key) {
 						append_str_to_str(primal_code, "ANDS\n");
 					else if (next_token->next->t_elem->type == OR)
 						append_str_to_str(primal_code, "ORS\n");
-					else if (next_token->next->t_elem->type == NOT){
-						append_str_to_str(primal_code, "NOTS\n");
-					}
 					else if (next_token->next->t_elem->type == DIV2){
 						operand_module(primal_code, actual_token);
 					}else if (next_token->next->t_elem->type == LESS_THAN){
@@ -281,7 +289,6 @@ void get_expr_value(String * primal_code, TStack *s, int type, char *key) {
 						append_str_to_str(primal_code, "NOTS\n");
 					}
 				}
-
 				state = E_DELETE;
 				break;
 
@@ -411,12 +418,21 @@ void e_push(String *primal_code, TSElem *t, char *key, String *str) {
 void operand_module(String *primal_code, TSElem *t) {
 	String str;
 	init_string(&str);
-
 	e_push(primal_code, t, NULL, &str);
 	append_str_to_str(primal_code, "INT2FLOATS\n");
 	e_push(primal_code, t->next, NULL, &str);
 	append_str_to_str(primal_code, "INT2FLOATS\nDIVS\n");
 	append_str_to_str(primal_code, "PUSHS float@0.5\nSUBS\nFLOAT2INTS\nMULS\nSUBS\n");
-
 	free_string(&str);
+}
+
+bool is_token(TSElem *s, int type) {
+	if (s == NULL) {
+		return false;
+	}
+	if (s->t_elem != NULL) {
+		if (s->t_elem->type == type)
+			return true;
+	}
+	return false;
 }

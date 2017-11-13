@@ -49,5 +49,8 @@ int convert_operand_type(int operand);
 void e_move(String *primal_code, TSElem *t, char *key, String *str);
 void e_push(String *primal_code, TSElem *t, char *key, String *str);
 void operand_module(String *primal_code, TSElem *t);
+bool is_token(TSElem *s, int type);
+bool is_value(token *token_type);
+bool is_operand(token *token_type, bool in_condition);
 
 #endif
