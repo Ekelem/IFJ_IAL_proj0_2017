@@ -34,7 +34,7 @@ bool is_keyword(char *str, token *t)
 	for (unsigned i = 0; i < strlen(str); i++)
 		str_low[i] = tolower(str[i]);
 	str_low[strlen(str)+1] = '\0';
-	for (int i = 0; i < 35; i++)
+	for (int i = 0; i < KEYWORD_COUNT; i++)
 	{
 		if(strcmp(key_words[i], str_low) == 0) {
 			t->type = i + 2;
@@ -121,6 +121,7 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 	token *t= malloc(sizeof(token));
 
 	bool exponent = false;
+	bool added_num = false;
 
 	String ascii_seq;
 	String s;
@@ -152,7 +153,6 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 							case '<':  state = COMPARE_LESS;     break;
 							case '>':  state = COMPARE_GREATER;  break;
 							case '!':  state = EXCLAMATION_MARK; break;
-							case '.':  state = DOUBLE_1; init_string(&s);        break;
 							case '\'': state = LINE_COMMENT;     break;
 							case '&':  state = BASE;	break;
 							case '+':  state = ADD_EQ; 	break;
@@ -164,6 +164,9 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 							case ';':  return save_token(t, NULL, SEMICOLON, *err_line, *err_pos);
 							case '(':  return save_token(t, NULL, LEFT_PARANTHESIS, *err_line, *err_pos);
 							case ')':  return save_token(t, NULL, RIGHT_PARANTHESIS, *err_line, *err_pos);
+							case '.':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+							case '#':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+							case '%':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 							case '\"': return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 						}
 					}
@@ -193,21 +196,36 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				break;
 
 			case DOUBLE_1:
-				if (isdigit(c))
-					append_char_to_str(&s, c);
-				else if (c == 'e' || c == 'E') {
-					state = DOUBLE_3;
+				if (isdigit(c)) {
+					added_num = true;
 					append_char_to_str(&s, c);
 				}
+				else if (c == 'e' || c == 'E') {
+					if (added_num){
+						state = DOUBLE_3;
+						append_char_to_str(&s, c);
+					}
+					else
+						return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+				}
+				else if (isalpha(c)) {
+					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+				}
 				else {
-					*err_pos -= 1;
-					ungetc(c, f);
-					return save_token(t, &s, DOUBLEE, *err_line, *err_pos);
+					if (added_num) {
+						added_num = false;
+						*err_pos -= 1;
+						ungetc(c, f);
+						return save_token(t, &s, DOUBLEE, *err_line, *err_pos);
+					}
+					else
+						return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				}
 				break;
 
 			case DOUBLE_2:
 				if (isdigit(c)) {
+					added_num = true;
 					append_char_to_str(&s, c);
 				}
 				else if (isalpha(c)){
@@ -220,14 +238,20 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					append_char_to_str(&s, c);
 				}
 				else {
-					*err_pos -= 1;
-					ungetc(c, f);
-					return save_token(t, &s, INT_WITH_EXP, *err_line, *err_pos);
+					if (added_num){
+						added_num = false;
+						*err_pos -= 1;
+						ungetc(c, f);
+						return save_token(t, &s, INT_WITH_EXP, *err_line, *err_pos);
+					}
+					else
+						return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				}
 				break;
 
 			case DOUBLE_3:
 				if (isdigit(c)) {
+					added_num = true;
 					append_char_to_str(&s, c);
 				}
 				else if (isalpha(c)){
@@ -240,9 +264,14 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					append_char_to_str(&s, c);
 				}
 				else {
-					*err_pos -= 1;
-					ungetc(c, f);
-					return save_token(t, &s, DOUBLE_WITH_EXP, *err_line, *err_pos);
+					if (added_num){
+						added_num = false;
+						*err_pos -= 1;
+						ungetc(c, f);
+						return save_token(t, &s, DOUBLE_WITH_EXP, *err_line, *err_pos);
+					}
+					else
+						return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				}
 				break;
 
@@ -427,7 +456,7 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				if (c >= '0' &&  c <= '1'){
 					append_char_to_str(&s, c);
 				}
-				else if ((c >= '2' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f') ) {
+				else if ((c >= '2' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ) {
 					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				}
 				else {
@@ -440,7 +469,7 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 			case BASE_8:
 				if (c >= '0' &&  c <= '7')
 					append_char_to_str(&s, c);
-				else if ((c >= '8' && c <= '9') || (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f')) {
+				else if ((c >= '8' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
 					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				}
 				else {

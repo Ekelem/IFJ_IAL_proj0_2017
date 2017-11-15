@@ -15,7 +15,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-#define KEYWORD_COUNT 22
+#define KEYWORD_COUNT 35
 
 typedef union attribute {
 	int int_value;
