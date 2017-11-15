@@ -14,9 +14,14 @@ unsigned int hash_function(const char *str)
 	return h;
 }
 
-void set_id_type(struct htab_listitem * item, unsigned int new_type)
+void set_id_type(struct htab_listitem * item, char new_type)
 {
 	item->data.type= new_type;
+}
+
+char get_id_type(struct htab_listitem * item)
+{
+	return item->data.type;
 }
 
 void set_id_used(struct htab_listitem * item)

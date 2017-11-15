@@ -59,7 +59,9 @@ typedef struct htab_t
 }htab_t;
 
 
-void set_id_type(struct htab_listitem * item, unsigned int new_type);
+void set_id_type(struct htab_listitem * item, char new_type);
+
+char get_id_type(struct htab_listitem * item);
 
 void set_id_used(struct htab_listitem * item);
 
