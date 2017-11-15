@@ -32,6 +32,8 @@ int expression_EQ(token_buffer * token_buff, htab_t * symtable, String * primal_
 	if (type == INTEGER || type == DOUBLE || type == BOOLEAN || type == STRING)
 		expected_token(token_buff, EQUALS);
 
+	//ATI ma to byt INTEGER_TYPE, STRING_TYPE, BOOLEAN_TYPE a DOUBLE_TYPE
+
 	//1.step: check, TODO
 	semantic_expr_check(token_buff, symtable, primal_code, key, type);
 
