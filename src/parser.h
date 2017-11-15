@@ -40,9 +40,11 @@ void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_co
 void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal_code);
-void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code, token * identifier);
+void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * found_record);
 
 void neterm_expression(token_buffer * token_buff, htab_t * symtable, String * primal_code, token_type end_token);
+void function_call(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * found_record);
+void generate_prepare_params(String * primal_code, struct func_par * actual_param, unsigned int param_order, struct htab_listitem * param_caller, struct htab_listitem * found_record);
 
 unsigned int neterm_type(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 

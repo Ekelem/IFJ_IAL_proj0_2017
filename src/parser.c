@@ -1,7 +1,13 @@
 #include "parser.h"
 
+#define DEBUG_MSG 42
+
 void translate(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: started translation\n");
+	#endif
+
 	init_string(primal_code);
 	append_str_to_str(primal_code, ".IFJcode17\n");		//Header
 	append_str_to_str(primal_code, "JUMP %MAIN\n");		//jump to scope
@@ -10,27 +16,30 @@ void translate(token_buffer * token_buff, htab_t * symtable, String * primal_cod
 
 void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: neterm start\n");
+	#endif
+
 	static bool scope_found = 0;
-	token * actual_token = token_buffer_get_token(token_buff);
-	switch (actual_token->type){
+
+	while ((token_buffer_peek_token(token_buff)->type)!=EOF)
+	{
+		token * actual_token = token_buffer_get_token(token_buff);
+		switch (actual_token->type){
 		case SCOPE :
 			if (scope_found)
 				error_msg(ERR_CODE_OTHERS, "Scope block was already defined\n");
 			scope_found = 1;
 			append_str_to_str(primal_code, "LABEL %MAIN\n");
 			neterm_scope(token_buff, symtable, primal_code);
-			neterm_start(token_buff, symtable, primal_code);
 			break;
 		case DECLARE :
 			neterm_function_dec(token_buff, symtable, primal_code);
-			neterm_start(token_buff, symtable, primal_code);
 			break;
 		case FUNCTION :
 			neterm_function_def(token_buff, symtable, primal_code);
-			neterm_start(token_buff, symtable, primal_code);
 			break;
 		case NEW_LINE :
-			neterm_start(token_buff, symtable, primal_code);
 			break;
 		case EOF :
 			if (scope_found == 0)
@@ -39,13 +48,16 @@ void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_
 		default :
 			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 3, SCOPE, DECLARE, FUNCTION);
 			break;
+		}
 	}
-
-
 }
 
 void neterm_scope(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: neterm scope\n");
+	#endif
+
 	append_str_to_str(primal_code, "CREATEFRAME\n");
 	append_str_to_str(primal_code, "PUSHFRAME\n");
 	while (!is_peek_token(token_buff, END))
@@ -59,6 +71,10 @@ void neterm_scope(token_buffer * token_buff, htab_t * symtable, String * primal_
 
 void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: function declaration\n");
+	#endif
+
 	expected_token(token_buff, FUNCTION);
 
 	token * actual_token = token_buffer_get_token(token_buff);		//expect "IDENTIFIER"
@@ -68,8 +84,8 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 			found_record = htab_find(symtable, actual_token->attr.string_value);
 			if (found_record != NULL)
 			{
-				if (id_is_function(found_record))
-					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' was declared before as function\n", found_record->key);
+				if (!id_is_function(found_record))
+					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' was declared before as variable\n", found_record->key);
 				if (!id_is_declared(found_record))
 					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is a variable\n", found_record->key);
 			}
@@ -98,15 +114,22 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 
 void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: function definition\n");
+	#endif
+
 	token * actual_token = token_buffer_get_token(token_buff);		//expect "IDENTIFIER"
 	struct htab_listitem * found = NULL;
 	switch (actual_token->type){
 		case IDENTIFIER :
 			found = htab_find(symtable, actual_token->attr.string_value);
-			if (id_is_defined(found))
-				error_msg(ERR_CODE_OTHERS, "redefinition of function %s.\n", found->key);
-			else
-				set_id_defined(found);
+			if (found!=NULL)
+			{
+				if (id_is_defined(found))
+					error_msg(ERR_CODE_OTHERS, "redefinition of function %s.\n", found->key);
+				else
+					set_id_defined(found);
+			}
 			break;
 		default :
 			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
@@ -159,6 +182,10 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 
 unsigned int neterm_type(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: neterm type\n");
+	#endif
+
 	token * actual_token = token_buffer_get_token(token_buff);		//type selection
 	switch (actual_token->type){
 		case INTEGER :
@@ -182,6 +209,10 @@ unsigned int neterm_type(token_buffer * token_buff, htab_t * symtable, String * 
 
 void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: neterm args\n");
+	#endif
+
 	struct func_par * actual_param = func_record->data.u_argconst.first_par;
 	unsigned int param_order = 0;
 	//printf("%d\n", func_record->data.par_count);
@@ -231,6 +262,10 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 
 void neterm_args_create(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * new_func_record)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: neterm args create\n");
+	#endif
+
 	unsigned int param_order = 0;
 	struct func_par ** actual_param = &(new_func_record->data.u_argconst.first_par);
 
@@ -267,7 +302,12 @@ void neterm_args_create(token_buffer * token_buff, htab_t * symtable, String * p
 
 void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: neterm body\n");
+	#endif
+
 	struct htab_t * new_symtable;
+	struct htab_listitem * found_record;
 	token * actual_token = token_buffer_get_token(token_buff);
 	switch (actual_token->type){
 		case DIM :
@@ -286,7 +326,14 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 			body_do_while(token_buff, symtable, primal_code);
 			break;
 		case IDENTIFIER :
-			body_assignment(token_buff, symtable, primal_code, actual_token);
+			found_record = htab_find(symtable, actual_token->attr.string_value);	//search in symtable for identifier
+			if (found_record == NULL)
+			error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is not declared\n", actual_token->attr.string_value);	//Does not exist.. Too bad
+	
+			if (id_is_function(found_record))	//is it function or variable name? ..can not be both, sorry.
+				function_call(token_buff, symtable, primal_code, found_record);
+			else
+				body_assignment(token_buff, symtable, primal_code, found_record);
 			break;
 		/*case RETURN :
 			body_return(token_buff, symtable, primal_code);
@@ -308,6 +355,10 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 
 void body_declaration(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: body declaration\n");
+	#endif
+
 	token * actual_token = token_buffer_get_token(token_buff);
 	struct htab_listitem * found_record = NULL;
 	switch (actual_token->type){
@@ -316,9 +367,9 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 			if (found_record != NULL)
 			{
 				if (id_is_function(found_record))
-					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is function\n", found_record->key);
+					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is function.\n", found_record->key);
 				if (id_is_declared(found_record))
-					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' was declared before\n", found_record->key);
+					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' was declared before.\n", found_record->key);
 			}
 			else
 			{
@@ -345,11 +396,16 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 	}
 	else {
 		expression_EQ(token_buff, symtable, primal_code, found_record->key, var_type->type);
+		set_id_defined(found_record);
 	}
 }
 
 void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: body input\n");
+	#endif
+
 	token * actual_token = token_buffer_get_token(token_buff);
 	switch (actual_token->type){
 		case IDENTIFIER :
@@ -365,6 +421,10 @@ void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_co
 
 void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: body if then\n");
+	#endif
+
 	expression_EQ(token_buff, symtable, primal_code, NULL, e_if);
 
 	expected_token(token_buff, NEW_LINE);
@@ -399,6 +459,10 @@ void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_
 
 void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: body do while\n");
+	#endif
+
 	expected_token(token_buff, WHILE);
 	expression_EQ(token_buff, symtable, primal_code, NULL, e_while);
 	while (!is_peek_token(token_buff, LOOP))
@@ -410,26 +474,165 @@ void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal
 	expected_token(token_buff, NEW_LINE);
 }
 
-void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code, token * identifier)
+void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * found_record)
 {
-	struct htab_listitem * found_record = htab_find(symtable, identifier->attr.string_value);
-	if (found_record == NULL)
-		error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is not declared\n", identifier->attr.string_value);
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: body assignment\n");
+	#endif
 
-	int type;
-	if (found_record->data.type == 1)
-		type = INTEGER;
-	else if (found_record->data.type == 2)
-		type = STRING;
-	else if (found_record->data.type == 4)
-		type = DOUBLE;
-	else
-		type = BOOLEAN;
-	expression_EQ(token_buff, symtable, primal_code, identifier->attr.string_value, type);
+	char return_type = get_id_type(found_record);
+	expression_EQ(token_buff, symtable, primal_code, found_record->key, return_type);
+	set_id_defined(found_record);
+}
+
+void function_call(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * found_record)
+{
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: function call\n");
+	#endif
+
+	append_str_to_str(primal_code, "CREATEFRAME\n");	//prepare Temporary frame
+
+	struct func_par * actual_param = found_record->data.u_argconst.first_par;
+	unsigned int param_order = 0;
+	struct htab_listitem * param_caller = NULL;
+	expected_token(token_buff, LEFT_PARANTHESIS);
+	while ((token_buffer_peek_token(token_buff)->type)!=RIGHT_PARANTHESIS)
+	{
+		if (param_order != 0)
+			expected_token(token_buff, COMA);
+
+		token * actual_token = token_buffer_get_token(token_buff);
+		switch (actual_token->type){
+			case IDENTIFIER :
+				param_caller = htab_find(symtable, actual_token->attr.string_value);
+				if (param_caller == NULL)
+					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' does not exist.\n", param_caller->key);
+
+				if (!id_is_defined(param_caller))
+					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is used undefined.\n", param_caller->key);
+
+				if (param_order < found_record->data.par_count)
+				{
+					switch (actual_param->par_type)
+					{
+						case INTEGER_TYPE:
+							switch (get_id_type(param_caller))
+							{
+								case INTEGER_TYPE:
+								append_str_to_str(primal_code, "DEFVAR TF@");
+								append_str_to_str(primal_code, actual_param->par_name);
+								append_str_to_str(primal_code, "\nMOVE TF@");
+								append_str_to_str(primal_code, actual_param->par_name);
+								append_str_to_str(primal_code, " LF@");
+								append_str_to_str(primal_code, param_caller->key);
+								append_char_to_str(primal_code, '\n');
+								break;
+								case DOUBLE_TYPE:
+								append_str_to_str(primal_code, "DEFVAR TF@");
+								append_str_to_str(primal_code, actual_param->par_name);
+								append_str_to_str(primal_code, "\nFLOAT2INT TF@");
+								append_str_to_str(primal_code, actual_param->par_name);
+								append_str_to_str(primal_code, " LF@");
+								append_str_to_str(primal_code, param_caller->key);
+								append_str_to_str(primal_code, "\n");
+								break;
+								default:
+								error_msg(ERR_CODE_TYPE, "%d. parameter in function %s expect integer or double.\n", param_order+1, found_record->key);
+								break;
+							}
+						break;
+						case DOUBLE_TYPE:
+							switch (get_id_type(param_caller))
+							{
+								case DOUBLE_TYPE:
+								append_str_to_str(primal_code, "DEFVAR TF@");
+								append_str_to_str(primal_code, actual_param->par_name);
+								append_str_to_str(primal_code, "\nMOVE TF@");
+								append_str_to_str(primal_code, actual_param->par_name);
+								append_str_to_str(primal_code, " LF@");
+								append_str_to_str(primal_code, param_caller->key);
+								append_char_to_str(primal_code, '\n');
+								break;
+								case INTEGER_TYPE:
+								append_str_to_str(primal_code, "DEFVAR TF@");
+								append_str_to_str(primal_code, actual_param->par_name);
+								append_str_to_str(primal_code, "\nINT2FLOAT TF@");
+								append_str_to_str(primal_code, actual_param->par_name);
+								append_str_to_str(primal_code, " LF@");
+								append_str_to_str(primal_code, param_caller->key);
+								append_str_to_str(primal_code, "\n");
+								break;
+								default:
+								error_msg(ERR_CODE_TYPE, "%d. parameter in function %s expect integer or double value.\n", param_order+1, found_record->key);
+								break;
+							}
+						break;
+						case STRING_TYPE:
+							if (get_id_type(param_caller) == STRING_TYPE)
+							{
+								append_str_to_str(primal_code, "DEFVAR TF@");
+								append_str_to_str(primal_code, actual_param->par_name);
+								append_str_to_str(primal_code, "\nMOVE TF@");
+								append_str_to_str(primal_code, actual_param->par_name);
+								append_str_to_str(primal_code, " LF@");
+								append_str_to_str(primal_code, param_caller->key);
+								append_char_to_str(primal_code, '\n');
+							}
+							else
+								error_msg(ERR_CODE_TYPE, "%d. parameter in function %s expect string value.\n", param_order+1, found_record->key);
+							
+							break;
+						case BOOLEAN_TYPE:
+							if (get_id_type(param_caller) == BOOLEAN_TYPE)
+							{
+								append_str_to_str(primal_code, "DEFVAR TF@");
+								append_str_to_str(primal_code, actual_param->par_name);
+								append_str_to_str(primal_code, "\nMOVE TF@");
+								append_str_to_str(primal_code, actual_param->par_name);
+								append_str_to_str(primal_code, " LF@");
+								append_str_to_str(primal_code, param_caller->key);
+								append_char_to_str(primal_code, '\n');
+							}
+							else
+								error_msg(ERR_CODE_TYPE, "%d. parameter in function %s expect boolean value.\n", param_order+1, found_record->key);
+							
+							break;
+						default:
+							error_msg(ERR_CODE_TYPE, "%d. parameter in function calling %s have unexpected value.\n", param_order+1, found_record->key);
+						break;
+					}
+				}
+				else
+				{
+					error_msg(ERR_CODE_TYPE, "function %s takes only %d parameters.\n", found_record->key, found_record->data.par_count);
+				}
+				break;
+			default :
+				syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
+				break;
+		}
+		param_order++;
+		actual_param=actual_param->par_next;
+	}
+	//printf("%d\n", found_record->data.par_count);
+	if (param_order != found_record->data.par_count)
+		error_msg(ERR_CODE_OTHERS, "function %s expect %d parameters.\n", found_record->key, found_record->data.par_count);
+
+	expected_token(token_buff, RIGHT_PARANTHESIS);
+	append_str_to_str(primal_code, "PUSHFRAME\n");
+	append_str_to_str(primal_code, "CALL ");
+	append_str_to_str(primal_code, found_record->key);
+	append_char_to_str(primal_code, '\n');
+	append_str_to_str(primal_code, "POPFRAME\n");
 }
 
 void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: body print\n");
+	#endif
+
 	//expression
 	expected_token(token_buff, SEMICOLON);
 	if (is_peek_token(token_buff, NEW_LINE))
@@ -572,5 +775,99 @@ void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned in
 			break;
 		default:
 			break;
+	}
+}
+
+void generate_prepare_params(String * primal_code, struct func_par * actual_param, unsigned int param_order, struct htab_listitem * param_caller, struct htab_listitem * found_record)
+{
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: generate prepare params\n");
+	#endif
+
+	switch (actual_param->par_type)
+	{
+		case INTEGER_TYPE:
+			switch (get_id_type(param_caller))
+			{
+				case INTEGER_TYPE:
+				append_str_to_str(primal_code, "DEFVAR TF@");
+				append_str_to_str(primal_code, actual_param->par_name);
+				append_str_to_str(primal_code, "\nMOVE TF@");
+				append_str_to_str(primal_code, actual_param->par_name);
+				append_str_to_str(primal_code, " LF@");
+				append_str_to_str(primal_code, param_caller->key);
+				append_char_to_str(primal_code, '\n');
+				break;
+				case DOUBLE_TYPE:
+				append_str_to_str(primal_code, "DEFVAR TF@");
+				append_str_to_str(primal_code, actual_param->par_name);
+				append_str_to_str(primal_code, "\nFLOAT2INT TF@");
+				append_str_to_str(primal_code, actual_param->par_name);
+				append_str_to_str(primal_code, " LF@");
+				append_str_to_str(primal_code, param_caller->key);
+				append_str_to_str(primal_code, "\n");
+				break;
+				default:
+				error_msg(ERR_CODE_TYPE, "%d. parameter in function %s expect integer or double.", param_order+1, found_record->key);
+				break;
+			}
+		case DOUBLE_TYPE:
+			switch (get_id_type(param_caller))
+			{
+				case DOUBLE_TYPE:
+				append_str_to_str(primal_code, "DEFVAR TF@");
+				append_str_to_str(primal_code, actual_param->par_name);
+				append_str_to_str(primal_code, "\nMOVE TF@");
+				append_str_to_str(primal_code, actual_param->par_name);
+				append_str_to_str(primal_code, " LF@");
+				append_str_to_str(primal_code, param_caller->key);
+				append_char_to_str(primal_code, '\n');
+				break;
+				case INTEGER_TYPE:
+				append_str_to_str(primal_code, "DEFVAR TF@");
+				append_str_to_str(primal_code, actual_param->par_name);
+				append_str_to_str(primal_code, "\nINT2FLOAT TF@");
+				append_str_to_str(primal_code, actual_param->par_name);
+				append_str_to_str(primal_code, " LF@");
+				append_str_to_str(primal_code, param_caller->key);
+				append_str_to_str(primal_code, "\n");
+				break;
+				default:
+				error_msg(ERR_CODE_TYPE, "%d. parameter in function %s expect integer or double value.", param_order+1, found_record->key);
+				break;
+			}
+		case STRING_TYPE:
+			if (get_id_type(param_caller) == STRING_TYPE)
+			{
+				append_str_to_str(primal_code, "DEFVAR TF@");
+				append_str_to_str(primal_code, actual_param->par_name);
+				append_str_to_str(primal_code, "\nMOVE TF@");
+				append_str_to_str(primal_code, actual_param->par_name);
+				append_str_to_str(primal_code, " LF@");
+				append_str_to_str(primal_code, param_caller->key);
+				append_char_to_str(primal_code, '\n');
+			}
+			else
+				error_msg(ERR_CODE_TYPE, "%d. parameter in function %s expect string value.", param_order+1, found_record->key);
+			
+			break;
+		case BOOLEAN_TYPE:
+			if (get_id_type(param_caller) == BOOLEAN_TYPE)
+			{
+				append_str_to_str(primal_code, "DEFVAR TF@");
+				append_str_to_str(primal_code, actual_param->par_name);
+				append_str_to_str(primal_code, "\nMOVE TF@");
+				append_str_to_str(primal_code, actual_param->par_name);
+				append_str_to_str(primal_code, " LF@");
+				append_str_to_str(primal_code, param_caller->key);
+				append_char_to_str(primal_code, '\n');
+			}
+			else
+				error_msg(ERR_CODE_TYPE, "%d. parameter in function %s expect boolean value.", param_order+1, found_record->key);
+			
+			break;
+		default:
+			error_msg(ERR_CODE_TYPE, "%d. parameter in function calling %s have unexpected value.", param_order+1, found_record->key);
+		break;
 	}
 }
