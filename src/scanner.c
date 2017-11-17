@@ -9,9 +9,9 @@
 
 #include "scanner.h"
 
-char *key_words[] = { "as", "asc", "declare", "dim", "do", "double", "else", "end", "chr", "function",
-					  "if", "input", "integer", "length", "loop", "print", "return", "scope", "string",
-					  "substr", "then", "while", "and", "or", "boolean", "continue", "elseif", "exit", "false",
+char *key_words[] = { "as", "declare", "dim", "do", "double", "else", "end", "function",
+					  "if", "input", "integer", "loop", "print", "return", "scope", "string",
+					  "then", "while", "and", "or", "boolean", "continue", "elseif", "exit", "false",
 					  "for", "next", "not", "shared", "static", "true"};
 
 
