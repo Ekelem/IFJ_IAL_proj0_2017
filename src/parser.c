@@ -11,6 +11,9 @@ void translate(token_buffer * token_buff, htab_t * symtable, String * primal_cod
 	init_string(primal_code);
 	append_str_to_str(primal_code, ".IFJcode17\n");		//Header
 	append_str_to_str(primal_code, "JUMP %MAIN\n");		//jump to scope
+	
+	add_build_in_functions(symtable, primal_code);
+
 	neterm_start(token_buff, symtable, primal_code);
 }
 
@@ -31,7 +34,10 @@ void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_
 				error_msg(ERR_CODE_OTHERS, "Scope block was already defined\n");
 			scope_found = 1;
 			append_str_to_str(primal_code, "LABEL %MAIN\n");
+			append_str_to_str(primal_code, "CREATEFRAME\n");
+			append_str_to_str(primal_code, "PUSHFRAME\n");
 			neterm_scope(token_buff, symtable, primal_code);
+			append_str_to_str(primal_code, "POPFRAME\n");
 			break;
 		case DECLARE :
 			neterm_function_dec(token_buff, symtable, primal_code);
@@ -58,15 +64,12 @@ void neterm_scope(token_buffer * token_buff, htab_t * symtable, String * primal_
 	fprintf(stderr, "log: neterm scope\n");
 	#endif
 
-	append_str_to_str(primal_code, "CREATEFRAME\n");
-	append_str_to_str(primal_code, "PUSHFRAME\n");
 	while (!is_peek_token(token_buff, END))
 	{
 		neterm_body(token_buff, symtable, primal_code);
 	}
 	expected_token(token_buff, END);
 	expected_token(token_buff, SCOPE);
-	append_str_to_str(primal_code, "POPFRAME\n");
 }
 
 void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * primal_code)
@@ -87,7 +90,7 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 				if (!id_is_function(found_record))
 					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' was declared before as variable\n", found_record->key);
 				if (!id_is_declared(found_record))
-					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is a variable\n", found_record->key);
+					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' was declared before.\n", found_record->key);
 			}
 			break;
 		default :
@@ -341,7 +344,11 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 		case SCOPE :
 			expected_token(token_buff, NEW_LINE);
 			new_symtable = htab_move(symtable->arr_size, symtable);
+			append_str_to_str(primal_code, "CREATEFRAME\n");
+			htab_foreach(symtable, new_symtable, primal_code, (*copy_scope_layer));
+			append_str_to_str(primal_code, "PUSHFRAME\n");
 			neterm_scope(token_buff, new_symtable, primal_code);
+			append_str_to_str(primal_code, "POPFRAME\n");
 			htab_free(new_symtable);
 			break;
 
@@ -390,11 +397,13 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 	append_char_to_str(primal_code, '\n');
 
 	actual_token = token_buffer_peek_token(token_buff);
-	if (actual_token->type == NEW_LINE){
-		//TODO: init var
+	if (actual_token->type == NEW_LINE)		//implicit value
+	{
+		generate_implicit_value(found_record, primal_code);
 		expected_token(token_buff, NEW_LINE);
 	}
-	else {
+	else
+	{
 		expression_EQ(token_buff, symtable, primal_code, found_record->key, var_type->type);
 		set_id_defined(found_record);
 	}
@@ -425,11 +434,16 @@ void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_
 	fprintf(stderr, "log: body if then\n");
 	#endif
 
-	expression_EQ(token_buff, symtable, primal_code, NULL, e_if);
+	bool else_branch=0;
+
+	//expression_EQ(token_buff, symtable, primal_code, NULL, e_if);
 
 	expected_token(token_buff, NEW_LINE);
+
+	append_str_to_str(primal_code, "PUSHS bool@true\n");
+	append_str_to_str(primal_code, "JUMPIFNEQS ");
 	unsigned int order =generate_if_label_order();
-	generate_if_label(primal_code, label_if, order);
+	generate_if_label(primal_code, label_else, order);
 	token * next_token = token_buffer_peek_token(token_buff);
 	while (next_token->type != ELSE && next_token->type != END)
 	{
@@ -440,17 +454,31 @@ void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_
 	case ELSE :
 		expected_token(token_buff, ELSE);
 		expected_token(token_buff, NEW_LINE);
+		append_str_to_str(primal_code, "JUMP ");
+		generate_if_label(primal_code, label_end_if, order);
+		append_str_to_str(primal_code, "LABEL ");
 		generate_if_label(primal_code, label_else, order);
+
+		else_branch=1;
 
 		while (((next_token = token_buffer_peek_token(token_buff))->type) != END)
 		{
 			neterm_body(token_buff, symtable, primal_code);
 		}
 	case END :
+		if(else_branch)
+		{
+			append_str_to_str(primal_code, "LABEL ");
+			generate_if_label(primal_code, label_end_if, order);
+		}
+		else
+		{
+			append_str_to_str(primal_code, "LABEL ");
+			generate_if_label(primal_code, label_else, order);
+		}
 		expected_token(token_buff, END);
 		expected_token(token_buff, IF);
 		expected_token(token_buff, NEW_LINE);
-		generate_if_label(primal_code, label_end_if, order);
 		break;
 	default :
 		break;
@@ -509,8 +537,8 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 				if (param_caller == NULL)
 					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' does not exist.\n", param_caller->key);
 
-				if (!id_is_defined(param_caller))
-					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is used undefined.\n", param_caller->key);
+				/*if (!id_is_defined(param_caller))
+					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is used undefined.\n", param_caller->key);*/
 
 				if (param_order < found_record->data.par_count)
 				{
@@ -729,21 +757,24 @@ unsigned int generate_if_label_order()
 void generate_if_label(String * primal_code, enum_label_names prefix, unsigned int order)
 {
 	char buffer[4] = "0000";
-	append_str_to_str(primal_code, "LABEL %");
+	//append_str_to_str(primal_code, "LABEL %");
 	switch (prefix)
 	{
 		case label_if:
 			snprintf(buffer, 4, "%d", order);
+			append_char_to_str(primal_code, '%');
 			append_str_to_str(primal_code, buffer);
 			append_str_to_str(primal_code, "IF\n");
 			break;
 		case label_else:
 			snprintf(buffer, 4, "%d", order);
+			append_char_to_str(primal_code, '%');
 			append_str_to_str(primal_code, buffer);
 			append_str_to_str(primal_code, "ELSE\n");
 			break;
 		case label_end_if:
 			snprintf(buffer, 4, "%d", order);
+			append_char_to_str(primal_code, '%');
 			append_str_to_str(primal_code, buffer);
 			append_str_to_str(primal_code, "ENDIF\n");
 			break;
@@ -868,6 +899,104 @@ void generate_prepare_params(String * primal_code, struct func_par * actual_para
 			break;
 		default:
 			error_msg(ERR_CODE_TYPE, "%d. parameter in function calling %s have unexpected value.", param_order+1, found_record->key);
+		break;
+	}
+}
+
+void add_build_in_functions(htab_t * symtable, String * primal_code)
+{
+	struct htab_listitem * record = NULL;
+
+	//length(s as string) as integer
+	record = create_func_record(symtable, "length");
+	record->data.type=INTEGER_TYPE;
+	record->data.u_argconst.first_par=malloc(sizeof(struct func_par));
+	record->data.u_argconst.first_par->par_name="s";
+	record->data.u_argconst.first_par->par_type=STRING_TYPE;
+	set_func_par_count(record, 1);
+
+	append_str_to_str(primal_code, "LABEL length\n"
+									"DEFVAR LF@%returnval\n"
+									"STRLEN LF@%returnval LF@s\n"
+									"RETURN\n");
+
+
+	//substr(s as string, i as integer, n as integer) as string
+	create_func_record(symtable, "substr");
+	record = create_func_record(symtable, "substr");
+	record->data.type=STRING_TYPE;
+	record->data.u_argconst.first_par=malloc(sizeof(struct func_par));
+	record->data.u_argconst.first_par->par_name="s";
+	record->data.u_argconst.first_par->par_type=STRING_TYPE;
+
+	record->data.u_argconst.first_par->par_next=malloc(sizeof(struct func_par));
+	record->data.u_argconst.first_par->par_next->par_name="i";
+	record->data.u_argconst.first_par->par_next->par_type=INTEGER_TYPE;
+
+	record->data.u_argconst.first_par->par_next->par_next=malloc(sizeof(struct func_par));
+	record->data.u_argconst.first_par->par_next->par_next->par_name="n";
+	record->data.u_argconst.first_par->par_next->par_next->par_type=INTEGER_TYPE;
+	set_func_par_count(record, 3);
+
+	//asc(s as string, i as integer) as integer
+	create_func_record(symtable, "asc");
+
+	//chr(i as integer) as string
+	create_func_record(symtable, "chr");
+}
+
+struct htab_listitem * create_func_record(htab_t * symtable, char * name)
+{
+	struct htab_listitem * new_record = make_item(name);
+	set_id_declared(new_record);
+	set_id_function(new_record);
+	htab_append(new_record, symtable);
+	set_func_par_count(new_record, 0);
+	return new_record;
+}
+
+void copy_scope_layer(struct htab_listitem * item, htab_t * other_symtable, String * primal_code)
+{
+	if (!id_is_function(item))
+	{
+		append_str_to_str(primal_code, "DEFVAR TF@");
+		append_str_to_str(primal_code, item->key);
+		append_str_to_str(primal_code, "\nMOVE TF@");
+		append_str_to_str(primal_code, item->key);
+		append_str_to_str(primal_code, " LF@");
+		append_str_to_str(primal_code, item->key);
+		append_char_to_str(primal_code, '\n');
+	}
+}
+
+void copy_general_layer(struct htab_listitem * item, htab_t * other_symtable, String * primal_code)
+{
+	if (id_is_function(item))
+	{
+		htab_append(item, other_symtable);
+	}
+}
+
+void generate_implicit_value(struct htab_listitem * found_record, String * primal_code)
+{
+	append_str_to_str(primal_code, "MOVE LF@");
+	append_str_to_str(primal_code, found_record->key);
+	switch (found_record->data.type)
+	{
+		case INTEGER_TYPE:
+		append_str_to_str(primal_code, " int@0\n");
+		break;
+
+		case DOUBLE_TYPE:
+		append_str_to_str(primal_code, " float@0.0\n");
+		break;
+
+		case STRING_TYPE:
+		append_str_to_str(primal_code, " string@\n");
+		break;
+
+		case BOOLEAN_TYPE:
+		append_str_to_str(primal_code, " bool@false\n");
 		break;
 	}
 }

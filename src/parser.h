@@ -56,4 +56,12 @@ void generate_if_label(String * primal_code, enum_label_names prefix, unsigned i
 
 void generate_func_label(String * primal_code, char* func_name);
 
+void add_build_in_functions(htab_t * symtalbe, String * primal_code);
+
+struct htab_listitem * create_func_record(htab_t * symtable, char * name);
+
+void copy_scope_layer(struct htab_listitem * item, htab_t * other_symtable, String * primal_code);
+
+void generate_implicit_value(struct htab_listitem * found_record, String * primal_code);
+
 #endif

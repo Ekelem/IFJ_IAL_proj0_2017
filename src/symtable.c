@@ -249,3 +249,16 @@ struct htab_t *htab_move(long newsize, struct htab_t *t2) {
 
 	return tmp;
 }
+
+void htab_foreach(htab_t* t, htab_t * other_symtable, String * primal_code, void(*function)(struct htab_listitem * item, htab_t * other_symtable, String * primal_code))
+{
+	for (unsigned int i=0; i<(htab_bucket_count(t)); i++)
+	{
+		struct htab_listitem * item =t->buckets[i];
+		while (item!=NULL)
+		{
+			function(item, other_symtable, primal_code);
+			item=item->next;
+		}
+	}
+}

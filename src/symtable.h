@@ -111,4 +111,6 @@ struct htab_listitem * htab_lookup_add(struct htab_t *t, const char * key);
 
 struct htab_t *htab_move(long newsize, struct htab_t *t2);
 
+void htab_foreach(htab_t* t, htab_t * other_symtable, String * primal_code, void(*function)(struct htab_listitem * item, htab_t * other_symtable, String * primal_code));
+
 #endif
