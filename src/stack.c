@@ -80,7 +80,11 @@ void push_expr_token (TStack *s, token *t) {
 	if (new == NULL)
 		error_msg(ERR_CODE_INTERN, "Could not allocate %d bytes", sizeof(TSElem));
 	new->t_elem = t;
-	new->is_valid = TRUE;
+	new->is_valid = true;
+	if (t->type == DOUBLEE || t->type == DOUBLE_WITH_EXP || t->type == INT_WITH_EXP)
+		new->conv_double = true;
+	else
+		new->conv_double = false;
 	new->next = NULL;
 	new->prev = s->Last;
 	if (s->First == NULL) {
@@ -186,5 +190,88 @@ void dealloc_tstack(TStack *s) {
 		s->First = s->First->next;
 		free(tmp);
 		tmp = s->First;
+	}
+}
+
+int stack_valid_counter(TStack *s) {
+	int counter = 0;
+	TSElem *tmp = s->First;
+	while (tmp != NULL) {
+		if (tmp->is_valid)
+			counter++;
+		tmp = tmp->next;
+	}
+	return counter;
+}
+
+TStack stack_copy(TStack *s) {
+	TSElem *tmp = s->First;
+	TStack new;
+	stack_init(&new);
+
+	while (tmp != NULL) {
+		push_expr_token(&new, tmp->t_elem);
+		tmp = tmp->next;
+	}
+
+	return new;
+}
+
+
+void BInit (BStack *s) {
+	s->First = NULL;
+}
+void BPush (BStack *s, bool is_bool_value) {
+	BSElem *new = malloc(sizeof(BSElem));
+	new->is_bool_value = is_bool_value;
+	new->next = s->First;
+	s->First = new;
+}
+void BPop (BStack *s) {
+	if (s->First != NULL) {
+		BSElem *tmp = s->First;
+		s->First = s->First->next;
+		free(tmp);
+	}
+}
+
+bool BTop (BStack *s) {
+	if (s->First == NULL)
+		exit(42);
+	return s->First->is_bool_value;
+}
+
+bool BEmpty (BStack *s) {
+	return (s->First == NULL);
+}
+
+bool BTop_equals(BStack *s) {
+	if (s->First != NULL && s->First->next != NULL) {
+		if (s->First->is_bool_value && s->First->next->is_bool_value){
+			BSElem *tmp = s->First;
+			s->First = s->First->next;
+			free(tmp);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void dealloc_BStack(BStack *s) {
+	BSElem *tmp = s->First;
+	while (tmp != NULL) {
+		s->First = s->First->next;
+		free(tmp);
+		tmp = s->First;
+	}
+	s->First = NULL;
+}
+
+void print_BStack(BStack *s) {
+	BSElem *tmp = s->First;
+	while (tmp != NULL) {
+		printf("%d\n", tmp->is_bool_value);
+		tmp = tmp->next;
 	}
 }

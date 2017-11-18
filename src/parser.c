@@ -366,8 +366,7 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 		case NEW_LINE :
 			break;
 		default :
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type,
-                                    6, DIM, INPUT, IF, DO, IDENTIFIER, RETURN);
+			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 6, DIM, INPUT, IF, DO, IDENTIFIER, RETURN);
 			break;
 	}
 }
@@ -401,7 +400,6 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 			break;
 	}
 	expected_token(token_buff, AS);
-	token *var_type = token_buffer_peek_token(token_buff);
 	set_id_type(found_record, neterm_type(token_buff, symtable, primal_code));
 	set_id_declared(found_record);
 	append_str_to_str(primal_code, "DEFVAR LF@");
@@ -414,10 +412,16 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 		generate_implicit_value(found_record, primal_code);
 		expected_token(token_buff, NEW_LINE);
 	}
-	else
+	else if (actual_token->type == EQUALS)
 	{
-		expression_EQ(token_buff, symtable, primal_code, found_record->key, var_type->type);
+		expected_token(token_buff, EQUALS);
+		int variable_type = get_id_type(found_record);
+		int expr_return_type = parse_expression(token_buff, symtable, primal_code, found_record->key, INTEGER_TYPE, NEW_LINE);
+		parse_semantic_expression(primal_code, found_record, variable_type, expr_return_type);
 		set_id_defined(found_record);
+	}
+	else {
+		syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2, NEW_LINE, EQUALS);
 	}
 }
 
@@ -448,9 +452,10 @@ void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_
 
 	bool else_branch=0;
 
-	//expression_EQ(token_buff, symtable, primal_code, NULL, e_if);
+	int variable_type = BOOLEAN_TYPE;
+	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NULL, variable_type, THEN);
+	parse_semantic_expression(primal_code, NULL, variable_type, expr_return_type);
 
-	expected_token(token_buff, NEW_LINE);
 
 	append_str_to_str(primal_code, "PUSHS bool@true\n");
 	append_str_to_str(primal_code, "JUMPIFNEQS ");
@@ -504,7 +509,10 @@ void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal
 	#endif
 
 	expected_token(token_buff, WHILE);
-	expression_EQ(token_buff, symtable, primal_code, NULL, e_while);
+	int variable_type = BOOLEAN_TYPE;
+	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NULL, BOOLEAN_TYPE, NEW_LINE);
+	parse_semantic_expression(primal_code, NULL, variable_type, expr_return_type);
+
 	while (!is_peek_token(token_buff, LOOP))
 	{
 		neterm_body(token_buff, symtable, primal_code);
@@ -520,9 +528,52 @@ void body_assignment(token_buffer * token_buff, htab_t * symtable, String * prim
 	fprintf(stderr, "log: body assignment\n");
 	#endif
 
-	char return_type = get_id_type(found_record);
-	expression_EQ(token_buff, symtable, primal_code, found_record->key, return_type);
+	expected_token(token_buff, EQUALS);
+	int variable_type = get_id_type(found_record);
+	int expr_return_type = parse_expression(token_buff, symtable, primal_code, found_record->key, 420, NEW_LINE);
+	parse_semantic_expression(primal_code, found_record, variable_type, expr_return_type);
 	set_id_defined(found_record);
+}
+
+void parse_semantic_expression(String * primal_code, struct htab_listitem *found_record, int variable_type, int expr_return_type) {
+
+	if (variable_type == DOUBLE_TYPE && expr_return_type == INTEGER_TYPE) {
+		append_str_to_str(primal_code, "INT2FLOATS\nPOPS LF@");
+		append_str_to_str(primal_code, found_record->key);
+		append_char_to_str(primal_code, '\n');
+	}
+	else if (variable_type == DOUBLE_TYPE && expr_return_type == DOUBLE_TYPE){
+		append_str_to_str(primal_code, "POPS LF@");
+		append_str_to_str(primal_code, found_record->key);
+		append_char_to_str(primal_code, '\n');
+	}
+	else if (variable_type == INTEGER_TYPE && expr_return_type == DOUBLE_TYPE){
+		append_str_to_str(primal_code, "FLOAT2INTS\nPOPS LF@");
+		append_str_to_str(primal_code, found_record->key);
+		append_char_to_str(primal_code, '\n');
+	}
+	else if (variable_type == INTEGER_TYPE && expr_return_type == INTEGER_TYPE){
+		append_str_to_str(primal_code, "POPS LF@");
+		append_str_to_str(primal_code, found_record->key);
+		append_char_to_str(primal_code, '\n');
+	}
+	else if (variable_type == BOOLEAN_TYPE && expr_return_type == BOOLEAN_TYPE && found_record == NULL){
+
+	}
+	else if (variable_type == BOOLEAN_TYPE && expr_return_type == BOOLEAN_TYPE && found_record != NULL){
+		append_str_to_str(primal_code, "POPS LF@");
+		append_str_to_str(primal_code, found_record->key);
+		append_char_to_str(primal_code, '\n');
+	}
+	else if (variable_type == STRING_TYPE && expr_return_type == STRING_TYPE){
+		append_str_to_str(primal_code, "POPS LF@");
+		append_str_to_str(primal_code, found_record->key);
+		append_char_to_str(primal_code, '\n');
+	}
+
+	else {
+		error_msg(ERR_CODE_OTHERS, "The expression value does not match the variable type\n");
+	}
 }
 
 void function_call(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * found_record)

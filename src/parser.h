@@ -16,12 +16,6 @@ enum label_names
 	label_end_if
 }typedef enum_label_names;
 
-typedef enum {
-	e_init,
-	e_assign,
-	e_if,
-	e_while
-} expr_states;
 
 void translate(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_code);
@@ -63,5 +57,7 @@ struct htab_listitem * create_func_record(htab_t * symtable, char * name);
 void copy_scope_layer(struct htab_listitem * item, htab_t * other_symtable, String * primal_code);
 
 void generate_implicit_value(struct htab_listitem * found_record, String * primal_code);
+
+void parse_semantic_expression(String * primal_code, struct htab_listitem *found_record, int variable_type, int expr_return_type);
 
 #endif

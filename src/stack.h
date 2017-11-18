@@ -36,6 +36,7 @@ bool dynamic_stack_full(struct dynamic_stack * stack);
 typedef struct tselem {
 	token *t_elem;
 	bool is_valid;
+	bool conv_double;
 	struct tselem *next;
 	struct tselem *prev;
 }TSElem;
@@ -67,5 +68,34 @@ void delete_current_expr(TSElem *s);
 int stack_counter(TStack *s);
 
 void dealloc_tstack(TStack *s);
+
+int stack_valid_counter(TStack *s);
+
+TStack stack_copy(TStack *s);
+
+
+/********************************************/
+/****************VALUE_STACK*****************/
+/********************************************/
+
+typedef struct bselem {
+	bool is_bool_value;
+	struct bselem *next;
+} BSElem;
+
+
+typedef struct bstack {
+	BSElem *First;
+} BStack;
+
+
+void BInit (BStack *s);
+void BPush (BStack *s, bool is_bool_value);
+void BPop (BStack *s);
+bool BTop (BStack *s);
+bool BEmpty (BStack *s);
+bool BTop_equals(BStack *s);
+void dealloc_BStack(BStack *s);
+void print_BStack(BStack *s);
 
 #endif
