@@ -23,8 +23,8 @@ char *key_words2[] = { "as", "asc", "declare", "dim", "do", "double", "else", "e
 					  "if", "input", "integer", "length", "loop", "print", "return", "scope", "string",
 					  "substr", "then", "while", "for" ,"next"};
 
-char * tok_names [] = {"LEXICAL_ERROR", "IDENTIFIER" , "AS", "ASC", "DECLARE", "DIM", "DO", "DOUBLE", "ELSE", "END", "CHR", "FUNCTION", "IF", "INPUT",
-		"INTEGER", "LENGTH", "LOOP", "PRINT", "RETURN", "SCOPE", "STRING", "SUBSTRING", "THEN", "WHILE", "AND", "BOOLEAN",
+char * tok_names [] = {"LEXICAL_ERROR", "IDENTIFIER" , "AS", "DECLARE", "DIM", "DO", "DOUBLE", "ELSE", "END", "FUNCTION", "IF", "INPUT",
+		"INTEGER", "LOOP", "PRINT", "RETURN", "SCOPE", "STRING", "THEN", "WHILE", "AND", "BOOLEAN",
 		"CONTINUE", "ELSEIF", "EXIT", "FALSE", "FOR", "NEXT", "NOT", "OR", "SHARED", "STATIC", "TRUE", "SEMICOLON", "ADD", "SUB", "MUL", "DIV", "DIV2",
 		"LESS_THAN", "GREATER_THAN", "LESS_OR_EQUALS", "GREATER_OR_EQUALS", "EQUALS", "NOT_EQUALS", "LEFT_PARANTHESIS", "RIGHT_PARANTHESIS",
 		"DOUBLEE", "INT_WITH_EXP", "DOUBLE_WITH_EXP", "INT_VALUE", "STRING_VALUE", "COMA", "KEY_WORD", "INT_2", "INT_8", "INT_16", "NEW_LINE"};
