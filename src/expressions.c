@@ -333,14 +333,14 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 							error_msg(ERR_CODE_TYPE, "Operand SUB can be combined only with INTEGER OR DOUBLE values\n");
 						}
 						if ((is_valid_token_type(symtable, actual_token, DOUBLE_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE)) || actual_token->conv_double || next_token->conv_double ) {
-							if (is_valid_token_type(symtable, actual_token, INTEGER_TYPE) && !actual_token->conv_double) {
-								conv_first = true;
-								actual_token->conv_double = true;
-							}
-							if (is_valid_token_type(symtable, next_token, INTEGER_TYPE) && !next_token->conv_double) {
-								conv_second = true;
-								next_token->conv_double = true;
-							}
+								if (is_valid_token_type(symtable, actual_token, INTEGER_TYPE) && !actual_token->conv_double) {
+									conv_first = true;
+									actual_token->conv_double = true;
+								}
+								if (is_valid_token_type(symtable, next_token, INTEGER_TYPE) && !next_token->conv_double) {
+									conv_second = true;
+									next_token->conv_double = true;
+								}
 						}
 						break;
 
@@ -562,11 +562,11 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 					}
 				}
 
-				bool pushed;
+				bool pushed = false, pushed2 = true;
 				if (!(is_token_type(symtable, actual_token, STRING_TYPE))){
 					pushed = e_push(symtable, primal_code, actual_token, key, &str, &value_stack);
 					if (conv_first) {
-						if (!pushed && actual_token->is_valid){
+						if (!pushed && !next_token->is_valid){
 							append_str_to_str(primal_code, "POPS GF@%SWAP\n");
 							append_str_to_str(primal_code, "INT2FLOATS\nPUSHS GF@%SWAP\n");
 						}
@@ -578,11 +578,15 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 				}
 				if (!(is_token_type(symtable, next_token, STRING_TYPE))) {
 					if (next_token->t_elem->type != NOT){
-						e_push(symtable, primal_code, next_token, key, &str, &value_stack);
+						pushed2 = e_push(symtable, primal_code, next_token, key, &str, &value_stack);
 						if (conv_second) {
-							actual_token->conv_double = true;
+							if (pushed && !pushed2){
+								append_str_to_str(primal_code, "POPS GF@%SWAP\n");
+								append_str_to_str(primal_code, "INT2FLOATS\nPUSHS GF@%SWAP\n");
+							}
+							else
+								append_str_to_str(primal_code, "INT2FLOATS\n");
 							next_token->conv_double = true;
-							append_str_to_str(primal_code, "INT2FLOATS\n");
 						}
 					}
 				}
@@ -648,6 +652,12 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 							append_str_to_str(primal_code, "ADDS\n");
 							break;
 						case SUB:
+							if (pushed && !pushed2){
+								append_str_to_str(primal_code, "POPS GF@%SWAP\n");
+								append_str_to_str(primal_code, "POPS GF@%SWAP2\n");
+								append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
+								append_str_to_str(primal_code, "PUSHS GF@%SWAP2\n");
+							}
 							BPop(&value_stack);
 							append_str_to_str(primal_code, "SUBS\n");
 							break;
@@ -658,10 +668,10 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						case DIV:
 							BPop(&value_stack);
 							if (!next_token->is_valid){
-								append_str_to_str(primal_code, "POPS GF@%TMP\n");
-								append_str_to_str(primal_code, "POPS GF@%TMP2\n");
-								append_str_to_str(primal_code, "PUSHS GF@%TMP2\n");
-								append_str_to_str(primal_code, "PUSHS GF@%TMP\n");
+								append_str_to_str(primal_code, "POPS GF@%SWAP\n");
+								append_str_to_str(primal_code, "POPS GF@%SWAP2\n");
+								append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
+								append_str_to_str(primal_code, "PUSHS GF@%SWAP2\n");
 							}
 							append_str_to_str(primal_code, "DIVS\n");
 							break;
