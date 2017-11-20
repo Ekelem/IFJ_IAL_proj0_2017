@@ -35,6 +35,7 @@ void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_co
 void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * found_record);
+void body_return(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record);
 
 void neterm_expression(token_buffer * token_buff, htab_t * symtable, String * primal_code, token_type end_token);
 void function_call(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * found_record);
@@ -56,7 +57,7 @@ struct htab_listitem * create_func_record(htab_t * symtable, char * name);
 
 void copy_scope_layer(struct htab_listitem * item, htab_t * other_symtable, String * primal_code);
 
-void generate_implicit_value(struct htab_listitem * found_record, String * primal_code);
+void generate_implicit_value(String * primal_code, char * name, enum_type type);
 
 void parse_semantic_expression(String * primal_code, struct htab_listitem *found_record, int variable_type, int expr_return_type);
 

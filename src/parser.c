@@ -181,6 +181,7 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 	expected_token(token_buff, END);
 	expected_token(token_buff, FUNCTION);
 	expected_token(token_buff, NEW_LINE);
+	append_str_to_str(primal_code, "MOVE LF@%returnval ");
 	append_str_to_str(primal_code, "RETURN\n");
 }
 
@@ -409,7 +410,7 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 	actual_token = token_buffer_peek_token(token_buff);
 	if (actual_token->type == NEW_LINE)		//implicit value
 	{
-		generate_implicit_value(found_record, primal_code);
+		generate_implicit_value(primal_code, found_record->key, found_record->data.type);
 		expected_token(token_buff, NEW_LINE);
 	}
 	else if (actual_token->type == EQUALS)
@@ -432,9 +433,32 @@ void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_co
 	#endif
 
 	token * actual_token = token_buffer_get_token(token_buff);
+	struct htab_listitem * found_record = NULL;
 	switch (actual_token->type){
 		case IDENTIFIER :
 			//check if exists
+			found_record = htab_find(symtable, actual_token->attr.string_value);
+			if (found_record == NULL || id_is_function(found_record))
+				error_msg(ERR_CODE_OTHERS, "identifier %s was not declared in this scope as variable.", actual_token->attr.string_value);
+
+			append_str_to_str(primal_code, "READ LF@");
+			append_str_to_str(primal_code, actual_token->attr.string_value);
+
+			switch (get_id_type(found_record))
+			{
+				case INTEGER_TYPE:
+					append_str_to_str(primal_code, " int\n");
+				break;
+				case DOUBLE_TYPE:
+					append_str_to_str(primal_code, " float\n");
+				break;
+				case STRING_TYPE:
+					append_str_to_str(primal_code, " string\n");
+				break;
+				case BOOLEAN_TYPE:
+					append_str_to_str(primal_code, " bool\n");
+				break;
+			}
 			break;
 		default :
 			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
@@ -509,14 +533,28 @@ void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal
 	#endif
 
 	expected_token(token_buff, WHILE);
+
+	unsigned int order = generate_if_label_order();
+	append_str_to_str(primal_code, "LABEL ");
+	generate_if_label(primal_code, label_if, order);
+
 	int variable_type = BOOLEAN_TYPE;
 	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NULL, BOOLEAN_TYPE, NEW_LINE);
 	parse_semantic_expression(primal_code, NULL, variable_type, expr_return_type);
+
+	append_str_to_str(primal_code, "PUSHS bool@true\n");
+	append_str_to_str(primal_code, "JUMPIFNEQS ");
+	generate_if_label(primal_code, label_else, order);
 
 	while (!is_peek_token(token_buff, LOOP))
 	{
 		neterm_body(token_buff, symtable, primal_code);
 	}
+
+	append_str_to_str(primal_code, "JUMP ");
+	generate_if_label(primal_code, label_if, order);
+	append_str_to_str(primal_code, "LABEL ");
+	generate_if_label(primal_code, label_else, order);
 
 	expected_token(token_buff, LOOP);
 	expected_token(token_buff, NEW_LINE);
@@ -533,6 +571,17 @@ void body_assignment(token_buffer * token_buff, htab_t * symtable, String * prim
 	int expr_return_type = parse_expression(token_buff, symtable, primal_code, found_record->key, 420, NEW_LINE);
 	parse_semantic_expression(primal_code, found_record, variable_type, expr_return_type);
 	set_id_defined(found_record);
+}
+
+void body_return(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record)
+{
+	//only callable from funcbody
+	int variable_type = get_id_type(func_record);
+	int expr_return_type = parse_expression(token_buff, symtable, primal_code, func_record->key, 420, NEW_LINE);
+	parse_semantic_expression(primal_code, func_record, variable_type, expr_return_type);
+
+	append_str_to_str(primal_code, "POPS %returnval\n");
+	append_str_to_str(primal_code, "RETURN\n");
 }
 
 void parse_semantic_expression(String * primal_code, struct htab_listitem *found_record, int variable_type, int expr_return_type) {
@@ -1150,11 +1199,11 @@ void copy_general_layer(struct htab_listitem * item, htab_t * other_symtable, St
 	}
 }
 
-void generate_implicit_value(struct htab_listitem * found_record, String * primal_code)
+void generate_implicit_value(String * primal_code, char * name, enum_type type)
 {
 	append_str_to_str(primal_code, "MOVE LF@");
-	append_str_to_str(primal_code, found_record->key);
-	switch (found_record->data.type)
+	append_str_to_str(primal_code, name);
+	switch (type)
 	{
 		case INTEGER_TYPE:
 		append_str_to_str(primal_code, " int@0\n");
