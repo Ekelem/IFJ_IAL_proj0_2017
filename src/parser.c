@@ -2,6 +2,7 @@
 
 #define DEBUG_MSG 42
 
+/* Starts translation of code to assembler code */
 void translate(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	#ifdef DEBUG_MSG
@@ -17,6 +18,7 @@ void translate(token_buffer * token_buff, htab_t * symtable, String * primal_cod
 	neterm_start(token_buff, symtable, primal_code);
 }
 
+/* Nonterminal function describes nonterminal START rules. Generates relevant instructions */
 void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	#ifdef DEBUG_MSG
@@ -59,6 +61,7 @@ void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_
 	}
 }
 
+/* Nonterminal function describes nonterminal SCOPE rules. */
 void neterm_scope(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	#ifdef DEBUG_MSG
@@ -73,6 +76,7 @@ void neterm_scope(token_buffer * token_buff, htab_t * symtable, String * primal_
 	expected_token(token_buff, SCOPE);
 }
 
+/* Nonterminal function describes nonterminal FUNCTION_DECLARATION rules. */
 void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	#ifdef DEBUG_MSG
@@ -116,6 +120,7 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 	found_record->data.type = neterm_type(token_buff, symtable, primal_code);
 }
 
+/* Nonterminal function describes nonterminal FUNCTION_DEFINITION rules. Generates relevant instructions */
 void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	#ifdef DEBUG_MSG
@@ -185,6 +190,7 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 	append_str_to_str(primal_code, "RETURN\n");
 }
 
+/* Nonterminal function describes nonterminal TYPE rules. */
 unsigned int neterm_type(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	#ifdef DEBUG_MSG
@@ -213,6 +219,7 @@ unsigned int neterm_type(token_buffer * token_buff, htab_t * symtable, String * 
 	return 0;
 }
 
+/* Nonterminal function describes nonterminal ARGS rules. Checks arguments of function */
 void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record)
 {
 	#ifdef DEBUG_MSG
@@ -272,6 +279,7 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 	}
 }
 
+/* Nonterminal function describes nonterminal ARGS_CREATE rules. Creates relevant arguments for function */
 void neterm_args_create(token_buffer * token_buff, htab_t * symtable, String * primal_code,
                         struct htab_listitem * new_func_record)
 {
@@ -314,6 +322,8 @@ void neterm_args_create(token_buffer * token_buff, htab_t * symtable, String * p
 	}
 }
 
+
+/* Nonterminal function describes nonterminal BODY rules. Generates relevant instructions */
 void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	#ifdef DEBUG_MSG
@@ -372,6 +382,7 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 	}
 }
 
+/* Nonterminal function describes nonterminal BODY_DECLARATION rules. Generates relevant instructions */
 void body_declaration(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	#ifdef DEBUG_MSG
@@ -426,6 +437,7 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 	}
 }
 
+/* Nonterminal function describes nonterminal BODY_INPUT rules. Generates relevant instructions */
 void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	#ifdef DEBUG_MSG
@@ -468,6 +480,7 @@ void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_co
 	expected_token(token_buff, NEW_LINE);
 }
 
+/* Nonterminal function describes nonterminal BODY_IF_THEN rules. Generates relevant instructions */
 void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	#ifdef DEBUG_MSG
@@ -526,6 +539,7 @@ void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_
     }
 }
 
+/* Nonterminal function describes nonterminal BODY_DO_WHILE rules. Generates relevant instructions */
 void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	#ifdef DEBUG_MSG
@@ -560,6 +574,7 @@ void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal
 	expected_token(token_buff, NEW_LINE);
 }
 
+/* Nonterminal function describes nonterminal BODY_ASSIGNMENT rules. Generates relevant instructions */
 void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * found_record)
 {
 	#ifdef DEBUG_MSG
@@ -573,6 +588,7 @@ void body_assignment(token_buffer * token_buff, htab_t * symtable, String * prim
 	set_id_defined(found_record);
 }
 
+/* Nonterminal function describes nonterminal BODY_RETURN rules. Generates relevant instructions */
 void body_return(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record)
 {
 	//only callable from funcbody
@@ -584,6 +600,7 @@ void body_return(token_buffer * token_buff, htab_t * symtable, String * primal_c
 	append_str_to_str(primal_code, "RETURN\n");
 }
 
+/* Generates relevant instrunctions for expression*/
 void parse_semantic_expression(String * primal_code, struct htab_listitem *found_record, int variable_type, int expr_return_type) {
 
 	if (variable_type == DOUBLE_TYPE && expr_return_type == INTEGER_TYPE) {
@@ -625,6 +642,7 @@ void parse_semantic_expression(String * primal_code, struct htab_listitem *found
 	}
 }
 
+/* Nonterminal function describes nonterminal FUNCTION_CALL rules. Generates relevant instructions */
 void function_call(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * found_record)
 {
 	#ifdef DEBUG_MSG
@@ -645,7 +663,7 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 		token * actual_token = token_buffer_get_token(token_buff);
 		switch (actual_token->type){
 			case IDENTIFIER :
-                //printf("Prom:%s\n", actual_token->attr.string_value);
+                printf("Prom:%s\n", actual_token->attr.string_value);
 				param_caller = htab_find(symtable, actual_token->attr.string_value);
 				if (param_caller == NULL)
 					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' does not exist.\n",
@@ -777,6 +795,7 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 	append_str_to_str(primal_code, "POPFRAME\n");
 }
 
+/* Nonterminal function describes nonterminal BODY_PRINT rules. Generates relevant instructions */
 void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	#ifdef DEBUG_MSG
@@ -791,13 +810,14 @@ void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_co
 		body_print(token_buff, symtable, primal_code);
 }
 
+/* Checks if next token is the one we expected. If it is different exits program with relevant error code */
 void expected_token(token_buffer * token_buff, int tok_type)
 {
 	token * actual_token = token_buffer_get_token(token_buff);
 	if (actual_token->type != tok_type)
 		syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, tok_type);
 }
-
+/* Checks if next token is the one we expected. Returns true if it is truth*/
 bool is_peek_token(token_buffer * token_buff, int tok_type)
 {
 	token * next_token = token_buffer_peek_token(token_buff);
@@ -807,6 +827,7 @@ bool is_peek_token(token_buffer * token_buff, int tok_type)
 		return 0;
 }
 
+/* Nonterminal function describes nonterminal EXPRESSION rules. Generates relevant instructions */
 void neterm_expression(token_buffer * token_buff, htab_t * symtable, String * primal_code, token_type end_token)
 {
 	struct dynamic_stack * expr_stack=dynamic_stack_init();
@@ -870,12 +891,14 @@ void neterm_expression(token_buffer * token_buff, htab_t * symtable, String * pr
 
 //void expression_operator_push()
 
+/* Generates order of if label */
 unsigned int generate_if_label_order()
 {
 	static unsigned int counter = 0;
 	return counter++;
 }
 
+/* Generates relevant instructions of if label */
 void generate_if_label(String * primal_code, enum_label_names prefix, unsigned int order)
 {
 	char buffer[4] = "0000";
@@ -905,6 +928,7 @@ void generate_if_label(String * primal_code, enum_label_names prefix, unsigned i
 	}
 }
 
+/* Generates relevant instructions for jumps */
 void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned int order)
 {
 	char buffer[4] = "0000";
@@ -931,6 +955,7 @@ void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned in
 	}
 }
 
+/* Generates relevant instructions for parameters */
 void generate_prepare_params(String * primal_code, struct func_par * actual_param, unsigned int param_order,
                              struct htab_listitem * param_caller, struct htab_listitem * found_record)
 {
@@ -1031,6 +1056,7 @@ void generate_prepare_params(String * primal_code, struct func_par * actual_para
 	}
 }
 
+/* Adds built-in functions into code with its instructions */
 void add_build_in_functions(htab_t * symtable, String * primal_code)
 {
 	struct htab_listitem * record = NULL;
@@ -1074,21 +1100,21 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
                                     "DEFVAR LF@slen\n"
                                     "DEFVAR LF@onechr\n");
     append_str_to_str(primal_code,  "STRLEN LF@slen LF@s\n"
-									"EQ LF@supbool LF@slen int@0\n");
-    append_str_to_str(primal_code,  "JUMPIFNEQ Snzero LF@supbool bool@true\n"
-    								"LABEL SubstrEnd\n");
-	append_str_to_str(primal_code,  "MOVE LF@%returnval string@\\000 \n");
-	append_str_to_str(primal_code,  "RETURN\n");
+                                    "EQ LF@supbool LF@slen int@0\n");
+    append_str_to_str(primal_code,  "JUMPIFNEQ Snzero LF@supbool boo@true\n");
+    append_str_to_str(primal_code,  "LABEL SubstrEnd\n"
+                                    "MOVE LF@%returnval string@d \n"
+                                    "RETURN\n");
     append_str_to_str(primal_code,  "LABEL Snzero\n"
-									"EQ LF@supbool LF@i int@0\n");
-	append_str_to_str(primal_code,  "JUMPIFEQ SubstrEnd LF@supbool bool@true\n");
-    append_str_to_str(primal_code,  "LT LF@supbool LF@i int@0\n");
-	append_str_to_str(primal_code,  "JUMPIFEQ SubstrEnd LF@supbool bool@true\n");
+                                    "EQ LF@supbool LF@i int@0\n");
+    append_str_to_str(primal_code,  "JUMPIFEQ SubstrEnd LF@supbool boo@true\n");
+    append_str_to_str(primal_code,  "LT LF@supbool LF@i int@0\n"
+                                    "JUMPIFEQ SubstrEnd LF@supbool boo@true\n");
     append_str_to_str(primal_code,  "LT LF@supbool LF@n int@0\n");
-    append_str_to_str(primal_code,  "JUMPIFEQ Sublen LF@supbool bool@true\n"
+    append_str_to_str(primal_code,  "JUMPIFEQ Sublen LF@supbool boo@true\n"
                                     "SUB LF@strindex LF@slen LF@i\n");
     append_str_to_str(primal_code,  "GT LF@supbool LF@n LF@strindex\n");
-    append_str_to_str(primal_code,  "JUMPIFEQ Sublen LF@supbool bool@true\n"
+    append_str_to_str(primal_code,  "JUMPIFEQ Sublen LF@supbool boo@true\n"
                                     "JUMP Scontinue\n");
     append_str_to_str(primal_code,  "LABEL Sublen\n");
     append_str_to_str(primal_code,  "MOVE LF@n LF@slen\n"
@@ -1100,7 +1126,7 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
     append_str_to_str(primal_code,  "CONCAT LF@%returnval LF@%returnval LF@onechr\n");
     append_str_to_str(primal_code, "LT LF@supbool LF@strindex LF@n\n");
     append_str_to_str(primal_code,  "ADD LF@strindex int@1\n"
-                                    "JUMPIFEQ Scycle LF@supbool bool@true\n");
+                                    "JUMPIFEQ Scycle LF@supbool boo@true\n");
     append_str_to_str(primal_code,  "RETURN\n"
                                     "\n");
 
@@ -1162,11 +1188,12 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
     append_str_to_str(primal_code,  "INT2CHAR LF@%returnval LF@i\n"
                                     "RETURN\n"
                                     "LABEL CTrue\n");
-    append_str_to_str(primal_code,  "MOVE LF@%returnval bool@false \n"
+    append_str_to_str(primal_code,  "MOVE LF@%returnval string@0 \n"
                                     "RETURN\n"
                                     "\n");
 }
 
+/* Creates new function record */
 struct htab_listitem * create_func_record(htab_t * symtable, char * name)
 {
 	struct htab_listitem * new_record = make_item(name);
@@ -1177,6 +1204,7 @@ struct htab_listitem * create_func_record(htab_t * symtable, char * name)
 	return new_record;
 }
 
+/* Generates instruction code for variable */
 void copy_scope_layer(struct htab_listitem * item, htab_t * other_symtable, String * primal_code)
 {
 	if (!id_is_function(item))
@@ -1191,6 +1219,7 @@ void copy_scope_layer(struct htab_listitem * item, htab_t * other_symtable, Stri
 	}
 }
 
+/* Appends symbol table to another symbol table */
 void copy_general_layer(struct htab_listitem * item, htab_t * other_symtable, String * primal_code)
 {
 	if (id_is_function(item))
@@ -1199,6 +1228,7 @@ void copy_general_layer(struct htab_listitem * item, htab_t * other_symtable, St
 	}
 }
 
+/* Generates code of hard value */
 void generate_implicit_value(String * primal_code, char * name, enum_type type)
 {
 	append_str_to_str(primal_code, "MOVE LF@");

@@ -3,6 +3,7 @@
 #define TABLE_SIZE 20
 #define ERROR false
 
+/* Structure of precedence table using true and false, that represent priority of operation */
 const bool  precedence_tab[TABLE_SIZE][TABLE_SIZE] = {
 //			  ADD    SUB    MUL	   DIV    DIV2   LS	    GR	   LSE	  GRE 	 NEQ 	EQ 	   LPAR   RPAR   ID	    LIT    AND    OR     NOT
 /*ADD*/ 	{ true,  true,  true,  true,  true,  false, false, false, false, false, false, false, true,  true,  true,  false, false, true   },
@@ -27,7 +28,7 @@ const bool  precedence_tab[TABLE_SIZE][TABLE_SIZE] = {
 
 
 
-
+/* Parses the given expression */
 int parse_expression(token_buffer * token_buff, htab_t * symtable, String * primal_code, char *key, int type, int end_token) {
 	static bool first_time = true;
 	if (first_time) {
@@ -46,9 +47,7 @@ int parse_expression(token_buffer * token_buff, htab_t * symtable, String * prim
 	return return_type;
 }
 
-
-
-
+/* Checks semantic of given expression. Exits the program with different error codes depending on error.*/ 
 void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, String * primal_code, int type, int end_token) {
 	int start_token = token_buff->actual;
 	token *actual_token = token_buffer_get_token(token_buff);
@@ -162,7 +161,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 	token_buff->actual = start_token;
 }
 
-
+/* Pops everything from stack until token is left parenthesis */
 void untilLeftPar ( TStack *sTemp, TStack  *sOut) {
 	token *actual_token;
 
@@ -180,6 +179,7 @@ void untilLeftPar ( TStack *sTemp, TStack  *sOut) {
 	}
 }
 
+/* Does relevant operation depending on type of actual token  */
 void doOperation ( TStack *sTemp, TStack  *sOut, token *t) {
 
 	token *actual_token = peek_last_expr(sTemp);
@@ -204,6 +204,7 @@ void doOperation ( TStack *sTemp, TStack  *sOut, token *t) {
 	}
 }
 
+/* Converts expression from infix to postfix using stack */
 TStack infix2postfix (token_buffer * token_buff, htab_t * symtable, String * primal_code) {
 
 	TStack sTemp;
@@ -248,7 +249,7 @@ TStack infix2postfix (token_buffer * token_buff, htab_t * symtable, String * pri
 	return (sOut);
 }
 
-// DO NOT TOUCH!! :D
+/* Counts value of expression. Checks semantics and generates relevant instructions*/
 int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal_code, TStack *s, int type, char *key) {
 	TSElem *actual_token = s->First;
 	TSElem *next_token = s->First->next;
@@ -760,8 +761,9 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 
 
 
-// HELPFUL STUFF
+/********************* Helpful functions **********************/
 
+/* Converts operator type */
 int convert_operand_type(int operand) {
 	switch(operand) {
 		case ADD:  return E_ADD;
@@ -786,7 +788,7 @@ int convert_operand_type(int operand) {
 	return operand;
 }
 
-
+/* Generates relevant PUSH instructions depending on operand type*/
 bool e_push(htab_t *symtable, String *primal_code, TSElem *t, char *key, String *str, BStack *value_stack) {
 	bool was_pushed = false;
 	clear_string(str);
@@ -855,6 +857,7 @@ void operand_module(htab_t *symtable, String *primal_code, TSElem *t, BStack *va
 	free_string(&str);
 }
 
+/* Checks type identity */
 bool is_token(TSElem *s, int type) {
 	if (s == NULL) {
 		return false;
@@ -866,10 +869,12 @@ bool is_token(TSElem *s, int type) {
 	return false;
 }
 
+/* Returns priority of operators using precedence table*/
 bool has_higher_priority(t_expressions op1, t_expressions op2) {
 	return (precedence_tab[op1][op2]);
 }
 
+/* Checks if given token is operator */ 
 bool is_operand(token *token_type, bool in_condition) {
 	if (token_type == NULL){
 		return false;
@@ -899,6 +904,7 @@ bool is_operand(token *token_type, bool in_condition) {
 	return false;
 }
 
+/* Chceks if given token is value or not. */
 bool is_value(token *token_type) {
 	if (token_type == NULL){
 		return false;
@@ -917,7 +923,7 @@ bool is_value(token *token_type) {
 	return false;
 }
 
-
+/* Checks token type of found record in symtable. */
 bool is_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 	if (symtable == NULL || actual_token->t_elem == NULL)
 		return false;
@@ -935,6 +941,7 @@ bool is_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 	return false;
 }
 
+/* Checks if given type of token is valid. Eventually exits program with relevant error code. */
 bool is_valid_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 	if (symtable == NULL || actual_token->t_elem == NULL)
 		return false;
@@ -1007,6 +1014,7 @@ bool is_valid_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 	return true;
 }
 
+/* Checks semantic in using operator NOT. */
 void sem_check_not(TSElem *actual_token, htab_t *symtable) {
 	if (is_value(actual_token->t_elem)) {
 		if (actual_token->t_elem->type == TRUE || actual_token->t_elem->type == FALSE) {
@@ -1027,6 +1035,7 @@ void sem_check_not(TSElem *actual_token, htab_t *symtable) {
 	}
 }
 
+/* Returns relevant semantic type. */
 int return_semantic_type(TStack *Out, htab_t *symtable) {
 	TSElem *tmp = Out->First;
 	bool is_string = false;

@@ -1,5 +1,6 @@
 #include "garbage_collector.h"
 
+/* Initializes garbage collector*/
 void init_garbage_collector()
 {
 	GARBAGE_COLLECTOR=malloc(sizeof(struct dynamic_stack));
@@ -18,6 +19,7 @@ void init_garbage_collector()
 	init_freed_stack();
 }
 
+/* Initializes dynamic stack */
 void init_freed_stack()
 {
 	struct dynamic_stack * freed_stack=malloc(sizeof(struct dynamic_stack));
@@ -36,6 +38,7 @@ void init_freed_stack()
 	freed_stack->size=STACK_ALLOC_STEP;
 }
 
+/* Garbage allocates memory */
 void * garbage_malloc(size_t size)
 {
 	void* result=malloc(size);
@@ -54,6 +57,7 @@ void * garbage_malloc(size_t size)
 	return result;
 }
 
+/* Garbage frees memory */
 void garbage_free(void * addr)
 {
 	void ** found = dynamic_stack_search(GARBAGE_COLLECTOR, addr);
@@ -67,6 +71,7 @@ void garbage_free(void * addr)
 	}
 }
 
+/* Garbage reallocates memory */
 void * garbage_realloc(void * addr, size_t new_size)
 {
 	void ** found = dynamic_stack_search(GARBAGE_COLLECTOR, addr);
@@ -86,6 +91,7 @@ void * garbage_realloc(void * addr, size_t new_size)
 	return new_addr;
 }
 
+/* Frees unfreed memory in dynamic stack*/
 void garbage_collect()
 {
 	while (GARBAGE_COLLECTOR->actual!=-1)
@@ -99,11 +105,13 @@ void garbage_collect()
 	free(GARBAGE_COLLECTOR);
 }
 
+/* Assigns garbage collector as dynamic stack */
 struct dynamic_stack * get_stack_of_freed_addr()
 {
 	return GARBAGE_COLLECTOR->start[1];
 }
 
+/* Reallocates memory of garbage collector if dynamic stack is full.*/
 void garbage_col_push(void * value)
 {
 	if (dynamic_stack_full(GARBAGE_COLLECTOR))
@@ -118,6 +126,7 @@ void garbage_col_push(void * value)
 	GARBAGE_COLLECTOR->start[++GARBAGE_COLLECTOR->actual]=value;
 }
 
+/* Reallocates memory of garbage collector if dynamic stack of freed adresses is full.*/
 void garbage_col_free_push(void * value)
 {
 	if (dynamic_stack_full(get_stack_of_freed_addr()))

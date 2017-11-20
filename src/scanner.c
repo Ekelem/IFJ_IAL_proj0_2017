@@ -14,7 +14,7 @@ char *key_words[] = { "as", "declare", "dim", "do", "double", "else", "end", "fu
 					  "then", "while", "and", "or", "boolean", "continue", "elseif", "exit", "false",
 					  "for", "next", "not", "shared", "static", "true"};
 
-
+/* Converts value from base to integer */
 int base_to_int(char *str, int base) {
 	int sum = 0, tmp, power = 1;
 
@@ -26,6 +26,7 @@ int base_to_int(char *str, int base) {
 	return sum;
 }
 
+/* Checks is token is keyword */
 bool is_keyword(char *str, token *t)
 {
 	if (strlen(str) > 8)
@@ -44,6 +45,7 @@ bool is_keyword(char *str, token *t)
 	return false;
 }
 
+/* Checks token is valid identifier */
 bool is_validID(char *str)
 {
 	if (str != NULL && strlen(str) != 0)
@@ -62,6 +64,7 @@ bool is_validID(char *str)
 	return false;
 }
 
+/* Saves token with its type, line and position */
 token * save_token(token *t, String *str, int type, int line, int pos)
 {
 	t->line = line;
@@ -114,6 +117,7 @@ token * save_token(token *t, String *str, int type, int line, int pos)
 	return t;
 }
 
+/* Reads characters from input file and produces relevant tokens. Usage of FSM. */
 token * get_token(FILE *f, int *err_line, int *err_pos)
 {
 	int state = WHITE_SPACE;
@@ -202,7 +206,6 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				}
 				else if (c == 'e' || c == 'E') {
 					if (added_num){
-						added_num = false;
 						state = DOUBLE_3;
 						append_char_to_str(&s, c);
 					}
@@ -233,18 +236,10 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				}
 				else if (c == '+' || c == '-'){
-					if (added_num) {
-						*err_pos -= 1;
-						ungetc(c, f);
-						return save_token(t, &s, INT_WITH_EXP, *err_line, *err_pos);
-					}
-					else
-					{
-						if (exponent)
-							return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-						exponent = true;
-						append_char_to_str(&s, c);
-					}
+					if (exponent)
+						return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+					exponent = true;
+					append_char_to_str(&s, c);
 				}
 				else {
 					if (added_num){
@@ -267,18 +262,10 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				}
 				else if (c == '+' || c == '-'){
-					if (added_num) {
-						*err_pos -= 1;
-						ungetc(c, f);
-						return save_token(t, &s, DOUBLE_WITH_EXP, *err_line, *err_pos);
-					}
-					else
-					{
-						if (exponent)
-							return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-						exponent = true;
-						append_char_to_str(&s, c);
-					}
+					if (exponent)
+						return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+					exponent = true;
+					append_char_to_str(&s, c);
 				}
 				else {
 					if (added_num){
@@ -355,15 +342,7 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					state = UNUSUAL_CHAR;
 				}
 				else {
-					if (c== '\\' || c == '#' || c == '(' || c == ')' || c == '+' || c == ']' ||
-						(c >= 45 && c <= 63) || (c >= 65 && c <= 91) || (c >= 97 && c <= 125)){
-						append_char_to_str(&s, c);
-						//printf("ZNAK %d\n", c);
-					}
-					else
-					{
-						str_convert_ascii(&s, c);
-					}
+					append_char_to_str(&s, c);
 				}
 				break;
 
@@ -389,11 +368,6 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					ungetc(c, f);
 					init_string(&ascii_seq);
 					state = UNUSUAL_CHAR_2;
-				}
-				else if (c == ' '){
-					ungetc(c, f);
-					state = STRING_LITERAL_BEGINS;
-					str_convert_ascii(&s, '\\');
 				}
 				else {
 					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);

@@ -17,19 +17,21 @@
 
 #define KEYWORD_COUNT 31
 
+/* Attribute of token structure */
 typedef union attribute {
 	int int_value;
 	double double_value;
 	char *string_value;
 } attribute;
 
+/* Token structure */
 typedef struct {
 	int type;
 	int line, pos;
 	attribute attr;
 } token;
 
-
+/* States enumeration */
 typedef enum {
 	WHITE_SPACE = 0,
 	IDENTIFICATOR,
@@ -59,6 +61,7 @@ typedef enum {
 	DIV2_EQ
 } states;
 
+/* Token types enumeration */
 typedef enum {
 		LEXICAL_ERROR = 0, IDENTIFIER , AS, DECLARE, DIM, DO, DOUBLE, ELSE, END, FUNCTION, IF, INPUT,
 		INTEGER, LOOP, PRINT, RETURN, SCOPE, STRING, THEN, WHILE, AND, OR, BOOLEAN,

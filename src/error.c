@@ -7,6 +7,7 @@
 
 extern char * tok_names [];
 
+/* Writes error message and exits program with corresponding error code */
 void error_msg(int err_code, const char *fmt, ...)
 {
 	va_list list;
@@ -17,6 +18,7 @@ void error_msg(int err_code, const char *fmt, ...)
 	exit(err_code);
 }
 
+/* Writes error warning */
 void warn_msg(const char *fmt, ...)
 {
 	va_list list;
@@ -26,6 +28,7 @@ void warn_msg(const char *fmt, ...)
 	va_end(list);
 }
 
+/* Writes number of line and position of error. Exits program with corresponding error code */
 void syntax_error_unexpexted(int line, int pos, int unexpected_type, int numb, ...)
 {
 	va_list list;

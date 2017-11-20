@@ -4,6 +4,7 @@
 #define free(addr) garbage_free(addr)
 #define realloc(addr, size) garbage_realloc(addr, size)
 
+/* Initializes dynamic stack */
 struct dynamic_stack * dynamic_stack_init()
 {
 	struct dynamic_stack * result = malloc(sizeof(struct dynamic_stack));
@@ -15,12 +16,15 @@ struct dynamic_stack * dynamic_stack_init()
 	result->size=STACK_ALLOC_STEP;
 	return result;
 }
+
+/* Pops value from dynamic stack */
 void dynamic_stack_pop(struct dynamic_stack * stack)
 {
 	if (!dynamic_stack_empty(stack))
 		stack->actual--;
 }
 
+/* Pushes value on dynamic stack */
 void dynamic_stack_push(struct dynamic_stack * stack, void * value)
 {
 	if (dynamic_stack_full(stack))
@@ -29,6 +33,7 @@ void dynamic_stack_push(struct dynamic_stack * stack, void * value)
 	stack->start[++(stack->actual)]=value;
 }
 
+/* Searches for value in dynamic stack */
 void ** dynamic_stack_search(struct dynamic_stack * stack, void * value)
 {
 	int temp_search;
@@ -42,11 +47,13 @@ void ** dynamic_stack_search(struct dynamic_stack * stack, void * value)
 	return NULL;
 }
 
+/* Returns top of dynamic stack */
 void * dynamic_stack_top(struct dynamic_stack * stack)
 {
 	return stack->start[stack->actual];
 }
 
+/* Reallocates memory for dynamic stack */
 void dynamic_stack_realloc(struct dynamic_stack * stack)
 {
 	if (realloc(stack->start, stack->size + STACK_ALLOC_STEP)==NULL)
@@ -55,11 +62,13 @@ void dynamic_stack_realloc(struct dynamic_stack * stack)
 	stack->size+=STACK_ALLOC_STEP;
 }
 
+/* Checks if dynamic stack is empty */
 bool dynamic_stack_empty(struct dynamic_stack * stack)
 {
 	return (stack->actual == -1);
 }
 
+/* Checks if dynamic stack is empty */
 bool dynamic_stack_full(struct dynamic_stack * stack)
 {
 	return (stack->actual == stack->size);
@@ -70,11 +79,13 @@ bool dynamic_stack_full(struct dynamic_stack * stack)
 /****************EXPRESSSION*****************/
 /********************************************/
 
+/* Initializes stack for expressions */
 void stack_init (TStack *s) {
 	s->First = NULL;
 	s->Last = NULL;
 }
 
+/* Pushes token on stack */
 void push_expr_token (TStack *s, token *t) {
 	TSElem *new = malloc(sizeof(TSElem));
 	if (new == NULL)
@@ -96,6 +107,7 @@ void push_expr_token (TStack *s, token *t) {
 	s->Last = new;
 }
 
+/* Pops last element from stack */
 void pop_last_expr(TStack *s) {
 	if (s->Last != NULL) {
 		TSElem *tmp = s->Last;
@@ -113,6 +125,7 @@ void pop_last_expr(TStack *s) {
 	}
 }
 
+/* Pops first element from stack */
 void pop_first_expr(TStack *s) {
 	if (!SEmpty(s)) {
 		TSElem *tmp = s->First;
@@ -131,6 +144,7 @@ void pop_first_expr(TStack *s) {
 	}
 }
 
+/* Returns last element on stack */
 token *peek_last_expr(TStack *s) {
 	if (!(SEmpty(s))) {
 		return s->Last->t_elem;
@@ -138,6 +152,7 @@ token *peek_last_expr(TStack *s) {
 	return NULL;
 }
 
+/* Returns first element on stack */
 token *peek_first_expr(TStack *s) {
 	if (!(SEmpty(s))) {
 		return s->First->t_elem;
@@ -145,11 +160,12 @@ token *peek_first_expr(TStack *s) {
 	return NULL;
 }
 
-
+/* Checks if stack is empty */
 bool SEmpty (TStack *s) {
 	return (s->First == NULL);
 }
 
+/* Prints the whole stack */
 void print_stack(TStack *s) {
 	if (s->First == NULL)
 		printf("NULL\n");
@@ -161,6 +177,7 @@ void print_stack(TStack *s) {
 	}
 }
 
+/* Deletes current expression */
 void delete_current_expr(TSElem *s) {
 	if (s != NULL) {
 		TSElem *tmp = s;
@@ -174,6 +191,7 @@ void delete_current_expr(TSElem *s) {
 	}
 }
 
+/* Counts number of stack elements */
 int stack_counter(TStack *s) {
 	int counter = 0;
 	TSElem *tmp = s->First;
@@ -184,6 +202,7 @@ int stack_counter(TStack *s) {
 	return counter;
 }
 
+/* Frees memory of whole stack */
 void dealloc_tstack(TStack *s) {
 	TSElem *tmp = s->First;
 	while (tmp != NULL) {
@@ -193,6 +212,7 @@ void dealloc_tstack(TStack *s) {
 	}
 }
 
+/* Counts number of stack elements. Checks validity of counter*/
 int stack_valid_counter(TStack *s) {
 	int counter = 0;
 	TSElem *tmp = s->First;
@@ -204,6 +224,7 @@ int stack_valid_counter(TStack *s) {
 	return counter;
 }
 
+/* Copies whole stack into another stack */
 TStack stack_copy(TStack *s) {
 	TSElem *tmp = s->First;
 	TStack new;
@@ -217,16 +238,20 @@ TStack stack_copy(TStack *s) {
 	return new;
 }
 
-
+/* Initializes BStack */
 void BInit (BStack *s) {
 	s->First = NULL;
 }
+
+/* Pushes boolean value on stack */
 void BPush (BStack *s, bool is_bool_value) {
 	BSElem *new = malloc(sizeof(BSElem));
 	new->is_bool_value = is_bool_value;
 	new->next = s->First;
 	s->First = new;
 }
+
+/* Pops boolean value on stack */
 void BPop (BStack *s) {
 	if (s->First != NULL) {
 		BSElem *tmp = s->First;
@@ -235,16 +260,19 @@ void BPop (BStack *s) {
 	}
 }
 
+/* Returns boolean value on top of the BStack */
 bool BTop (BStack *s) {
 	if (s->First == NULL)
 		exit(42);
 	return s->First->is_bool_value;
 }
 
+/* Checks if BStack is empty */
 bool BEmpty (BStack *s) {
 	return (s->First == NULL);
 }
 
+/* Checks two first in row values if they are boolean*/
 bool BTop_equals(BStack *s) {
 	if (s->First != NULL && s->First->next != NULL) {
 		if (s->First->is_bool_value && s->First->next->is_bool_value){
@@ -258,6 +286,7 @@ bool BTop_equals(BStack *s) {
 	return false;
 }
 
+/* Frees whole BStack*/
 void dealloc_BStack(BStack *s) {
 	BSElem *tmp = s->First;
 	while (tmp != NULL) {
@@ -268,6 +297,7 @@ void dealloc_BStack(BStack *s) {
 	s->First = NULL;
 }
 
+/* Prints whole BStacl*/
 void print_BStack(BStack *s) {
 	BSElem *tmp = s->First;
 	while (tmp != NULL) {

@@ -1,5 +1,6 @@
 #include "common.h"
 
+/* Initializes hash table before it has been used */
 htab_t * initialization(const char * file_path, token_buffer * token_buff)
 {
 	FILE * input_file;
@@ -24,17 +25,11 @@ htab_t * initialization(const char * file_path, token_buffer * token_buff)
 		state = t->type;
 	}
 
-	//fprintf(stderr, "%d\n", token_buff->len);
 	fclose(input_file);
-
-	/*for (int i = 0; i < (token_buff->len-1); ++i)
-	{
-		print_token(token_buff->arr[i]->type, token_buff->arr[i]);
-	}*/
-
 	return htab_init(token_buff->len);
 }
 
+/* Initializes output file and puts generated assembler code to it*/
 void output_primal_code(const char * file_path, String * primal_code)
 {
 	FILE * output_file;

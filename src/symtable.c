@@ -5,6 +5,100 @@
 
 #include "symtable.h"
 
+
+
+/* Sets identifier type */
+void set_id_type(struct htab_listitem * item, char new_type)
+{
+	item->data.type= new_type;
+}
+
+/* Returns identifier type */
+char get_id_type(struct htab_listitem * item)
+{
+	return item->data.type;
+}
+
+/* Sets identifier is used */
+void set_id_used(struct htab_listitem * item)
+{
+	item->data.flags|= 1;
+}
+
+/* Sets identifier is declared */
+void set_id_declared(struct htab_listitem * item)
+{
+	item->data.flags|= 2;
+}
+
+/* Sets identifier is defined */
+void set_id_defined(struct htab_listitem * item)
+{
+	item->data.flags|= 4;
+}
+
+/* Sets identifier is constant */
+void set_id_constant(struct htab_listitem * item, token * constant)
+{
+	item->data.flags|= 8;
+	item->data.u_argconst.constant = constant;
+}
+
+/* Sets function inline */
+void set_func_inline(struct htab_listitem * item)
+{
+	item->data.flags|= 8;
+}
+
+/* Sets identifier is function */
+void set_id_function(struct htab_listitem * item)
+{
+	item->data.flags|= 128;
+}
+
+/* Sets initial parameters count to function record*/
+void set_func_par_count(struct htab_listitem * item, unsigned int value)
+{
+	item->data.par_count= value;
+}
+
+/* Increments function paramaters count */
+void add_func_par_count(struct htab_listitem * item)
+{
+	item->data.par_count+= 1;
+}
+
+/* Returns if identifier is function */
+bool id_is_function(struct htab_listitem * item)
+{
+	return (item->data.flags & 128);
+}
+
+/* Returns if identifier is used */
+bool id_is_used(struct htab_listitem * item)
+{
+	return (item->data.flags & 1);
+}
+
+/* Returns if identifier is declared */
+bool id_is_declared(struct htab_listitem * item)
+{
+	return (item->data.flags & 2);
+}
+
+/* Returns if identifier is defined */
+bool id_is_defined(struct htab_listitem * item)
+{
+	return (item->data.flags & 4);
+}
+
+/* Returns size of symbol table */
+size_t htab_bucket_count(struct htab_t *t)
+{
+	return t->arr_size;
+}
+
+/* Hashes the identifier name*/
 unsigned int hash_function(const char *str)
 {
 	unsigned int h=0;
@@ -14,83 +108,7 @@ unsigned int hash_function(const char *str)
 	return h;
 }
 
-void set_id_type(struct htab_listitem * item, char new_type)
-{
-	item->data.type= new_type;
-}
-
-char get_id_type(struct htab_listitem * item)
-{
-	return item->data.type;
-}
-
-void set_id_used(struct htab_listitem * item)
-{
-	item->data.flags|= 1;
-}
-
-void set_id_declared(struct htab_listitem * item)
-{
-	item->data.flags|= 2;
-}
-
-void set_id_defined(struct htab_listitem * item)
-{
-	item->data.flags|= 4;
-}
-
-void set_id_constant(struct htab_listitem * item, token * constant)
-{
-	item->data.flags|= 8;
-	item->data.u_argconst.constant = constant;
-}
-
-void set_func_inline(struct htab_listitem * item)
-{
-	item->data.flags|= 8;
-}
-
-void set_id_function(struct htab_listitem * item)
-{
-	item->data.flags|= 128;
-}
-
-void set_func_par_count(struct htab_listitem * item, unsigned int value)
-{
-	item->data.par_count= value;
-}
-
-void add_func_par_count(struct htab_listitem * item)
-{
-	item->data.par_count+= 1;
-}
-
-
-bool id_is_function(struct htab_listitem * item)
-{
-	return (item->data.flags & 128);
-}
-
-bool id_is_used(struct htab_listitem * item)
-{
-	return (item->data.flags & 1);
-}
-
-bool id_is_declared(struct htab_listitem * item)
-{
-	return (item->data.flags & 2);
-}
-
-bool id_is_defined(struct htab_listitem * item)
-{
-	return (item->data.flags & 4);
-}
-
-size_t htab_bucket_count(struct htab_t *t)
-{
-	return t->arr_size;
-}
-
+/* Initializes symbol table */
 struct htab_t * htab_init(size_t size)
 {
 	const size_t allocmem = (sizeof(struct htab_t)+(size*(sizeof(struct htab_listitem*))));
@@ -108,6 +126,7 @@ struct htab_t * htab_init(size_t size)
 	return result;
 }
 
+/* Makes new function record and sets initial values*/
 struct htab_listitem * make_item(const char * key)
 {
 	struct htab_listitem * item = malloc(sizeof(struct htab_listitem));
@@ -126,6 +145,7 @@ struct htab_listitem * make_item(const char * key)
 	return item;
 }
 
+/* Append function record to symbol table */
 void htab_append(struct htab_listitem *item, struct htab_t *t)
 {
 	unsigned int index = (hash_function(item->key) % (htab_bucket_count(t)));
@@ -143,6 +163,7 @@ void htab_append(struct htab_listitem *item, struct htab_t *t)
 	end->next->next=NULL;
 }
 
+/* Returns last function record in symbol table */
 struct htab_listitem * htab_last(struct htab_t *t, const char * key)
 {
 	unsigned int index = (hash_function(key) % htab_bucket_count(t));
@@ -156,6 +177,7 @@ struct htab_listitem * htab_last(struct htab_t *t, const char * key)
 	return item;
 }
 
+/* Returns function record with relevant key */
 struct htab_listitem * htab_find(struct htab_t *t, const char * key)
 {
 	unsigned int index = (hash_function(key) % htab_bucket_count(t));
@@ -171,6 +193,7 @@ struct htab_listitem * htab_find(struct htab_t *t, const char * key)
 		return NULL;
 }
 
+/* Clears symbol table. Deletes and frees all items */
 void htab_clear (struct htab_t * t)
 {
 	struct htab_listitem * item;
@@ -190,12 +213,14 @@ void htab_clear (struct htab_t * t)
 	t->n=0;
 }
 
+/* Deletes and frees symbol table */
 void htab_free(struct htab_t * t)
 {
 	htab_clear(t);
 	free(t);
 }
 
+/* Adds function record at relevant index in symbol table*/
 struct htab_listitem * htab_lookup_add(struct htab_t *t, const char * key)
 {
 	struct htab_listitem * item=htab_find(t, key); 
@@ -221,6 +246,7 @@ struct htab_listitem * htab_lookup_add(struct htab_t *t, const char * key)
 		return item;
 }
 
+/* Moves items of symbol table */
 struct htab_t *htab_move(long newsize, struct htab_t *t2) {
 	if (newsize < 1) {
 		fprintf(stderr, "Invalid parameter, newsize < 1\n");
@@ -250,6 +276,7 @@ struct htab_t *htab_move(long newsize, struct htab_t *t2) {
 	return tmp;
 }
 
+/* Copies all function record from one symbol table to another*/
 void htab_foreach(htab_t* t, htab_t * other_symtable, String * primal_code, void(*function)(struct htab_listitem * item, htab_t * other_symtable, String * primal_code))
 {
 	for (unsigned int i=0; i<(htab_bucket_count(t)); i++)

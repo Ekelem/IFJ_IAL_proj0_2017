@@ -6,43 +6,24 @@
 #ifndef ERROR_H
 #define ERROR_H 42
 
-/*
- *chyba v programu v ramci lexikalni analyzy (chybna struktura aktualniho lexe-
- *mu)
-*/
+/* Program error in lexical analysis (wrong structure of actual lexem)*/
 #define ERR_CODE_LEXICAL 1
 
-
-/*
- *chyba v programu v ramci syntakticke analyzy (chybna syntaxe programu)
-*/
+/* Program error in syntactic analysis (wrong syntax of program)*/
 #define ERR_CODE_SYNTAX 2
 
 
-/*
- *semanticka chyba v programu – nedefinovana funkce/promenna, pokus o redefi-
- *nici funkce/promenne, atd.
-*/
+/* Program semantic error (undefined function/varaible, attempt to redefine function/variable etc.)*/
 #define ERR_CODE_UNDEFINED 3
 
-
-/*
- *semanticka chyba typove kompatibility v aritmetickych, retezcovych a relacnich
- *vyrazech, prip. spatny pocet ci typ parametru u volani funkce.
-*/
+/* Semantic errors of type compatibility in arithmetic, string and relational expressions. 
+   Eventually, wrong number or type of parameters in function call.*/
 #define ERR_CODE_TYPE 4
 
-
-/*
- *ostatni semanticke chyby
-*/
+/* Other semantic errors*/
 #define ERR_CODE_OTHERS 6
 
-
-/*
- *interni chyba prekladace tj. neovlivnena vstupnim programem (napr. chyba alo-
- *kace pameti, atd.)
-*/
+/* Internal error (f.e. unsuccesful allocation..) */
 #define ERR_CODE_INTERN 99
 
 #define ERRPREFIX "Error: "
@@ -52,9 +33,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
+/* Writes error message and exits program with corresponding error code */
 void error_msg(int err_code, const char *fmt, ...);
+/* Writes error warning */
 void warn_msg(const char *fmt, ...);
+/* Writes number of line and position of error. Exits program with corresponding error code */
 void syntax_error_unexpexted(int line, int pos, int unexpected_type, int numb, ...);
 
 
