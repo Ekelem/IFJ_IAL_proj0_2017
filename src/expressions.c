@@ -68,6 +68,8 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 	else if (actual_token->type == IDENTIFIER) {
 		state = sem_value;
 	}
+	else if (actual_token->type == LEXICAL_ERROR)
+		error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 	else {
 		error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
 	}
@@ -85,6 +87,8 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 					par_count--;
 					state = sem_RP;
 				}
+				else if (next_token->type == LEXICAL_ERROR)
+					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
 					error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
 				break;
@@ -97,6 +101,8 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 					state = sem_operand_not;
 				else if (is_value(next_token))
 					state = sem_value;
+				else if (next_token->type == LEXICAL_ERROR)
+					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
 					error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
 				break;
@@ -110,6 +116,8 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (is_value(next_token)) {
 					state = sem_value;
 				}
+				else if (next_token->type == LEXICAL_ERROR)
+					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
 					error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
 				break;
@@ -120,6 +128,8 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				}
 				else if (is_operand(next_token, true))
 					state = sem_operand;
+				else if (next_token->type == LEXICAL_ERROR)
+					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
 					error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
 				break;
@@ -130,6 +140,10 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 					par_count++;
 					state = sem_LP;
 				}
+				else if (next_token->type == NOT)
+					state = sem_operand_not;
+				else if (next_token->type == LEXICAL_ERROR)
+					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
 					error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
 				break;
