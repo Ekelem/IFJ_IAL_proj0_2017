@@ -355,7 +355,15 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					state = UNUSUAL_CHAR;
 				}
 				else {
-					append_char_to_str(&s, c);
+					if (c== '\\' || c == '#' || c == '(' || c == ')' || c == '+' || c == ']' ||
+						(c >= 45 && c <= 63) || (c >= 65 && c <= 91) || (c >= 97 && c <= 125)){
+						append_char_to_str(&s, c);
+						//printf("ZNAK %d\n", c);
+					}
+					else
+					{
+						str_convert_ascii(&s, c);
+					}
 				}
 				break;
 
@@ -381,6 +389,11 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					ungetc(c, f);
 					init_string(&ascii_seq);
 					state = UNUSUAL_CHAR_2;
+				}
+				else if (c == ' '){
+					ungetc(c, f);
+					state = STRING_LITERAL_BEGINS;
+					str_convert_ascii(&s, '\\');
 				}
 				else {
 					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);

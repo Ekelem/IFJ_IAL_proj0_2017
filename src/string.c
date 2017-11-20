@@ -81,6 +81,27 @@ void str_copy_str(String *s1, String *s2)
 	s1->len = s2->len;
 }
 
+void str_convert_ascii(String *s1, int c)
+{
+	char ascii[4];
+	sprintf(ascii, "%d", c);
+	if (c < 10)
+	{
+		append_str_to_str(s1, "\\00");
+		append_str_to_str(s1, ascii);
+	}
+	else if (c >= 10 && c < 100)
+	{
+		append_str_to_str(s1, "\\0");
+		append_str_to_str(s1, ascii);
+	}
+	else
+	{
+		append_str_to_str(s1, "\\");
+		append_str_to_str(s1, ascii);
+	}
+}
+
 
 int str_cmp_str(String *s1, String *s2)
 {

@@ -14,6 +14,7 @@ void append_char_to_str(String *s, char c);
 void append_str_to_str(String *s, const char * append);
 void clear_string(String *s);
 void free_string(String *s);
+void str_convert_ascii(String *s1, int c);
 void str_copy_str(String *s1, String *s2);
 void first_append_char_to_str(String *s, char c);
 
