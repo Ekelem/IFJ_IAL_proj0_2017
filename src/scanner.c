@@ -206,6 +206,7 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				}
 				else if (c == 'e' || c == 'E') {
 					if (added_num){
+						added_num = false;
 						state = DOUBLE_3;
 						append_char_to_str(&s, c);
 					}
@@ -236,10 +237,18 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				}
 				else if (c == '+' || c == '-'){
-					if (exponent)
-						return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-					exponent = true;
-					append_char_to_str(&s, c);
+					if (added_num) {
+						*err_pos -= 1;
+						ungetc(c, f);
+						return save_token(t, &s, INT_WITH_EXP, *err_line, *err_pos);
+					}
+					else
+					{
+						if (exponent)
+							return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+						exponent = true;
+						append_char_to_str(&s, c);
+					}
 				}
 				else {
 					if (added_num){
@@ -262,10 +271,18 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				}
 				else if (c == '+' || c == '-'){
-					if (exponent)
-						return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-					exponent = true;
-					append_char_to_str(&s, c);
+					if (added_num) {
+						*err_pos -= 1;
+						ungetc(c, f);
+						return save_token(t, &s, DOUBLE_WITH_EXP, *err_line, *err_pos);
+					}
+					else
+					{
+						if (exponent)
+							return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+						exponent = true;
+						append_char_to_str(&s, c);
+					}
 				}
 				else {
 					if (added_num){
@@ -341,9 +358,17 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				else if (c == '\\') {
 					state = UNUSUAL_CHAR;
 				}
-				else {
-					append_char_to_str(&s, c);
-				}
+                else {
+                    if (c== '\\' || c == '#' || c == '(' || c == ')' || c == '+' || c == ']' ||
+                        (c >= 45 && c <= 63) || (c >= 65 && c <= 91) || (c >= 97 && c <= 125)){
+                        append_char_to_str(&s, c);
+                        //printf("ZNAK %d\n", c);
+                    }
+                    else
+                    {
+                        str_convert_ascii(&s, c);
+                    }
+                }
 				break;
 
 			case UNUSUAL_CHAR:
@@ -369,6 +394,11 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					init_string(&ascii_seq);
 					state = UNUSUAL_CHAR_2;
 				}
+                else if (c == ' ') {
+                    ungetc(c, f);
+                    state = STRING_LITERAL_BEGINS;
+                    str_convert_ascii(&s, '\\');
+                }
 				else {
 					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				}

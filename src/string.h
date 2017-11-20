@@ -30,6 +30,9 @@ void free_string(String *s);
 /* Copies value of first string to second string */
 void str_copy_str(String *s1, String *s2);
 
+/* Convert int value of char to escape sequence string */
+void str_convert_ascii(String *s1, int c);
+
 /* Checks if string are the same */
 int str_cmp_str(String *s1, String *s2);
 
