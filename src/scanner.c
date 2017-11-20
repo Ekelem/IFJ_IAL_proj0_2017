@@ -202,6 +202,7 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				}
 				else if (c == 'e' || c == 'E') {
 					if (added_num){
+						added_num = false;
 						state = DOUBLE_3;
 						append_char_to_str(&s, c);
 					}
@@ -232,10 +233,18 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				}
 				else if (c == '+' || c == '-'){
-					if (exponent)
-						return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-					exponent = true;
-					append_char_to_str(&s, c);
+					if (added_num) {
+						*err_pos -= 1;
+						ungetc(c, f);
+						return save_token(t, &s, INT_WITH_EXP, *err_line, *err_pos);
+					}
+					else
+					{
+						if (exponent)
+							return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+						exponent = true;
+						append_char_to_str(&s, c);
+					}
 				}
 				else {
 					if (added_num){
@@ -258,10 +267,18 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				}
 				else if (c == '+' || c == '-'){
-					if (exponent)
-						return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-					exponent = true;
-					append_char_to_str(&s, c);
+					if (added_num) {
+						*err_pos -= 1;
+						ungetc(c, f);
+						return save_token(t, &s, DOUBLE_WITH_EXP, *err_line, *err_pos);
+					}
+					else
+					{
+						if (exponent)
+							return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+						exponent = true;
+						append_char_to_str(&s, c);
+					}
 				}
 				else {
 					if (added_num){

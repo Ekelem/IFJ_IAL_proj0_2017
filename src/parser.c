@@ -645,7 +645,7 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 		token * actual_token = token_buffer_get_token(token_buff);
 		switch (actual_token->type){
 			case IDENTIFIER :
-                printf("Prom:%s\n", actual_token->attr.string_value);
+                //printf("Prom:%s\n", actual_token->attr.string_value);
 				param_caller = htab_find(symtable, actual_token->attr.string_value);
 				if (param_caller == NULL)
 					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' does not exist.\n",
@@ -1074,21 +1074,21 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
                                     "DEFVAR LF@slen\n"
                                     "DEFVAR LF@onechr\n");
     append_str_to_str(primal_code,  "STRLEN LF@slen LF@s\n"
-                                    "EQ LF@supbool LF@slen int@0\n");
-    append_str_to_str(primal_code,  "JUMPIFNEQ Snzero LF@supbool boo@true\n");
-    append_str_to_str(primal_code,  "LABEL SubstrEnd\n"
-                                    "MOVE LF@%returnval string@d \n"
-                                    "RETURN\n");
+									"EQ LF@supbool LF@slen int@0\n");
+    append_str_to_str(primal_code,  "JUMPIFNEQ Snzero LF@supbool bool@true\n"
+    								"LABEL SubstrEnd\n");
+	append_str_to_str(primal_code,  "MOVE LF@%returnval string@\\000 \n");
+	append_str_to_str(primal_code,  "RETURN\n");
     append_str_to_str(primal_code,  "LABEL Snzero\n"
-                                    "EQ LF@supbool LF@i int@0\n");
-    append_str_to_str(primal_code,  "JUMPIFEQ SubstrEnd LF@supbool boo@true\n");
-    append_str_to_str(primal_code,  "LT LF@supbool LF@i int@0\n"
-                                    "JUMPIFEQ SubstrEnd LF@supbool boo@true\n");
+									"EQ LF@supbool LF@i int@0\n");
+	append_str_to_str(primal_code,  "JUMPIFEQ SubstrEnd LF@supbool bool@true\n");
+    append_str_to_str(primal_code,  "LT LF@supbool LF@i int@0\n");
+	append_str_to_str(primal_code,  "JUMPIFEQ SubstrEnd LF@supbool bool@true\n");
     append_str_to_str(primal_code,  "LT LF@supbool LF@n int@0\n");
-    append_str_to_str(primal_code,  "JUMPIFEQ Sublen LF@supbool boo@true\n"
+    append_str_to_str(primal_code,  "JUMPIFEQ Sublen LF@supbool bool@true\n"
                                     "SUB LF@strindex LF@slen LF@i\n");
     append_str_to_str(primal_code,  "GT LF@supbool LF@n LF@strindex\n");
-    append_str_to_str(primal_code,  "JUMPIFEQ Sublen LF@supbool boo@true\n"
+    append_str_to_str(primal_code,  "JUMPIFEQ Sublen LF@supbool bool@true\n"
                                     "JUMP Scontinue\n");
     append_str_to_str(primal_code,  "LABEL Sublen\n");
     append_str_to_str(primal_code,  "MOVE LF@n LF@slen\n"
@@ -1100,7 +1100,7 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
     append_str_to_str(primal_code,  "CONCAT LF@%returnval LF@%returnval LF@onechr\n");
     append_str_to_str(primal_code, "LT LF@supbool LF@strindex LF@n\n");
     append_str_to_str(primal_code,  "ADD LF@strindex int@1\n"
-                                    "JUMPIFEQ Scycle LF@supbool boo@true\n");
+                                    "JUMPIFEQ Scycle LF@supbool bool@true\n");
     append_str_to_str(primal_code,  "RETURN\n"
                                     "\n");
 
@@ -1162,7 +1162,7 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
     append_str_to_str(primal_code,  "INT2CHAR LF@%returnval LF@i\n"
                                     "RETURN\n"
                                     "LABEL CTrue\n");
-    append_str_to_str(primal_code,  "MOVE LF@%returnval string@0 \n"
+    append_str_to_str(primal_code,  "MOVE LF@%returnval bool@false \n"
                                     "RETURN\n"
                                     "\n");
 }
