@@ -257,7 +257,7 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 		if (actual_param->par_type != neterm_type(token_buff, symtable, primal_code))
 			error_msg(ERR_CODE_OTHERS, "type of %d. parameter in function %s do not match type in declaration.\n",
                       param_order+1, func_record->key);
-	
+
 		actual_token = token_buffer_peek_token(token_buff);
 		if (actual_token->type == COMA)
 		{
@@ -428,7 +428,7 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 	{
 		expected_token(token_buff, EQUALS);
 		int variable_type = get_id_type(found_record);
-		int expr_return_type = parse_expression(token_buff, symtable, primal_code, found_record->key, INTEGER_TYPE, NEW_LINE);
+		int expr_return_type = parse_expression(token_buff, symtable, primal_code, NEW_LINE);
 		parse_semantic_expression(primal_code, found_record, variable_type, expr_return_type);
 		set_id_defined(found_record);
 		expected_token(token_buff, NEW_LINE);
@@ -491,7 +491,7 @@ void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_
 	bool else_branch=0;
 
 	int variable_type = BOOLEAN_TYPE;
-	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NULL, variable_type, THEN);
+	int expr_return_type = parse_expression(token_buff, symtable, primal_code, THEN);
 	parse_semantic_expression(primal_code, NULL, variable_type, expr_return_type);
 	expected_token(token_buff, THEN);
 
@@ -555,7 +555,7 @@ void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal
 	generate_if_label(primal_code, label_if, order);
 
 	int variable_type = BOOLEAN_TYPE;
-	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NULL, BOOLEAN_TYPE, NEW_LINE);
+	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NEW_LINE);
 	parse_semantic_expression(primal_code, NULL, variable_type, expr_return_type);
 	expected_token(token_buff, NEW_LINE);
 
@@ -586,7 +586,7 @@ void body_assignment(token_buffer * token_buff, htab_t * symtable, String * prim
 
 	expected_token(token_buff, EQUALS);
 	int variable_type = get_id_type(found_record);
-	int expr_return_type = parse_expression(token_buff, symtable, primal_code, found_record->key, 420, NEW_LINE);
+	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NEW_LINE);
 	parse_semantic_expression(primal_code, found_record, variable_type, expr_return_type);
 	set_id_defined(found_record);
 	expected_token(token_buff, NEW_LINE);
@@ -597,7 +597,7 @@ void body_return(token_buffer * token_buff, htab_t * symtable, String * primal_c
 {
 	//only callable from funcbody
 	int variable_type = get_id_type(func_record);
-	int expr_return_type = parse_expression(token_buff, symtable, primal_code, func_record->key, 420, NEW_LINE);
+	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NEW_LINE);
 	parse_semantic_expression(primal_code, func_record, variable_type, expr_return_type);
 
 	append_str_to_str(primal_code, "POPS %returnval\n");
@@ -806,7 +806,7 @@ void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_co
 	fprintf(stderr, "log: body print\n");
 	#endif
 
-	parse_expression(token_buff, symtable, primal_code, NULL, 420, SEMICOLON);
+	parse_expression(token_buff, symtable, primal_code, SEMICOLON);
 	append_str_to_str(primal_code, "POPS GF@%SWAP\n");
 	append_str_to_str(primal_code, "WRITE GF@%SWAP\n");
 

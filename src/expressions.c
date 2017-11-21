@@ -29,27 +29,27 @@ const bool  precedence_tab[TABLE_SIZE][TABLE_SIZE] = {
 
 
 /* Parses the given expression */
-int parse_expression(token_buffer * token_buff, htab_t * symtable, String * primal_code, char *key, int type, int end_token) {
+int parse_expression(token_buffer * token_buff, htab_t * symtable, String * primal_code, int end_token) {
 	static bool first_time = true;
 	if (first_time) {
 		first_time = false;
 		append_str_to_str(primal_code, "DEFVAR GF@%SWAP\nDEFVAR GF@%SWAP2\n");
 	}
 	//1.step: check
-	semantic_expr_check_order(token_buff, symtable, primal_code, type, end_token);
+	semantic_expr_check_order(token_buff, symtable, primal_code, end_token);
 
 	//2.step: create a double linked list(postfix expr)
 	TStack s = infix2postfix(token_buff, symtable, primal_code, end_token);
 
 	//3.step: calculate the value
-	int return_type = get_expr_value(token_buff, symtable, primal_code, &s, type, key);
+	int return_type = get_expr_value(token_buff, symtable, primal_code, &s);
 
 	token_buff->actual -= 1;
 	return return_type;
 }
 
-/* Checks semantic of given expression. Exits the program with different error codes depending on error.*/ 
-void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, String * primal_code, int type, int end_token) {
+/* Checks semantic of given expression. Exits the program with different error codes depending on error.*/
+void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, String * primal_code, int end_token) {
 	int start_token = token_buff->actual;
 	token *actual_token = token_buffer_get_token(token_buff);
 	token *next_token = token_buffer_peek_token(token_buff);
@@ -251,7 +251,7 @@ TStack infix2postfix (token_buffer * token_buff, htab_t * symtable, String * pri
 }
 
 /* Counts value of expression. Checks semantics and generates relevant instructions*/
-int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal_code, TStack *s, int type, char *key) {
+int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal_code, TStack *s) {
 	TSElem *actual_token = s->First;
 	TSElem *next_token = s->First->next;
 	String str;
@@ -271,7 +271,7 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 			append_char_to_str(primal_code, '\n');
 		}
 		else
-			e_push(symtable, primal_code,actual_token, "GF@%SWAP", &str, &value_stack);
+			e_push(symtable, primal_code,actual_token, &str, &value_stack);
 	}
 
 
@@ -287,7 +287,7 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 			case E_SEARCH:
 				if (is_value(actual_token->t_elem) && is_token(next_token, NOT)) {
 					sem_check_not(actual_token, symtable);
-					e_push(symtable, primal_code, actual_token, key, &str, &value_stack);
+					e_push(symtable, primal_code, actual_token, &str, &value_stack);
 					append_str_to_str(primal_code, "NOTS\n");
 					actual_token->is_valid = false;
 					delete_current_expr(next_token);
@@ -298,7 +298,7 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 				}
 				else if ( is_value(next_token->t_elem) && is_token(next_token->next, NOT)) {
 					sem_check_not(next_token, symtable);
-					e_push(symtable, primal_code, next_token, key, &str, &value_stack);
+					e_push(symtable, primal_code, next_token, &str, &value_stack);
 					append_str_to_str(primal_code, "NOTS\n");
 					next_token->is_valid = false;
 					delete_current_expr(next_token->next);
@@ -427,6 +427,38 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand MODULE can be combined only with INTEGER values\n");
+						}
+						if (!(is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && !actual_token->conv_double) {
+							conv_first = true;
+							actual_token->conv_double = true;
+						}
+						if(!(is_valid_token_type(symtable, next_token, DOUBLE_TYPE)) && !next_token->conv_double){
+							next_token->conv_double = true;
+							conv_second = true;
+						}
+						if (next_token->t_elem->type == DOUBLEE || next_token->t_elem->type == DOUBLE_WITH_EXP || next_token->t_elem->type == INT_WITH_EXP) {
+							if (next_token->t_elem->attr.double_value == 0.0) {
+								error_msg(ERR_CODE_TYPE, "Can not divide by Zero\n");
+							}
+						}
+						else if (next_token->t_elem->type == INT_VALUE) {
+							if (next_token->t_elem->attr.int_value == 0) {
+								error_msg(ERR_CODE_TYPE, "Can not divide by Zero\n");
+							}
+						}
+						else if (next_token->t_elem->type == IDENTIFIER) {
+							struct htab_listitem *found_record = htab_find(symtable, next_token->t_elem->attr.string_value);
+
+							if (found_record->data.type == INTEGER_TYPE) {
+								if (next_token->t_elem->attr.int_value == 0) {
+									error_msg(ERR_CODE_TYPE, "Can not divide by Zero\n");
+								}
+							}
+							else if (found_record->data.type == DOUBLE_TYPE) {
+								if (next_token->t_elem->attr.double_value == 0.0) {
+									error_msg(ERR_CODE_TYPE, "Can not divide by Zero\n");
+								}
+							}
 						}
 						break;
 
@@ -580,7 +612,7 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 
 				bool pushed = false, pushed2 = true;
 				if (!(is_token_type(symtable, actual_token, STRING_TYPE))){
-					pushed = e_push(symtable, primal_code, actual_token, key, &str, &value_stack);
+					pushed = e_push(symtable, primal_code, actual_token, &str, &value_stack);
 					if (conv_first) {
 						if (!pushed && !next_token->is_valid){
 							append_str_to_str(primal_code, "POPS GF@%SWAP\n");
@@ -594,7 +626,7 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 				}
 				if (!(is_token_type(symtable, next_token, STRING_TYPE))) {
 					if (next_token->t_elem->type != NOT){
-						pushed2 = e_push(symtable, primal_code, next_token, key, &str, &value_stack);
+						pushed2 = e_push(symtable, primal_code, next_token, &str, &value_stack);
 						if (conv_second) {
 							if (pushed && !pushed2){
 								append_str_to_str(primal_code, "POPS GF@%SWAP\n");
@@ -646,19 +678,17 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						append_str_to_str(primal_code, next_token->t_elem->attr.string_value);
 						append_char_to_str(primal_code, '\n');
 
-							unsigned len = strlen(actual_token->t_elem->attr.string_value)+strlen(next_token->t_elem->attr.string_value)+1;
-							actual_token->t_elem->attr.string_value = realloc(actual_token->t_elem->attr.string_value, len);
-							if (actual_token->t_elem->attr.string_value == NULL)
-								exit(ERR_CODE_INTERN);
-							strcat(actual_token->t_elem->attr.string_value, next_token->t_elem->attr.string_value);
-							append_str_to_str(primal_code, "CONCAT ");
-							append_str_to_str(primal_code, "GF@");
-							append_str_to_str(primal_code, "%SWAP");
-							append_str_to_str(primal_code, " GF@");
-							append_str_to_str(primal_code, "%SWAP");
-							append_str_to_str(primal_code, " GF@%SWAP2\n");
-							if (type == STRING)
-								append_str_to_str(primal_code, "PUSHS LF@%SWAP\n");
+						unsigned len = strlen(actual_token->t_elem->attr.string_value)+strlen(next_token->t_elem->attr.string_value)+1;
+						actual_token->t_elem->attr.string_value = realloc(actual_token->t_elem->attr.string_value, len);
+						if (actual_token->t_elem->attr.string_value == NULL)
+							exit(ERR_CODE_INTERN);
+						strcat(actual_token->t_elem->attr.string_value, next_token->t_elem->attr.string_value);
+						append_str_to_str(primal_code, "CONCAT ");
+						append_str_to_str(primal_code, "GF@");
+						append_str_to_str(primal_code, "%SWAP");
+						append_str_to_str(primal_code, " GF@");
+						append_str_to_str(primal_code, "%SWAP");
+						append_str_to_str(primal_code, " GF@%SWAP2\n");
 					}
 				}
 				else {
@@ -790,7 +820,7 @@ int convert_operand_type(int operand) {
 }
 
 /* Generates relevant PUSH instructions depending on operand type*/
-bool e_push(htab_t *symtable, String *primal_code, TSElem *t, char *key, String *str, BStack *value_stack) {
+bool e_push(htab_t *symtable, String *primal_code, TSElem *t, String *str, BStack *value_stack) {
 	bool was_pushed = false;
 	clear_string(str);
 	struct htab_listitem *found_record;
@@ -830,8 +860,6 @@ bool e_push(htab_t *symtable, String *primal_code, TSElem *t, char *key, String 
 			case STRING_VALUE:
 				BPush(value_stack, false);
 				return false;
-				append_str_to_str(primal_code, "PUSHS LF@");
-				append_str_to_str(primal_code, t->t_elem->attr.string_value);
 				break;
 
 			case TRUE:
@@ -850,11 +878,7 @@ bool e_push(htab_t *symtable, String *primal_code, TSElem *t, char *key, String 
 void operand_module(htab_t *symtable, String *primal_code, TSElem *t, BStack *value_stack) {
 	String str;
 	init_string(&str);
-	e_push(symtable, primal_code, t, NULL, &str, value_stack);
-	append_str_to_str(primal_code, "INT2FLOATS\n");
-	e_push(symtable, primal_code, t->next, NULL, &str, value_stack);
-	append_str_to_str(primal_code, "INT2FLOATS\nDIVS\n");
-	append_str_to_str(primal_code, "PUSHS float@0.5\nSUBS\nFLOAT2INTS\nMULS\nSUBS\n");
+	append_str_to_str(primal_code, "DIVS\nFLOAT2INTS\n");
 	free_string(&str);
 }
 

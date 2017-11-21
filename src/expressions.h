@@ -56,7 +56,7 @@ void operand_module(htab_t *symtable, String *primal_code, TSElem *t, BStack *va
 bool has_higher_priority(t_expressions op1, t_expressions op2);
 
 /* Parses the given expression */
-int parse_expression(token_buffer * token_buff, htab_t * symtable, String * primal_code, char *key, int type, int end_token);
+int parse_expression(token_buffer * token_buff, htab_t * symtable, String * primal_code, int end_token);
 
 /* Pops everything from stack until token is left parenthesis */
 void untilLeftPar ( TStack *sTemp, TStack  *sOut);
@@ -68,16 +68,16 @@ void doOperation ( TStack *sTemp, TStack  *sOut, token *t);
 TStack infix2postfix (token_buffer * token_buff, htab_t * symtable, String * primal_code, int end_token);
 
 /* Checks semantic of given expression. Exits the program with different error codes depending on error.*/ 
-void semantic_expr_check(token_buffer * token_buff, htab_t * symtable, String * primal_code, char *key, int type);
+void semantic_expr_check(token_buffer * token_buff, htab_t * symtable, String * primal_code, int type);
 
 /* Counts value of expression. Checks semantics and generates relevant instructions*/
-int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal_code, TStack *s, int type, char *key);
+int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal_code, TStack *s);
 
 /* Converts operator type */
 int convert_operand_type(int operand);
 
 /* Generates relevant PUSH instructions depending on operand type*/
-bool e_push(htab_t *symtable, String *primal_code, TSElem *t, char *key, String *str, BStack *value_stack);
+bool e_push(htab_t *symtable, String *primal_code, TSElem *t, String *str, BStack *value_stack);
 
 /* Checks type identity */
 bool is_token(TSElem *s, int type);
@@ -85,11 +85,11 @@ bool is_token(TSElem *s, int type);
 /* Chceks if given token is value or not. */
 bool is_value(token *token_type);
 
-/* Checks if given token is operator */ 
+/* Checks if given token is operator */
 bool is_operand(token *token_type, bool in_condition);
 
-/* Checks semantic of given expression. Exits the program with different error codes depending on error.*/ 
-void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, String * primal_code, int type, int end_token);
+/* Checks semantic of given expression. Exits the program with different error codes depending on error.*/
+void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, String * primal_code, int end_token);
 
 /* Checks token type of found record in symtable. */
 bool is_token_type(htab_t * symtable, TSElem *actual_token, int type);
