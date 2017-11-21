@@ -39,11 +39,12 @@ int parse_expression(token_buffer * token_buff, htab_t * symtable, String * prim
 	semantic_expr_check_order(token_buff, symtable, primal_code, type, end_token);
 
 	//2.step: create a double linked list(postfix expr)
-	TStack s = infix2postfix(token_buff, symtable, primal_code);
+	TStack s = infix2postfix(token_buff, symtable, primal_code, end_token);
 
 	//3.step: calculate the value
 	int return_type = get_expr_value(token_buff, symtable, primal_code, &s, type, key);
 
+	token_buff->actual -= 1;
 	return return_type;
 }
 
@@ -205,7 +206,7 @@ void doOperation ( TStack *sTemp, TStack  *sOut, token *t) {
 }
 
 /* Converts expression from infix to postfix using stack */
-TStack infix2postfix (token_buffer * token_buff, htab_t * symtable, String * primal_code) {
+TStack infix2postfix (token_buffer * token_buff, htab_t * symtable, String * primal_code, int end_token) {
 
 	TStack sTemp;
 	stack_init(&sTemp);
@@ -216,7 +217,7 @@ TStack infix2postfix (token_buffer * token_buff, htab_t * symtable, String * pri
 	token *t = token_buffer_get_token(token_buff);
 
 	while (42) {
-		if (t->type == NEW_LINE || t->type == EOF || t->type == THEN)
+		if (t->type == end_token || t->type == EOF)
 			break;
 
 		if ( is_operand(t, true)) {
@@ -1067,6 +1068,9 @@ int return_semantic_type(TStack *Out, htab_t *symtable) {
 						is_double = true;
 					else if (found_record->data.type == STRING_TYPE)
 						is_string = true;
+				}
+				else {
+					error_msg(ERR_CODE_TYPE, "Undeclared ID %s\n", tmp->t_elem->attr.string_value);
 				}
 				break;
 

@@ -431,6 +431,7 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 		int expr_return_type = parse_expression(token_buff, symtable, primal_code, found_record->key, INTEGER_TYPE, NEW_LINE);
 		parse_semantic_expression(primal_code, found_record, variable_type, expr_return_type);
 		set_id_defined(found_record);
+		expected_token(token_buff, NEW_LINE);
 	}
 	else {
 		syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2, NEW_LINE, EQUALS);
@@ -492,6 +493,7 @@ void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_
 	int variable_type = BOOLEAN_TYPE;
 	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NULL, variable_type, THEN);
 	parse_semantic_expression(primal_code, NULL, variable_type, expr_return_type);
+	expected_token(token_buff, THEN);
 
 
 	append_str_to_str(primal_code, "PUSHS bool@true\n");
@@ -555,6 +557,7 @@ void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal
 	int variable_type = BOOLEAN_TYPE;
 	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NULL, BOOLEAN_TYPE, NEW_LINE);
 	parse_semantic_expression(primal_code, NULL, variable_type, expr_return_type);
+	expected_token(token_buff, NEW_LINE);
 
 	append_str_to_str(primal_code, "PUSHS bool@true\n");
 	append_str_to_str(primal_code, "JUMPIFNEQS ");
@@ -586,6 +589,7 @@ void body_assignment(token_buffer * token_buff, htab_t * symtable, String * prim
 	int expr_return_type = parse_expression(token_buff, symtable, primal_code, found_record->key, 420, NEW_LINE);
 	parse_semantic_expression(primal_code, found_record, variable_type, expr_return_type);
 	set_id_defined(found_record);
+	expected_token(token_buff, NEW_LINE);
 }
 
 /* Nonterminal function describes nonterminal BODY_RETURN rules. Generates relevant instructions */
@@ -802,12 +806,19 @@ void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_co
 	fprintf(stderr, "log: body print\n");
 	#endif
 
-	//expression
-	expected_token(token_buff, SEMICOLON);
-	if (is_peek_token(token_buff, NEW_LINE))
-		expected_token(token_buff, NEW_LINE);
-	else
-		body_print(token_buff, symtable, primal_code);
+	parse_expression(token_buff, symtable, primal_code, NULL, 420, SEMICOLON);
+	append_str_to_str(primal_code, "POPS GF@%SWAP\n");
+	append_str_to_str(primal_code, "WRITE GF@%SWAP\n");
+
+	if (is_peek_token(token_buff, SEMICOLON)){
+		expected_token(token_buff, SEMICOLON);
+		if (!is_peek_token(token_buff, NEW_LINE))
+			body_print(token_buff, symtable, primal_code);
+	}
+	else {
+		token *actual_token = token_buffer_peek_token(token_buff);
+		syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2, NEW_LINE, SEMICOLON);
+	}
 }
 
 /* Checks if next token is the one we expected. If it is different exits program with relevant error code */

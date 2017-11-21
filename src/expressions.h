@@ -65,7 +65,7 @@ void untilLeftPar ( TStack *sTemp, TStack  *sOut);
 void doOperation ( TStack *sTemp, TStack  *sOut, token *t);
 
 /* Converts expression from infix to postfix using stack */
-TStack infix2postfix (token_buffer * token_buff, htab_t * symtable, String * primal_code);
+TStack infix2postfix (token_buffer * token_buff, htab_t * symtable, String * primal_code, int end_token);
 
 /* Checks semantic of given expression. Exits the program with different error codes depending on error.*/ 
 void semantic_expr_check(token_buffer * token_buff, htab_t * symtable, String * primal_code, char *key, int type);
