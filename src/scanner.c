@@ -378,7 +378,8 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				}
 				else if (c == 'n') {
 					state = STRING_LITERAL_BEGINS;
-					append_char_to_str(&s, '\n');
+					str_convert_ascii(&s, '\n');
+					//append_char_to_str(&s, '\n');
 				}
 				else if (c == 't') {
 					state = STRING_LITERAL_BEGINS;
