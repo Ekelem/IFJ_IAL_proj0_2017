@@ -109,6 +109,12 @@ token * save_token(token *t, String *str, int type, int line, int pos)
 				break;
 
 			case IDENTIFIER:
+				for (unsigned i = 0; i < strlen(str->str); i++)
+					str->str[i] = tolower(str->str[i]);
+				str->str[strlen(str->str)+1] = '\0';
+				t->attr.string_value = str->str;
+				break;
+				
 			case STRING_VALUE:
 				t->attr.string_value = str->str;
 				break;
