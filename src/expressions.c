@@ -262,16 +262,7 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 	int return_type = return_semantic_type(s, symtable);
 
 	if (stack_counter(s) == 1){
-		if (actual_token->t_elem->type == STRING_VALUE || is_token_type(symtable, actual_token, STRING_TYPE)){
-			if (actual_token->t_elem->type == STRING_VALUE)
-				append_str_to_str(primal_code, "PUSHS string@");
-			else
-				append_str_to_str(primal_code, "PUSHS LF@");
-			append_str_to_str(primal_code, actual_token->t_elem->attr.string_value);
-			append_char_to_str(primal_code, '\n');
-		}
-		else
-			e_push(symtable, primal_code,actual_token, &str, &value_stack);
+		e_push(symtable, primal_code,actual_token, &str, &value_stack);
 	}
 
 
@@ -611,8 +602,8 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 				}
 
 				bool pushed = false, pushed2 = true;
+				pushed = e_push(symtable, primal_code, actual_token, &str, &value_stack);
 				if (!(is_token_type(symtable, actual_token, STRING_TYPE))){
-					pushed = e_push(symtable, primal_code, actual_token, &str, &value_stack);
 					if (conv_first) {
 						if (!pushed && !next_token->is_valid){
 							append_str_to_str(primal_code, "POPS GF@%SWAP\n");
@@ -624,9 +615,9 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						actual_token->conv_double = true;
 					}
 				}
+				pushed2 = e_push(symtable, primal_code, next_token, &str, &value_stack);
 				if (!(is_token_type(symtable, next_token, STRING_TYPE))) {
 					if (next_token->t_elem->type != NOT){
-						pushed2 = e_push(symtable, primal_code, next_token, &str, &value_stack);
 						if (conv_second) {
 							if (pushed && !pushed2){
 								append_str_to_str(primal_code, "POPS GF@%SWAP\n");
@@ -640,6 +631,7 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 				}
 
 				if (actual_token->t_elem->type == STRING_VALUE || is_token_type(symtable, actual_token, STRING_TYPE)) {
+					//DUNO WHAT THIS IS FOR, BUT AFRAID OF REMOVING THESE LINES :D
 					if (next_token->next->t_elem->type == AND){
 						BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 						append_str_to_str(primal_code, "ANDS\n");
@@ -650,45 +642,26 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 					}
 					else if (next_token->next->t_elem->type == EQUALS){
 						BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
-						if (strcmp(actual_token->t_elem->attr.string_value, next_token->t_elem->attr.string_value) == 0)
-							append_str_to_str(primal_code, "PUSHS bool@true\n");
-						else
-							append_str_to_str(primal_code, "PUSHS bool@false\n");
+						append_str_to_str(primal_code, "EQS\n");
 					}
 					else if (next_token->next->t_elem->type == NOT_EQUALS){
 						BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
-						if (strcmp(actual_token->t_elem->attr.string_value, next_token->t_elem->attr.string_value) == 0)
-							append_str_to_str(primal_code, "PUSHS bool@false\n");
-						else
-							append_str_to_str(primal_code, "PUSHS bool@true\n");
+						append_str_to_str(primal_code, "EQS\nNOTS\n");
 					}
 					else if (next_token->next->t_elem->type == ADD){
 						BPop(&value_stack);
-						if (actual_token->t_elem->type == STRING_VALUE)
-							append_str_to_str(primal_code, "MOVE GF@%SWAP string@");
-						else
-							append_str_to_str(primal_code, "MOVE GF@%SWAP LF@");
-						append_str_to_str(primal_code, actual_token->t_elem->attr.string_value);
-						append_char_to_str(primal_code, '\n');
-
-						if (next_token->t_elem->type == STRING_VALUE)
-							append_str_to_str(primal_code, "MOVE GF@%SWAP2 string@");
-						else
-							append_str_to_str(primal_code, "MOVE GF@%SWAP2 LF@");
-						append_str_to_str(primal_code, next_token->t_elem->attr.string_value);
-						append_char_to_str(primal_code, '\n');
-
-						unsigned len = strlen(actual_token->t_elem->attr.string_value)+strlen(next_token->t_elem->attr.string_value)+1;
-						actual_token->t_elem->attr.string_value = realloc(actual_token->t_elem->attr.string_value, len);
-						if (actual_token->t_elem->attr.string_value == NULL)
-							exit(ERR_CODE_INTERN);
-						strcat(actual_token->t_elem->attr.string_value, next_token->t_elem->attr.string_value);
-						append_str_to_str(primal_code, "CONCAT ");
-						append_str_to_str(primal_code, "GF@");
-						append_str_to_str(primal_code, "%SWAP");
-						append_str_to_str(primal_code, " GF@");
-						append_str_to_str(primal_code, "%SWAP");
-						append_str_to_str(primal_code, " GF@%SWAP2\n");
+						if (pushed && !pushed2){
+							append_str_to_str(primal_code, "POPS GF@%SWAP\n");
+							append_str_to_str(primal_code, "POPS GF@%SWAP2\n");
+							append_str_to_str(primal_code, "CONCAT GF@%SWAP GF@%SWAP GF@%SWAP2\n");
+							append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
+						}
+						else {
+							append_str_to_str(primal_code, "POPS GF@%SWAP2\n");
+							append_str_to_str(primal_code, "POPS GF@%SWAP\n");
+							append_str_to_str(primal_code, "CONCAT GF@%SWAP GF@%SWAP GF@%SWAP2\n");
+							append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
+						}
 					}
 				}
 				else {
@@ -735,7 +708,14 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 							break;
 						case DIV2:
 							BPop(&value_stack);
-							operand_module(symtable, primal_code, actual_token, &value_stack);
+							if (pushed && !pushed2){
+								append_str_to_str(primal_code, "POPS GF@%SWAP\n");
+								append_str_to_str(primal_code, "POPS GF@%SWAP2\n");
+								append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
+								append_str_to_str(primal_code, "PUSHS GF@%SWAP2\n");
+							}
+							append_str_to_str(primal_code, "DIVS\nFLOAT2INTS\n");
+							actual_token->conv_double=false;
 							break;
 						case LESS_THAN:
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
@@ -859,7 +839,9 @@ bool e_push(htab_t *symtable, String *primal_code, TSElem *t, String *str, BStac
 
 			case STRING_VALUE:
 				BPush(value_stack, false);
-				return false;
+				was_pushed = true;
+				append_str_to_str(primal_code, "PUSHS string@");
+				append_str_to_str(primal_code, t->t_elem->attr.string_value);
 				break;
 
 			case TRUE:
@@ -875,12 +857,6 @@ bool e_push(htab_t *symtable, String *primal_code, TSElem *t, String *str, BStac
 	return was_pushed;
 }
 
-void operand_module(htab_t *symtable, String *primal_code, TSElem *t, BStack *value_stack) {
-	String str;
-	init_string(&str);
-	append_str_to_str(primal_code, "DIVS\nFLOAT2INTS\n");
-	free_string(&str);
-}
 
 /* Checks type identity */
 bool is_token(TSElem *s, int type) {
