@@ -13,7 +13,7 @@ void translate(token_buffer * token_buff, htab_t * symtable, String * primal_cod
 	append_str_to_str(primal_code, ".IFJcode17\n");		//Header
 	append_str_to_str(primal_code, "JUMP %MAIN\n");		//jump to scope
 	
-	add_build_in_functions(symtable, primal_code);
+	//add_build_in_functions(symtable, primal_code);
 
 	neterm_start(token_buff, symtable, primal_code);
 }
@@ -105,11 +105,7 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 	expected_token(token_buff, LEFT_PARANTHESIS);
 	if (found_record == NULL)
 	{
-		found_record = make_item(actual_token->attr.string_value);
-		set_id_declared(found_record);
-		set_id_function(found_record);
-		htab_append(found_record, symtable);
-		set_func_par_count(found_record, 0);
+		found_record = create_func_record(symtable, actual_token->attr.string_value);
 	}
 	while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
 	{
@@ -139,39 +135,26 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 				else
 					set_id_defined(found);
 			}
+			else
+			{
+				error_msg(ERR_CODE_OTHERS, "function must be declared before definition.\n");
+			}
 			break;
 		default :
 			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			break;
 	}
 	expected_token(token_buff, LEFT_PARANTHESIS);
-	if (found == NULL)	//implicit declaration
+
+	while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
 	{
-		found = make_item(actual_token->attr.string_value);
-		htab_append(found, symtable);
-		set_id_function(found);
-		set_id_declared(found);
-		set_id_defined(found);
-		set_func_par_count(found, 0);
-		while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
-		{
-			neterm_args_create(token_buff, symtable, primal_code, found);
-		}
-		expected_token(token_buff, RIGHT_PARANTHESIS);
-		expected_token(token_buff, AS);
-		found->data.type = neterm_type(token_buff, symtable, primal_code);
+		neterm_args(token_buff, symtable, primal_code, found);
 	}
-	else
-	{
-		while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
-		{
-			neterm_args(token_buff, symtable, primal_code, found);
-		}
-		expected_token(token_buff, RIGHT_PARANTHESIS);
-		expected_token(token_buff, AS);
-		if (found->data.type != neterm_type(token_buff, symtable, primal_code))
-			error_msg(ERR_CODE_OTHERS, "return type in function %s do not match declaration.\n", found->key);
-	}
+	expected_token(token_buff, RIGHT_PARANTHESIS);
+	expected_token(token_buff, AS);
+	if (found->data.type != neterm_type(token_buff, symtable, primal_code))
+		error_msg(ERR_CODE_OTHERS, "return type in function %s do not match declaration.\n", found->key);
+
 	expected_token(token_buff, NEW_LINE);
 	append_str_to_str(primal_code, "LABEL ");
 	append_str_to_str(primal_code, found->key);
@@ -180,13 +163,16 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 	struct htab_t * new_symtable = htab_init(symtable->arr_size);
 	while (!is_peek_token(token_buff, END))
 	{
-		neterm_body(token_buff, new_symtable, primal_code);
+		neterm_body_func(token_buff, new_symtable, primal_code, found);
 	}
 	htab_free(new_symtable);
 	expected_token(token_buff, END);
 	expected_token(token_buff, FUNCTION);
 	expected_token(token_buff, NEW_LINE);
-	append_str_to_str(primal_code, "MOVE LF@%returnval ");
+
+	//implicit return value, in 99 percent of time it is a dead code
+	generate_implicit_value(primal_code, "%returnval", found->data.type);
+	append_str_to_str(primal_code, "PUSHS LF@%returnval\n");
 	append_str_to_str(primal_code, "RETURN\n");
 }
 
@@ -226,27 +212,24 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 	fprintf(stderr, "log: neterm args\n");
 	#endif
 
-	struct func_par * actual_param = func_record->data.u_argconst.first_par;
-	unsigned int param_order = 0;
-	//printf("%d\n", func_record->data.par_count);
+	struct func_par * actual_param = func_record->data.first_par;
 	while (42)
 	{
 		token * actual_token = token_buffer_get_token(token_buff);
 		switch (actual_token->type){
 			case IDENTIFIER :
-				if (param_order < func_record->data.par_count)
+				if (actual_param!=NULL)
 				{
 					if (strcmp(actual_token->attr.string_value, actual_param->par_name))
 					{
-						error_msg(ERR_CODE_OTHERS, "%d. param (%s) in function %s was declared before as %s.\n",
-                                  param_order+1, actual_token->attr.string_value, func_record->key,
+						error_msg(ERR_CODE_OTHERS, "param (%s) from function %s was declared before as %s.\n",
+                                  actual_token->attr.string_value, func_record->key,
                                   actual_param->par_name);
 					}
 				}
 				else
 				{
-					error_msg(ERR_CODE_OTHERS, "function %s take only %d parameters.\n", func_record->key,
-                              func_record->data.par_count);
+					error_msg(ERR_CODE_OTHERS, "function %s do not take so much parameters.\n", func_record->key);
 				}
 				break;
 			default :
@@ -255,22 +238,21 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 		}
 		expected_token(token_buff, AS);
 		if (actual_param->par_type != neterm_type(token_buff, symtable, primal_code))
-			error_msg(ERR_CODE_OTHERS, "type of %d. parameter in function %s do not match type in declaration.\n",
-                      param_order+1, func_record->key);
+			error_msg(ERR_CODE_OTHERS, "type of parameter %s in function %s do not match type in declaration.\n",
+                      actual_param->par_name, func_record->key);
 
 		actual_token = token_buffer_peek_token(token_buff);
 		if (actual_token->type == COMA)
 		{
 			expected_token(token_buff, COMA);
-			param_order++;
 			actual_param=actual_param->par_next;
 			continue;
 		}
 		else if (actual_token->type == RIGHT_PARANTHESIS)
 		{
-			if (++param_order != func_record->data.par_count)
-				error_msg(ERR_CODE_OTHERS, "function %s expect %d parameters.\n",
-                          func_record->key, func_record->data.par_count);
+			if (actual_param->par_next != NULL)
+				error_msg(ERR_CODE_OTHERS, "function %s expect more parameters.\n",
+                          func_record->key);
 			break;
 		}
 		else
@@ -287,22 +269,31 @@ void neterm_args_create(token_buffer * token_buff, htab_t * symtable, String * p
 	fprintf(stderr, "log: neterm args create\n");
 	#endif
 
-	unsigned int param_order = 0;
-	struct func_par ** actual_param = &(new_func_record->data.u_argconst.first_par);
+	struct func_par ** actual_param = &(new_func_record->data.first_par);
 
 	while (42)
 	{
+		#ifdef DEBUG_MSG
+	fprintf(stderr, "log: neterm args create2\n");
+	#endif
 		token * actual_token = token_buffer_get_token(token_buff);
 		switch (actual_token->type){
 			case IDENTIFIER :
-				add_func_par_count(new_func_record);
+				if (!unique_parameter(new_func_record->data.first_par, actual_token->attr.string_value))
+					error_msg(ERR_CODE_OTHERS, "multiple parameters in function %s are called %s.\n",
+							new_func_record->key, actual_token->attr.string_value);
+
 				*actual_param=malloc(sizeof(struct func_par));
 				(*actual_param)->par_name=actual_token->attr.string_value;
+				(*actual_param)->par_next=NULL; //Added parameter is the last one;
 				break;
 			default :
 				syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 				break;
 		}
+		#ifdef DEBUG_MSG
+	fprintf(stderr, "log: neterm args create3\n");
+	#endif
 		expected_token(token_buff, AS);
 		(*actual_param)->par_type=neterm_type(token_buff, symtable, primal_code);
 	
@@ -310,7 +301,6 @@ void neterm_args_create(token_buffer * token_buff, htab_t * symtable, String * p
 		if (actual_token->type == COMA)
 		{
 			expected_token(token_buff, COMA);
-			param_order++;
 			actual_param=&((*actual_param)->par_next);
 			continue;
 		}
@@ -360,9 +350,64 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 			else
 				body_assignment(token_buff, symtable, primal_code, found_record);
 			break;
-		/*case RETURN :
-			body_return(token_buff, symtable, primal_code);
-			break;*/
+		case SCOPE :
+			expected_token(token_buff, NEW_LINE);
+			new_symtable = htab_move(symtable->arr_size, symtable);
+			append_str_to_str(primal_code, "CREATEFRAME\n");
+			htab_foreach(symtable, new_symtable, primal_code, (*copy_scope_layer));
+			append_str_to_str(primal_code, "PUSHFRAME\n");
+			neterm_scope(token_buff, new_symtable, primal_code);
+			append_str_to_str(primal_code, "POPFRAME\n");
+			htab_free(new_symtable);
+			break;
+
+		case NEW_LINE :
+			break;
+		default :
+			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 6, DIM, INPUT, IF, DO, IDENTIFIER, RETURN);
+			break;
+	}
+}
+
+void neterm_body_func(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record)
+{
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: neterm func_body\n");
+	#endif
+
+	struct htab_t * new_symtable;
+	struct htab_listitem * found_record;
+	token * actual_token = token_buffer_get_token(token_buff);
+	switch (actual_token->type){
+		case DIM :
+			body_declaration(token_buff, symtable, primal_code);
+			break;
+		case INPUT :
+			body_input(token_buff, symtable, primal_code);
+			break;
+		case PRINT :
+			body_print(token_buff, symtable, primal_code);
+			break;
+		case IF :
+			body_if_then(token_buff, symtable, primal_code);
+			break;
+		case DO :
+			body_do_while(token_buff, symtable, primal_code);
+			break;
+		case IDENTIFIER :
+			found_record = htab_find(symtable, actual_token->attr.string_value);	//search in symtable for identifier
+			if (found_record == NULL)
+			error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is not declared\n",
+                      actual_token->attr.string_value);	//Does not exist.. Too bad
+	
+			if (id_is_function(found_record))	//is it function or variable name? ..can not be both, sorry.
+				function_call(token_buff, symtable, primal_code, found_record);
+			else
+				body_assignment(token_buff, symtable, primal_code, found_record);
+			break;
+		case RETURN :
+			body_return(token_buff, symtable, primal_code, func_record);
+			break;
 		case SCOPE :
 			expected_token(token_buff, NEW_LINE);
 			new_symtable = htab_move(symtable->arr_size, symtable);
@@ -585,6 +630,24 @@ void body_assignment(token_buffer * token_buff, htab_t * symtable, String * prim
 	#endif
 
 	expected_token(token_buff, EQUALS);
+
+
+	token * next_token = token_buffer_peek_token(token_buff);
+	if (next_token->type == IDENTIFIER)
+	{
+		struct htab_listitem * record = htab_find(symtable, next_token->attr.string_value);
+		if (record != NULL)
+		{
+			if (id_is_function(record))
+			{
+				expected_token(token_buff, IDENTIFIER);
+				function_call(token_buff, symtable, primal_code, record);
+				parse_semantic_expression(primal_code, found_record, get_id_type(found_record), get_id_type(record));
+				return;
+			}
+
+		}
+	}
 	int variable_type = get_id_type(found_record);
 	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NEW_LINE);
 	parse_semantic_expression(primal_code, found_record, variable_type, expr_return_type);
@@ -598,9 +661,9 @@ void body_return(token_buffer * token_buff, htab_t * symtable, String * primal_c
 	//only callable from funcbody
 	int variable_type = get_id_type(func_record);
 	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NEW_LINE);
-	parse_semantic_expression(primal_code, func_record, variable_type, expr_return_type);
+	parse_semantic_expression_modified(primal_code, "%returnval", variable_type, expr_return_type);
 
-	append_str_to_str(primal_code, "POPS %returnval\n");
+	append_str_to_str(primal_code, "PUSHS LF@%returnval\n");
 	append_str_to_str(primal_code, "RETURN\n");
 }
 
@@ -646,6 +709,56 @@ void parse_semantic_expression(String * primal_code, struct htab_listitem *found
 	}
 }
 
+/*Erik
+
+second parameter as (char *) would be better
+in return you dont have htab_listitem
+only  name constant name "%returnvar"
+
+switch please..
+
+*/
+
+void parse_semantic_expression_modified(String * primal_code, char * name, int variable_type, int expr_return_type) {
+
+	if (variable_type == DOUBLE_TYPE && expr_return_type == INTEGER_TYPE) {
+		append_str_to_str(primal_code, "INT2FLOATS\nPOPS LF@");
+		append_str_to_str(primal_code, name);
+		append_char_to_str(primal_code, '\n');
+	}
+	else if (variable_type == DOUBLE_TYPE && expr_return_type == DOUBLE_TYPE){
+		append_str_to_str(primal_code, "POPS LF@");
+		append_str_to_str(primal_code, name);
+		append_char_to_str(primal_code, '\n');
+	}
+	else if (variable_type == INTEGER_TYPE && expr_return_type == DOUBLE_TYPE){
+		append_str_to_str(primal_code, "FLOAT2INTS\nPOPS LF@");
+		append_str_to_str(primal_code, name);
+		append_char_to_str(primal_code, '\n');
+	}
+	else if (variable_type == INTEGER_TYPE && expr_return_type == INTEGER_TYPE){
+		append_str_to_str(primal_code, "POPS LF@");
+		append_str_to_str(primal_code, name);
+		append_char_to_str(primal_code, '\n');
+	}
+	
+	else if (variable_type == BOOLEAN_TYPE && expr_return_type == BOOLEAN_TYPE){
+		append_str_to_str(primal_code, "POPS LF@");
+		append_str_to_str(primal_code, name);
+		append_char_to_str(primal_code, '\n');
+	}
+
+	else if (variable_type == STRING_TYPE && expr_return_type == STRING_TYPE){
+		append_str_to_str(primal_code, "POPS LF@");
+		append_str_to_str(primal_code, name);
+		append_char_to_str(primal_code, '\n');
+	}
+
+	else {
+		error_msg(ERR_CODE_OTHERS, "The expression value does not match the variable type\n");
+	}
+}
+
 /* Nonterminal function describes nonterminal FUNCTION_CALL rules. Generates relevant instructions */
 void function_call(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * found_record)
 {
@@ -655,15 +768,11 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 
 	append_str_to_str(primal_code, "CREATEFRAME\n");	//prepare Temporary frame
 
-	struct func_par * actual_param = found_record->data.u_argconst.first_par;
-	unsigned int param_order = 0;
+	struct func_par * actual_param = found_record->data.first_par;
 	struct htab_listitem * param_caller = NULL;
 	expected_token(token_buff, LEFT_PARANTHESIS);
 	while ((token_buffer_peek_token(token_buff)->type)!=RIGHT_PARANTHESIS)
 	{
-		if (param_order != 0)
-			expected_token(token_buff, COMA);
-
 		token * actual_token = token_buffer_get_token(token_buff);
 		switch (actual_token->type){
 			case IDENTIFIER :
@@ -671,11 +780,11 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 				if (param_caller == NULL)
 					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' does not exist.\n",
                               actual_token->attr.string_value);
+				if (id_is_function(param_caller))
+					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is function, which can not be used as parameter.\n",
+                              actual_token->attr.string_value);
 
-				/*if (!id_is_defined(param_caller))
-					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is used undefined.\n", param_caller->key);*/
-
-				if (param_order < found_record->data.par_count)
+				if (actual_param!=NULL)
 				{
 					switch (actual_param->par_type)
 					{
@@ -701,8 +810,8 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 								append_str_to_str(primal_code, "\n");
 								break;
 								default:
-								error_msg(ERR_CODE_TYPE, "%d. parameter in function %s expect integer or double.\n",
-                                          param_order+1, found_record->key);
+								error_msg(ERR_CODE_TYPE, "parameter in function %s expect integer or double.\n",
+                                          found_record->key);
 								break;
 							}
 						break;
@@ -729,8 +838,8 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 								break;
 								default:
 								error_msg(ERR_CODE_TYPE,
-                                          "%d. parameter in function %s expect integer or double value.\n",
-                                          param_order+1, found_record->key);
+                                          "parameter in function %s expect integer or double value.\n",
+                                          found_record->key);
 								break;
 							}
 						break;
@@ -746,8 +855,8 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 								append_char_to_str(primal_code, '\n');
 							}
 							else
-								error_msg(ERR_CODE_TYPE, "%d. parameter in function %s expect string value.\n",
-                                          param_order+1, found_record->key);
+								error_msg(ERR_CODE_TYPE, "parameter in function %s expect string value.\n",
+                                          found_record->key);
 							
 							break;
 						case BOOLEAN_TYPE:
@@ -762,33 +871,33 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 								append_char_to_str(primal_code, '\n');
 							}
 							else
-								error_msg(ERR_CODE_TYPE, "%d. parameter in function %s expect boolean value.\n",
-                                          param_order+1, found_record->key);
+								error_msg(ERR_CODE_TYPE, "parameter in function %s expect boolean value.\n",
+                                          found_record->key);
 							
 							break;
 						default:
-							error_msg(ERR_CODE_TYPE, "%d. parameter in function calling %s have unexpected value.\n",
-                                      param_order+1, found_record->key);
+							error_msg(ERR_CODE_TYPE, "parameter in function calling %s have unexpected value.\n",
+                                      found_record->key);
 						break;
 					}
 				}
 				else
 				{
-					error_msg(ERR_CODE_TYPE, "function %s takes only %d parameters.\n",
-                              found_record->key, found_record->data.par_count);
+					error_msg(ERR_CODE_TYPE, "function %s do not takes so much parameters.\n",
+                              found_record->key);
 				}
 				break;
 			default :
 				syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 				break;
 		}
-		param_order++;
 		actual_param=actual_param->par_next;
+		if (actual_param!=NULL)
+			expected_token(token_buff, COMA);
 	}
-	//printf("%d\n", found_record->data.par_count);
-	if (param_order != found_record->data.par_count)
-		error_msg(ERR_CODE_OTHERS, "function %s expect %d parameters.\n",
-                  found_record->key, found_record->data.par_count);
+	if (actual_param != NULL)
+		error_msg(ERR_CODE_OTHERS, "function %s expect more parameters.\n",
+                  found_record->key);
 
 	expected_token(token_buff, RIGHT_PARANTHESIS);
 	append_str_to_str(primal_code, "PUSHFRAME\n");
@@ -966,7 +1075,7 @@ void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned in
 }
 
 /* Generates relevant instructions for parameters */
-void generate_prepare_params(String * primal_code, struct func_par * actual_param, unsigned int param_order,
+/*void generate_prepare_params(String * primal_code, struct func_par * actual_param, unsigned int param_order,
                              struct htab_listitem * param_caller, struct htab_listitem * found_record)
 {
 	#ifdef DEBUG_MSG
@@ -1064,10 +1173,10 @@ void generate_prepare_params(String * primal_code, struct func_par * actual_para
                       param_order+1, found_record->key);
 		break;
 	}
-}
+}*/
 
 /* Adds built-in functions into code with its instructions */
-void add_build_in_functions(htab_t * symtable, String * primal_code)
+/*void add_build_in_functions(htab_t * symtable, String * primal_code)
 {
 	struct htab_listitem * record = NULL;
 
@@ -1084,7 +1193,6 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
 									"STRLEN LF@%returnval LF@s\n"
 									"RETURN\n"
                                     "\n");
-
 
 	//substr(s as string, i as integer, n as integer) as string
 	record = create_func_record(symtable, "substr");
@@ -1201,7 +1309,7 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
     append_str_to_str(primal_code,  "MOVE LF@%returnval string@0 \n"
                                     "RETURN\n"
                                     "\n");
-}
+}*/
 
 /* Creates new function record */
 struct htab_listitem * create_func_record(htab_t * symtable, char * name)
@@ -1210,7 +1318,7 @@ struct htab_listitem * create_func_record(htab_t * symtable, char * name)
 	set_id_declared(new_record);
 	set_id_function(new_record);
 	htab_append(new_record, symtable);
-	set_func_par_count(new_record, 0);
+	new_record->data.first_par=NULL;
 	return new_record;
 }
 
@@ -1261,4 +1369,18 @@ void generate_implicit_value(String * primal_code, char * name, enum_type type)
 		append_str_to_str(primal_code, " bool@false\n");
 		break;
 	}
+}
+
+bool unique_parameter(struct func_par * first_par, char * str)
+{
+	struct func_par * loop_param = first_par;
+	while (loop_param != NULL)
+	{
+		if (!strcmp(str, loop_param->par_name))
+		{
+			return 0;
+		}
+		loop_param = loop_param->par_next;
+	}
+	return true;
 }

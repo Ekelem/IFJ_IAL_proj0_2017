@@ -26,14 +26,10 @@ enum type
 /* Identifier data structure */
 typedef struct identifier_data
 {	
-	char type;		
-	char flags;		//3-X,2-defined,1-declared,0-used
-	unsigned int par_count;
-	union argconst
-	{
-		struct func_par * first_par;
-		token * constant;
-	}u_argconst;
+	char type;		//Integer, Double, String, Boolean
+	char flags;
+	struct func_par * first_par;
+	String * constant;
 	
 }id_data;
 
@@ -81,16 +77,10 @@ void set_id_defined(struct htab_listitem * item);
 void set_id_function(struct htab_listitem * item);
 
 /* Sets identifier is constant */
-void set_id_constant(struct htab_listitem * item, token * constant);
+void set_id_constant(struct htab_listitem * item, String * constant);
 
 /* Sets function inline */
 void set_func_inline(struct htab_listitem * item);
-
-/* Sets initial parameters count to function record*/
-void set_func_par_count(struct htab_listitem * item, unsigned int value);
-
-/* Increments function paramaters count */
-void add_func_par_count(struct htab_listitem * item);
 
 /* Returns if identifier is function */
 bool id_is_function(struct htab_listitem * item);

@@ -42,6 +42,8 @@ void neterm_args_create(token_buffer * token_buff, htab_t * symtable, String * p
 /* Nonterminal function describes nonterminal BODY rules. Generates relevant instructions */
 void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 
+void neterm_body_func(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record);
+
 /* Nonterminal function describes nonterminal BODY_DECLARATION rules. Generates relevant instructions */
 void body_declaration(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 
@@ -101,7 +103,11 @@ void copy_scope_layer(struct htab_listitem * item, htab_t * other_symtable, Stri
 /* Generates code of hard value */
 void generate_implicit_value(String * primal_code, char * name, enum_type type);
 
+bool unique_parameter(struct func_par * first_par, char * str);
+
 /* Generates relevant instrunctions for expression*/
 void parse_semantic_expression(String * primal_code, struct htab_listitem *found_record, int variable_type, int expr_return_type);
+
+void parse_semantic_expression_modified(String * primal_code, char * name, int variable_type, int expr_return_type);
 
 #endif
