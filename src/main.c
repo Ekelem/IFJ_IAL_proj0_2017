@@ -34,20 +34,13 @@ void print_token(int tk, token *t);
 
 int main(int argc, char const *argv[])
 {
-	if (argc != 2)
-	{
-		fprintf(stderr, "Wrong arguments\n");
-		return ERR_CODE_LEXICAL;
-	}
-
-	const char * file_path = argv[1];
 	token_buffer * token_buff = init_token_buffer();
-	htab_t * symtable = initialization(file_path, token_buff);
+	htab_t * symtable = initialization(token_buff);
 	String primal_code;
 
 	translate(token_buff, symtable, &primal_code);
 
-	output_primal_code("out.ifj", &primal_code);
+	fputs(primal_code.str, stdout);
 
 	free_tokens(token_buff);
 	htab_free(symtable);

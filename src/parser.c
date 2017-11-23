@@ -667,7 +667,6 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 		token * actual_token = token_buffer_get_token(token_buff);
 		switch (actual_token->type){
 			case IDENTIFIER :
-                printf("Prom:%s\n", actual_token->attr.string_value);
 				param_caller = htab_find(symtable, actual_token->attr.string_value);
 				if (param_caller == NULL)
 					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' does not exist.\n",
