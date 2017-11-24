@@ -35,9 +35,9 @@ void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_
 			if (scope_found)
 				error_msg(ERR_CODE_UNDEFINED, "Scope block was already defined\n");
 			scope_found = 1;
+			append_str_to_str(primal_code, "LABEL %MAIN\n");
 			append_str_to_str(primal_code, "DEFVAR GF@%SWAP\n");
 			append_str_to_str(primal_code, "DEFVAR GF@%SWAP2\n");
-			append_str_to_str(primal_code, "LABEL %MAIN\n");
 			append_str_to_str(primal_code, "CREATEFRAME\n");
 			append_str_to_str(primal_code, "PUSHFRAME\n");
 			neterm_scope(token_buff, symtable, primal_code);
