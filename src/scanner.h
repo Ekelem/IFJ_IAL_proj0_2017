@@ -14,6 +14,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #define KEYWORD_COUNT 31
 

@@ -8,6 +8,7 @@
 *.elf
 IFJ17
 out.ifj
+log/
 
 # Linker output
 *.ilk

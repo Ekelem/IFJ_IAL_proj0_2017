@@ -7,7 +7,7 @@ htab_t * initialization(token_buffer * token_buff)
 
 	init_garbage_collector();
 
-	int state = 0;
+	int state = 0, prev_state = 0;
 	while ( state != EOF) {
 		token * t;
 		t = get_token(stdin, &err_line, &err_pos);
@@ -15,8 +15,10 @@ htab_t * initialization(token_buffer * token_buff)
 			err_line += 1;
 			err_pos = 0;
 		}
-		add_token(token_buff, t);
+		prev_state = state;
 		state = t->type;
+		if (state != NEW_LINE || prev_state != NEW_LINE)
+			add_token(token_buff, t);
 	}
 
 	return htab_init(((token_buff->len)/16)+8);		//wild guess (one sixteenth of all tokens)
