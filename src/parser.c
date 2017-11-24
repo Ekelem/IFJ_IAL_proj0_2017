@@ -134,26 +134,41 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 					error_msg(ERR_CODE_UNDEFINED, "redefinition of function %s.\n", found->key);
 				else
 					set_id_defined(found);
+
+				expected_token(token_buff, LEFT_PARANTHESIS);
+
+				while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
+				{
+					neterm_args(token_buff, symtable, primal_code, found);
+				}
+				expected_token(token_buff, RIGHT_PARANTHESIS);
+				expected_token(token_buff, AS);
+				if (found->data.type != neterm_type(token_buff, symtable, primal_code))
+					error_msg(ERR_CODE_TYPE, "return type in function %s do not match declaration.\n", found->key);
 			}
 			else
 			{
-				error_msg(ERR_CODE_UNDEFINED, "function must be declared before definition.\n");
+				//implicit declaration
+
+				expected_token(token_buff, LEFT_PARANTHESIS);
+
+				found = create_func_record(symtable, actual_token->attr.string_value);
+				set_id_defined(found);
+				while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
+				{
+					neterm_args_create(token_buff, symtable, primal_code, found);
+				}
+				expected_token(token_buff, RIGHT_PARANTHESIS);
+				expected_token(token_buff, AS);
+				found->data.type = neterm_type(token_buff, symtable, primal_code);
+
+				//error_msg(ERR_CODE_UNDEFINED, "function must be declared before definition.\n");
 			}
 			break;
 		default :
 			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			break;
 	}
-	expected_token(token_buff, LEFT_PARANTHESIS);
-
-	while (!is_peek_token(token_buff, RIGHT_PARANTHESIS))
-	{
-		neterm_args(token_buff, symtable, primal_code, found);
-	}
-	expected_token(token_buff, RIGHT_PARANTHESIS);
-	expected_token(token_buff, AS);
-	if (found->data.type != neterm_type(token_buff, symtable, primal_code))
-		error_msg(ERR_CODE_TYPE, "return type in function %s do not match declaration.\n", found->key);
 
 	expected_token(token_buff, NEW_LINE);
 	append_str_to_str(primal_code, "LABEL ");
