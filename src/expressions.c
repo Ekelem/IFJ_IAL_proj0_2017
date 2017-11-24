@@ -457,6 +457,9 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						if ((is_valid_token_type(symtable, actual_token, INTEGER_TYPE) || is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && (is_valid_token_type(symtable, next_token, INTEGER_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE))) {
 							//Type OK
 						}
+						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
+							//Type OK
+						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand < can be combined only with INTEGER OR DOUBLE values\n");
 						}
@@ -474,6 +477,9 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 
 					case GREATER_THAN:
 						if ((is_valid_token_type(symtable, actual_token, INTEGER_TYPE) || is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && (is_valid_token_type(symtable, next_token, INTEGER_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE))) {
+							//Type OK
+						}
+						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
 						}
 						else {
@@ -495,6 +501,9 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						if ((is_valid_token_type(symtable, actual_token, INTEGER_TYPE) || is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && (is_valid_token_type(symtable, next_token, INTEGER_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE))) {
 							//Type OK
 						}
+						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
+							//Type OK
+						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand <= can be combined only with INTEGER OR DOUBLE values\n");
 						}
@@ -512,6 +521,9 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 
 					case GREATER_OR_EQUALS:
 						if ((is_valid_token_type(symtable, actual_token, INTEGER_TYPE) || is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && (is_valid_token_type(symtable, next_token, INTEGER_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE))) {
+							//Type OK
+						}
+						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
 						}
 						else {
@@ -626,37 +638,64 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 				}
 
 				if (actual_token->t_elem->type == STRING_VALUE || is_token_type(symtable, actual_token, STRING_TYPE)) {
-					//DUNO WHAT THIS IS FOR, BUT AFRAID OF REMOVING THESE LINES :D
-					if (next_token->next->t_elem->type == AND){
-						BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
-						append_str_to_str(primal_code, "ANDS\n");
-					}
-					else if (next_token->next->t_elem->type == OR) {
-						BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
-						append_str_to_str(primal_code, "ORS\n");
-					}
-					else if (next_token->next->t_elem->type == EQUALS){
-						BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
-						append_str_to_str(primal_code, "EQS\n");
-					}
-					else if (next_token->next->t_elem->type == NOT_EQUALS){
-						BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
-						append_str_to_str(primal_code, "EQS\nNOTS\n");
-					}
-					else if (next_token->next->t_elem->type == ADD){
-						BPop(&value_stack);
-						if (pushed && !pushed2){
-							append_str_to_str(primal_code, "POPS GF@%SWAP\n");
-							append_str_to_str(primal_code, "POPS GF@%SWAP2\n");
-							append_str_to_str(primal_code, "CONCAT GF@%SWAP GF@%SWAP GF@%SWAP2\n");
-							append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
-						}
-						else {
-							append_str_to_str(primal_code, "POPS GF@%SWAP2\n");
-							append_str_to_str(primal_code, "POPS GF@%SWAP\n");
-							append_str_to_str(primal_code, "CONCAT GF@%SWAP GF@%SWAP GF@%SWAP2\n");
-							append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
-						}
+					switch(next_token->next->t_elem->type){
+						case AND:
+							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
+							append_str_to_str(primal_code, "ANDS\n");
+							break;
+
+						case OR:
+							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
+							append_str_to_str(primal_code, "ORS\n");
+							break;
+
+						case GREATER_THAN:
+							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
+							append_str_to_str(primal_code, "GTS\n");
+							break;
+
+						case GREATER_OR_EQUALS:
+							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
+							append_str_to_str(primal_code, "LTS\n");
+							append_str_to_str(primal_code, "NOTS\n");
+							break;
+
+						case LESS_THAN:
+							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
+							append_str_to_str(primal_code, "LTS\n");
+							break;
+
+						case LESS_OR_EQUALS:
+							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
+							append_str_to_str(primal_code, "GTS\n");
+							append_str_to_str(primal_code, "NOTS\n");
+							break;
+
+						case EQUALS:
+							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
+							append_str_to_str(primal_code, "EQS\n");
+							break;
+
+						case NOT_EQUALS:
+							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
+							append_str_to_str(primal_code, "EQS\nNOTS\n");
+							break;
+
+						case ADD:
+							BPop(&value_stack);
+							if (pushed && !pushed2){
+								append_str_to_str(primal_code, "POPS GF@%SWAP\n");
+								append_str_to_str(primal_code, "POPS GF@%SWAP2\n");
+								append_str_to_str(primal_code, "CONCAT GF@%SWAP GF@%SWAP GF@%SWAP2\n");
+								append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
+							}
+							else {
+								append_str_to_str(primal_code, "POPS GF@%SWAP2\n");
+								append_str_to_str(primal_code, "POPS GF@%SWAP\n");
+								append_str_to_str(primal_code, "CONCAT GF@%SWAP GF@%SWAP GF@%SWAP2\n");
+								append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
+							}
+							break;
 					}
 				}
 				else {
