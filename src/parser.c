@@ -1495,7 +1495,9 @@ void copy_parameters(struct func_par * first_par, htab_t * symtable)
 	struct func_par * loop_param = first_par;
 	while (loop_param != NULL)
 	{
-		htab_append(make_item(loop_param->par_name), symtable);
+		struct htab_listitem * new_param = make_item(loop_param->par_name);
+		new_param->data.type=loop_param->par_type;
+		htab_append(new_param , symtable);
 		loop_param = loop_param->par_next;
 	}
 }
