@@ -13,7 +13,7 @@ void translate(token_buffer * token_buff, htab_t * symtable, String * primal_cod
 	append_str_to_str(primal_code, ".IFJcode17\n");		//Header
 	append_str_to_str(primal_code, "JUMP %MAIN\n");		//jump to scope
 	
-	//add_build_in_functions(symtable, primal_code);
+	add_build_in_functions(symtable, primal_code);
 
 	neterm_start(token_buff, symtable, primal_code);
 }
@@ -1295,40 +1295,55 @@ void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned in
 }*/
 
 /* Adds built-in functions into code with its instructions */
-/*void add_build_in_functions(htab_t * symtable, String * primal_code)
+void add_build_in_functions(htab_t * symtable, String * primal_code)
 {
 	struct htab_listitem * record = NULL;
+	struct func_par ** actual_param = NULL;
 
 	//length(s as string) as integer
 	record = create_func_record(symtable, "length");
 	record->data.type=INTEGER_TYPE;
-	record->data.u_argconst.first_par=malloc(sizeof(struct func_par));
-	record->data.u_argconst.first_par->par_name="s";
-	record->data.u_argconst.first_par->par_type=STRING_TYPE;
-	set_func_par_count(record, 1);
+
+	actual_param = &(record->data.first_par);
+
+	(*actual_param)=malloc(sizeof(struct func_par));
+	(*actual_param)->par_name="s";
+	(*actual_param)->par_type=STRING_TYPE;
+
+	(*actual_param)->par_next = NULL;	//last one
 
 	append_str_to_str(primal_code, "LABEL length\n"
 									"DEFVAR LF@%returnval\n"
 									"STRLEN LF@%returnval LF@s\n"
+									"PUSHS LF@%returnval\n"
 									"RETURN\n"
                                     "\n");
 
+
+/*
 	//substr(s as string, i as integer, n as integer) as string
 	record = create_func_record(symtable, "substr");
 	record->data.type=STRING_TYPE;
 
-	record->data.u_argconst.first_par=malloc(sizeof(struct func_par));
-	record->data.u_argconst.first_par->par_name="s";
-	record->data.u_argconst.first_par->par_type=STRING_TYPE;
+	actual_param = &(record->data.first_par);
 
-	record->data.u_argconst.first_par->par_next=malloc(sizeof(struct func_par));
-	record->data.u_argconst.first_par->par_next->par_name="i";
-	record->data.u_argconst.first_par->par_next->par_type=INTEGER_TYPE;
+	(*actual_param)=malloc(sizeof(struct func_par));
+	(*actual_param)->par_name="s";
+	(*actual_param)->par_type=STRING_TYPE;
 
-	record->data.u_argconst.first_par->par_next->par_next=malloc(sizeof(struct func_par));
-	record->data.u_argconst.first_par->par_next->par_next->par_name="n";
-	record->data.u_argconst.first_par->par_next->par_next->par_type=INTEGER_TYPE;
-	set_func_par_count(record, 3);
+	actual_param = &((*actual_param)->par_next);
+
+	(*actual_param)=malloc(sizeof(struct func_par));
+	(*actual_param)->par_name="i";
+	(*actual_param)->par_type=INTEGER_TYPE;
+
+	actual_param = &((*actual_param)->par_next);
+
+	(*actual_param)=malloc(sizeof(struct func_par));
+	(*actual_param)->par_name="n";
+	(*actual_param)->par_type=INTEGER_TYPE;
+
+	(*actual_param)->par_next = NULL;	//last one
 
 	append_str_to_str(primal_code,  "LABEL substr\n"
                                     "DEFVAR LF@%returnval\n"
@@ -1338,20 +1353,20 @@ void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned in
                                     "DEFVAR LF@onechr\n");
     append_str_to_str(primal_code,  "STRLEN LF@slen LF@s\n"
                                     "EQ LF@supbool LF@slen int@0\n");
-    append_str_to_str(primal_code,  "JUMPIFNEQ Snzero LF@supbool boo@true\n");
+    append_str_to_str(primal_code,  "JUMPIFNEQ Snzero LF@supbool bool@true\n");
     append_str_to_str(primal_code,  "LABEL SubstrEnd\n"
                                     "MOVE LF@%returnval string@d \n"
                                     "RETURN\n");
     append_str_to_str(primal_code,  "LABEL Snzero\n"
                                     "EQ LF@supbool LF@i int@0\n");
-    append_str_to_str(primal_code,  "JUMPIFEQ SubstrEnd LF@supbool boo@true\n");
+    append_str_to_str(primal_code,  "JUMPIFEQ SubstrEnd LF@supbool bool@true\n");
     append_str_to_str(primal_code,  "LT LF@supbool LF@i int@0\n"
-                                    "JUMPIFEQ SubstrEnd LF@supbool boo@true\n");
+                                    "JUMPIFEQ SubstrEnd LF@supbool bool@true\n");
     append_str_to_str(primal_code,  "LT LF@supbool LF@n int@0\n");
-    append_str_to_str(primal_code,  "JUMPIFEQ Sublen LF@supbool boo@true\n"
+    append_str_to_str(primal_code,  "JUMPIFEQ Sublen LF@supbool bool@true\n"
                                     "SUB LF@strindex LF@slen LF@i\n");
     append_str_to_str(primal_code,  "GT LF@supbool LF@n LF@strindex\n");
-    append_str_to_str(primal_code,  "JUMPIFEQ Sublen LF@supbool boo@true\n"
+    append_str_to_str(primal_code,  "JUMPIFEQ Sublen LF@supbool bool@true\n"
                                     "JUMP Scontinue\n");
     append_str_to_str(primal_code,  "LABEL Sublen\n");
     append_str_to_str(primal_code,  "MOVE LF@n LF@slen\n"
@@ -1363,22 +1378,27 @@ void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned in
     append_str_to_str(primal_code,  "CONCAT LF@%returnval LF@%returnval LF@onechr\n");
     append_str_to_str(primal_code, "LT LF@supbool LF@strindex LF@n\n");
     append_str_to_str(primal_code,  "ADD LF@strindex int@1\n"
-                                    "JUMPIFEQ Scycle LF@supbool boo@true\n");
-    append_str_to_str(primal_code,  "RETURN\n"
-                                    "\n");
+                                    "JUMPIFEQ Scycle LF@supbool bool@true\n");
+    append_str_to_str(primal_code,  "PUSHS LF@%returnval\n"
+    								"RETURN\n"
+                                    "\n");*/
+
 
 	//asc(s as string, i as integer) as integer
 	record = create_func_record(symtable, "asc");
 	record->data.type=INTEGER_TYPE;
 
-	record->data.u_argconst.first_par = malloc(sizeof(struct func_par));
-	record->data.u_argconst.first_par->par_name = "s";
-	record->data.u_argconst.first_par->par_type=STRING_TYPE;
+	actual_param = &(record->data.first_par);
 
-	record->data.u_argconst.first_par->par_next=malloc(sizeof(struct func_par));
-	record->data.u_argconst.first_par->par_next->par_name="i";
-	record->data.u_argconst.first_par->par_next->par_type=INTEGER_TYPE;
-	set_func_par_count(record, 2);
+	(*actual_param)=malloc(sizeof(struct func_par));
+	(*actual_param)->par_name="s";
+	(*actual_param)->par_type=STRING_TYPE;
+
+	actual_param = &((*actual_param)->par_next);
+
+	(*actual_param)=malloc(sizeof(struct func_par));
+	(*actual_param)->par_name="i";
+	(*actual_param)->par_type=INTEGER_TYPE;
 
 	append_str_to_str(primal_code,  "LABEL asc\n"
 									"DEFVAR LF@%returnval\n"
@@ -1394,21 +1414,25 @@ void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned in
 									"PUSHS bool@true\n");
     append_str_to_str(primal_code,  "JUMPIFEQS ATrue\n"
 									"STRI2INT LF@%returnval LF@s LF@i\n"
+									"PUSHS LF@%returnval\n"
 									"RETURN\n");
     append_str_to_str(primal_code,  "LABEL A_True\n"
 									"MOVE LF@%returnval int@0\n"
+									"PUSHS LF@%returnval\n"
 									"RETURN\n"
                                     "\n");
-
 
 	//chr(i as integer) as string
 	record = create_func_record(symtable, "chr");
 	record->data.type=STRING_TYPE;
 
-	record->data.u_argconst.first_par = malloc(sizeof(struct func_par));
-	record->data.u_argconst.first_par->par_name = "i";
-	record->data.u_argconst.first_par->par_type = INTEGER_TYPE;
-	set_func_par_count(record, 1);
+	actual_param = &(record->data.first_par);
+
+	(*actual_param)=malloc(sizeof(struct func_par));
+	(*actual_param)->par_name="i";
+	(*actual_param)->par_type=INTEGER_TYPE;
+
+	(*actual_param)->par_next = NULL;
 
 	append_str_to_str(primal_code,  "LABEL chr\n"
                                     "DEFVAR LF@%returnval\n"
@@ -1423,9 +1447,11 @@ void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned in
                                     "PUSHS bool@true\n"
                                     "JUMPIFEQS CTrue\n");
     append_str_to_str(primal_code,  "INT2CHAR LF@%returnval LF@i\n"
+    								"PUSHS LF@%returnval\n"
                                     "RETURN\n"
                                     "LABEL CTrue\n");
     append_str_to_str(primal_code,  "MOVE LF@%returnval string@0 \n"
+    								"PUSHS LF@%returnval\n"
                                     "RETURN\n"
                                     "\n");
 }
