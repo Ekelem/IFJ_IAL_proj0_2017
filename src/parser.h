@@ -56,8 +56,12 @@ void body_print(token_buffer * token_buff, htab_t * symtable, String * primal_co
 /* Nonterminal function describes nonterminal BODY_IF_THEN rules. Generates relevant instructions */
 void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_code);
 
+void body_func_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record);
+
 /* Nonterminal function describes nonterminal BODY_DO_WHILE rules. Generates relevant instructions */
 void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal_code);
+
+void body_func_do_while(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record);
 
 /* Nonterminal function describes nonterminal BODY_ASSIGNMENT rules. Generates relevant instructions */
 void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * found_record);
@@ -100,10 +104,14 @@ struct htab_listitem * create_func_record(htab_t * symtable, char * name);
 /* Generates instruction code for variable */
 void copy_scope_layer(struct htab_listitem * item, htab_t * other_symtable, String * primal_code);
 
+void copy_general_layer(struct htab_listitem * item, htab_t * other_symtable, String * primal_code);
+
 /* Generates code of hard value */
 void generate_implicit_value(String * primal_code, char * name, enum_type type);
 
 bool unique_parameter(struct func_par * first_par, char * str);
+
+void copy_parameters(struct func_par * first_par, htab_t * symtable);
 
 /* Generates relevant instrunctions for expression*/
 void parse_semantic_expression(String * primal_code, struct htab_listitem *found_record, int variable_type, int expr_return_type);

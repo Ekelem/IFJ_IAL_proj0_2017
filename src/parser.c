@@ -161,6 +161,14 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 	append_char_to_str(primal_code, '\n');
 	append_str_to_str(primal_code, "DEFVAR LF@%returnval\n");
 	struct htab_t * new_symtable = htab_init(symtable->arr_size);
+
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: adding globals\n");
+	#endif
+
+	copy_parameters(found->data.first_par, new_symtable);		//add parameters
+	htab_foreach(symtable, new_symtable, primal_code, (*copy_general_layer)); //add globals
+
 	while (!is_peek_token(token_buff, END))
 	{
 		neterm_body_func(token_buff, new_symtable, primal_code, found);
@@ -273,9 +281,6 @@ void neterm_args_create(token_buffer * token_buff, htab_t * symtable, String * p
 
 	while (42)
 	{
-		#ifdef DEBUG_MSG
-	fprintf(stderr, "log: neterm args create2\n");
-	#endif
 		token * actual_token = token_buffer_get_token(token_buff);
 		switch (actual_token->type){
 			case IDENTIFIER :
@@ -291,9 +296,7 @@ void neterm_args_create(token_buffer * token_buff, htab_t * symtable, String * p
 				syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 				break;
 		}
-		#ifdef DEBUG_MSG
-	fprintf(stderr, "log: neterm args create3\n");
-	#endif
+
 		expected_token(token_buff, AS);
 		(*actual_param)->par_type=neterm_type(token_buff, symtable, primal_code);
 	
@@ -389,10 +392,10 @@ void neterm_body_func(token_buffer * token_buff, htab_t * symtable, String * pri
 			body_print(token_buff, symtable, primal_code);
 			break;
 		case IF :
-			body_if_then(token_buff, symtable, primal_code);
+			body_func_if_then(token_buff, symtable, primal_code, func_record);
 			break;
 		case DO :
-			body_do_while(token_buff, symtable, primal_code);
+			body_func_do_while(token_buff, symtable, primal_code, func_record);
 			break;
 		case IDENTIFIER :
 			found_record = htab_find(symtable, actual_token->attr.string_value);	//search in symtable for identifier
@@ -586,6 +589,65 @@ void body_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_
     }
 }
 
+void body_func_if_then(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record)
+{
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: body if then\n");
+	#endif
+
+	bool else_branch=0;
+
+	int variable_type = BOOLEAN_TYPE;
+	int expr_return_type = parse_expression(token_buff, symtable, primal_code, THEN);
+	parse_semantic_expression(primal_code, NULL, variable_type, expr_return_type);
+	expected_token(token_buff, THEN);
+
+
+	append_str_to_str(primal_code, "PUSHS bool@true\n");
+	append_str_to_str(primal_code, "JUMPIFNEQS ");
+	unsigned int order =generate_if_label_order();
+	generate_if_label(primal_code, label_else, order);
+	token * next_token = token_buffer_peek_token(token_buff);
+	while (next_token->type != ELSE && next_token->type != END)
+	{
+		neterm_body_func(token_buff, symtable, primal_code, func_record);
+		next_token = token_buffer_peek_token(token_buff);
+	}
+	switch (next_token->type){
+        case ELSE :
+            expected_token(token_buff, ELSE);
+            expected_token(token_buff, NEW_LINE);
+            append_str_to_str(primal_code, "JUMP ");
+            generate_if_label(primal_code, label_end_if, order);
+            append_str_to_str(primal_code, "LABEL ");
+            generate_if_label(primal_code, label_else, order);
+
+            else_branch=1;
+
+            while (((next_token = token_buffer_peek_token(token_buff))->type) != END)
+            {
+                neterm_body_func(token_buff, symtable, primal_code, func_record);
+            }
+        case END :
+            if(else_branch)
+            {
+                append_str_to_str(primal_code, "LABEL ");
+                generate_if_label(primal_code, label_end_if, order);
+            }
+            else
+            {
+                append_str_to_str(primal_code, "LABEL ");
+                generate_if_label(primal_code, label_else, order);
+            }
+            expected_token(token_buff, END);
+            expected_token(token_buff, IF);
+            expected_token(token_buff, NEW_LINE);
+            break;
+        default :
+            break;
+    }
+}
+
 /* Nonterminal function describes nonterminal BODY_DO_WHILE rules. Generates relevant instructions */
 void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
@@ -622,6 +684,41 @@ void body_do_while(token_buffer * token_buff, htab_t * symtable, String * primal
 	expected_token(token_buff, NEW_LINE);
 }
 
+void body_func_do_while(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * func_record)
+{
+	#ifdef DEBUG_MSG
+	fprintf(stderr, "log: body do while\n");
+	#endif
+
+	expected_token(token_buff, WHILE);
+
+	unsigned int order = generate_if_label_order();
+	append_str_to_str(primal_code, "LABEL ");
+	generate_if_label(primal_code, label_if, order);
+
+	int variable_type = BOOLEAN_TYPE;
+	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NEW_LINE);
+	parse_semantic_expression(primal_code, NULL, variable_type, expr_return_type);
+	expected_token(token_buff, NEW_LINE);
+
+	append_str_to_str(primal_code, "PUSHS bool@true\n");
+	append_str_to_str(primal_code, "JUMPIFNEQS ");
+	generate_if_label(primal_code, label_else, order);
+
+	while (!is_peek_token(token_buff, LOOP))
+	{
+		neterm_body_func(token_buff, symtable, primal_code, func_record);
+	}
+
+	append_str_to_str(primal_code, "JUMP ");
+	generate_if_label(primal_code, label_if, order);
+	append_str_to_str(primal_code, "LABEL ");
+	generate_if_label(primal_code, label_else, order);
+
+	expected_token(token_buff, LOOP);
+	expected_token(token_buff, NEW_LINE);
+}
+
 /* Nonterminal function describes nonterminal BODY_ASSIGNMENT rules. Generates relevant instructions */
 void body_assignment(token_buffer * token_buff, htab_t * symtable, String * primal_code, struct htab_listitem * found_record)
 {
@@ -638,6 +735,7 @@ void body_assignment(token_buffer * token_buff, htab_t * symtable, String * prim
 		struct htab_listitem * record = htab_find(symtable, next_token->attr.string_value);
 		if (record != NULL)
 		{
+
 			if (id_is_function(record))
 			{
 				expected_token(token_buff, IDENTIFIER);
@@ -648,6 +746,7 @@ void body_assignment(token_buffer * token_buff, htab_t * symtable, String * prim
 
 		}
 	}
+
 	int variable_type = get_id_type(found_record);
 	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NEW_LINE);
 	parse_semantic_expression(primal_code, found_record, variable_type, expr_return_type);
@@ -1337,12 +1436,14 @@ void copy_scope_layer(struct htab_listitem * item, htab_t * other_symtable, Stri
 	}
 }
 
-/* Appends symbol table to another symbol table */
+/* Appends global variables to new_symtable */
 void copy_general_layer(struct htab_listitem * item, htab_t * other_symtable, String * primal_code)
 {
 	if (id_is_function(item))
 	{
-		htab_append(item, other_symtable);
+		struct htab_listitem * copy_record = create_func_record(other_symtable, item->key);
+		copy_record->data.first_par = item->data.first_par;
+		copy_record->data.type = item->data.type;
 	}
 }
 
@@ -1383,4 +1484,14 @@ bool unique_parameter(struct func_par * first_par, char * str)
 		loop_param = loop_param->par_next;
 	}
 	return true;
+}
+
+void copy_parameters(struct func_par * first_par, htab_t * symtable)
+{
+	struct func_par * loop_param = first_par;
+	while (loop_param != NULL)
+	{
+		htab_append(make_item(loop_param->par_name), symtable);
+		loop_param = loop_param->par_next;
+	}
 }
