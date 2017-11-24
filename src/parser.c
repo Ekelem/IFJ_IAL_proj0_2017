@@ -357,7 +357,7 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 			expected_token(token_buff, NEW_LINE);
 			new_symtable = htab_move(symtable->arr_size, symtable);
 			append_str_to_str(primal_code, "CREATEFRAME\n");
-			htab_foreach(symtable, new_symtable, primal_code, (*copy_scope_layer));
+			htab_foreach(new_symtable, new_symtable, primal_code, (*copy_scope_layer));
 			append_str_to_str(primal_code, "PUSHFRAME\n");
 			neterm_scope(token_buff, new_symtable, primal_code);
 			append_str_to_str(primal_code, "POPFRAME\n");
@@ -462,9 +462,12 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 	expected_token(token_buff, AS);
 	set_id_type(found_record, neterm_type(token_buff, symtable, primal_code));
 	set_id_declared(found_record);
-	append_str_to_str(primal_code, "DEFVAR LF@");
-	append_str_to_str(primal_code, found_record->key);
-	append_char_to_str(primal_code, '\n');
+	if (!id_is_shadow(found_record))
+	{
+		append_str_to_str(primal_code, "DEFVAR LF@");
+		append_str_to_str(primal_code, found_record->key);
+		append_char_to_str(primal_code, '\n');
+	}
 
 	actual_token = token_buffer_peek_token(token_buff);
 	if (actual_token->type == NEW_LINE)		//implicit value
@@ -1426,6 +1429,7 @@ void copy_scope_layer(struct htab_listitem * item, htab_t * other_symtable, Stri
 {
 	if (!id_is_function(item))
 	{
+		set_id_shadow(item);	//set shadow and unsed declared
 		append_str_to_str(primal_code, "DEFVAR TF@");
 		append_str_to_str(primal_code, item->key);
 		append_str_to_str(primal_code, "\nMOVE TF@");

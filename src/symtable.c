@@ -45,6 +45,12 @@ void set_id_constant(struct htab_listitem * item, String * constant)
 	item->data.constant = constant;
 }
 
+void set_id_shadow(struct htab_listitem * item)
+{
+	item->data.flags|= 16;
+	item->data.flags&= (~2);
+}
+
 void set_func_inline(struct htab_listitem * item)
 {
 	item->data.flags|= 8;
@@ -73,6 +79,11 @@ bool id_is_declared(struct htab_listitem * item)
 bool id_is_defined(struct htab_listitem * item)
 {
 	return (item->data.flags & 4);
+}
+
+bool id_is_shadow(struct htab_listitem * item)
+{
+	return (item->data.flags & 16);
 }
 
 size_t htab_bucket_count(struct htab_t *t)

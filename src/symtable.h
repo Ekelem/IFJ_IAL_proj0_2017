@@ -73,6 +73,8 @@ void set_id_declared(struct htab_listitem * item);
 /* Sets identifier is defined */
 void set_id_defined(struct htab_listitem * item);
 
+void set_id_shadow(struct htab_listitem * item);
+
 /* Sets identifier is function */
 void set_id_function(struct htab_listitem * item);
 
@@ -93,6 +95,8 @@ bool id_is_declared(struct htab_listitem * item);
 
 /* Returns if identifier is defined */
 bool id_is_defined(struct htab_listitem * item);
+
+bool id_is_shadow(struct htab_listitem * item);
 
 
 
