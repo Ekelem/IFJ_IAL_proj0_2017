@@ -459,12 +459,16 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				if (c == '\'') {
 					state = BLOCK_COMMENT_END;
 				}
+				else if (c == EOF)
+					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				break;
 
 			case BLOCK_COMMENT_END:
 				if (c == '/') {
 					state = WHITE_SPACE;
 				}
+				else if (c == EOF)
+					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 				else {
 						state = BLOCK_COMMENT;
 				}

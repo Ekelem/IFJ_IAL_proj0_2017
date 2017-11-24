@@ -146,7 +146,7 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 				expected_token(token_buff, RIGHT_PARANTHESIS);
 				expected_token(token_buff, AS);
 				if (found->data.type != neterm_type(token_buff, symtable, primal_code))
-					error_msg(ERR_CODE_TYPE, "return type in function %s do not match declaration.\n", found->key);
+					error_msg(ERR_CODE_UNDEFINED, "return type in function %s do not match declaration.\n", found->key);
 			}
 			else
 			{
@@ -755,7 +755,6 @@ void body_assignment(token_buffer * token_buff, htab_t * symtable, String * prim
 		struct htab_listitem * record = htab_find(symtable, next_token->attr.string_value);
 		if (record != NULL)
 		{
-
 			if (id_is_function(record))
 			{
 				expected_token(token_buff, IDENTIFIER);
@@ -763,7 +762,9 @@ void body_assignment(token_buffer * token_buff, htab_t * symtable, String * prim
 				parse_semantic_expression(primal_code, found_record, get_id_type(found_record), get_id_type(record));
 				return;
 			}
-
+		}
+		else {
+			error_msg(ERR_CODE_UNDEFINED, "Undefined VARIABLE or FUNCTION\n");
 		}
 	}
 
