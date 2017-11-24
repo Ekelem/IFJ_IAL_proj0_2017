@@ -51,9 +51,18 @@ void append_str_to_str(String *s, const char * append)
 {
 	if ((s->len + strlen(append)) >= s->alloc_size)
 	{
-		if ((s->str = (char *) realloc(s->str, (s->alloc_size + DEFAULT_STR_ALLOC) * sizeof(char))) == NULL)
+		if ((strlen(append)) > DEFAULT_STR_ALLOC)
+		{
+			if ((s->str = (char *) realloc(s->str, (s->alloc_size + (strlen(append)+1)) * sizeof(char))) == NULL)
 			print_error();
-		s->alloc_size += DEFAULT_STR_ALLOC;
+			s->alloc_size += strlen(append)+1;
+		}
+		else
+		{
+			if ((s->str = (char *) realloc(s->str, (s->alloc_size + DEFAULT_STR_ALLOC) * sizeof(char))) == NULL)
+			print_error();
+			s->alloc_size += DEFAULT_STR_ALLOC;
+		}
 	}
 	s->len += strlen(append);
 	strcat(s->str, append);

@@ -1349,7 +1349,9 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
     append_str_to_str(primal_code,  "DEFVAR LF@strindex\n"
                                     "DEFVAR LF@slen\n"
                                     "DEFVAR LF@onechr\n");
-    append_str_to_str(primal_code,  "STRLEN LF@slen LF@s\n"
+    append_str_to_str(primal_code,  "MOVE LF@onechr string@\n"
+									"MOVE LF@%returnval string@\n");
+    append_str_to_str(primal_code,	"STRLEN LF@slen LF@s\n"
                                     "EQ LF@supbool LF@slen int@0\n");
     append_str_to_str(primal_code,  "JUMPIFNEQ Snzero LF@supbool bool@true\n");
     append_str_to_str(primal_code,  "LABEL SubstrEnd\n"
