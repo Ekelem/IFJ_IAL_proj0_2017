@@ -33,7 +33,7 @@ void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_
 		switch (actual_token->type){
 		case SCOPE :
 			if (scope_found)
-				error_msg(ERR_CODE_OTHERS, "Scope block was already defined\n");
+				error_msg(ERR_CODE_UNDEFINED, "Scope block was already defined\n");
 			scope_found = 1;
 			append_str_to_str(primal_code, "LABEL %MAIN\n");
 			append_str_to_str(primal_code, "CREATEFRAME\n");
@@ -51,7 +51,7 @@ void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_
 			break;
 		case EOF :
 			if (scope_found == 0)
-				error_msg(ERR_CODE_OTHERS, "Scope block wasnt found\n");
+				error_msg(ERR_CODE_SYNTAX, "Scope block wasnt found\n");
 			break;
 		default :
 			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type,
@@ -93,9 +93,9 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 			if (found_record != NULL)
 			{
 				if (!id_is_function(found_record))
-					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' was declared before as variable\n", found_record->key);
+					error_msg(ERR_CODE_UNDEFINED, "IDENTIFIER '%s' was declared before as variable\n", found_record->key);
 				if (!id_is_declared(found_record))
-					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' was declared before.\n", found_record->key);
+					error_msg(ERR_CODE_UNDEFINED, "IDENTIFIER '%s' was declared before.\n", found_record->key);
 			}
 			break;
 		default :
@@ -131,13 +131,13 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 			if (found!=NULL)
 			{
 				if (id_is_defined(found))
-					error_msg(ERR_CODE_OTHERS, "redefinition of function %s.\n", found->key);
+					error_msg(ERR_CODE_UNDEFINED, "redefinition of function %s.\n", found->key);
 				else
 					set_id_defined(found);
 			}
 			else
 			{
-				error_msg(ERR_CODE_OTHERS, "function must be declared before definition.\n");
+				error_msg(ERR_CODE_UNDEFINED, "function must be declared before definition.\n");
 			}
 			break;
 		default :
@@ -153,7 +153,7 @@ void neterm_function_def(token_buffer * token_buff, htab_t * symtable, String * 
 	expected_token(token_buff, RIGHT_PARANTHESIS);
 	expected_token(token_buff, AS);
 	if (found->data.type != neterm_type(token_buff, symtable, primal_code))
-		error_msg(ERR_CODE_OTHERS, "return type in function %s do not match declaration.\n", found->key);
+		error_msg(ERR_CODE_TYPE, "return type in function %s do not match declaration.\n", found->key);
 
 	expected_token(token_buff, NEW_LINE);
 	append_str_to_str(primal_code, "LABEL ");
@@ -222,14 +222,14 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 				{
 					if (strcmp(actual_token->attr.string_value, actual_param->par_name))
 					{
-						error_msg(ERR_CODE_OTHERS, "param (%s) from function %s was declared before as %s.\n",
+						error_msg(ERR_CODE_UNDEFINED, "param (%s) from function %s was declared before as %s.\n",
                                   actual_token->attr.string_value, func_record->key,
                                   actual_param->par_name);
 					}
 				}
 				else
 				{
-					error_msg(ERR_CODE_OTHERS, "function %s do not take so much parameters.\n", func_record->key);
+					error_msg(ERR_CODE_UNDEFINED, "function %s do not take so much parameters.\n", func_record->key);
 				}
 				break;
 			default :
@@ -238,7 +238,7 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 		}
 		expected_token(token_buff, AS);
 		if (actual_param->par_type != neterm_type(token_buff, symtable, primal_code))
-			error_msg(ERR_CODE_OTHERS, "type of parameter %s in function %s do not match type in declaration.\n",
+			error_msg(ERR_CODE_TYPE, "type of parameter %s in function %s do not match type in declaration.\n",
                       actual_param->par_name, func_record->key);
 
 		actual_token = token_buffer_peek_token(token_buff);
@@ -251,7 +251,7 @@ void neterm_args(token_buffer * token_buff, htab_t * symtable, String * primal_c
 		else if (actual_token->type == RIGHT_PARANTHESIS)
 		{
 			if (actual_param->par_next != NULL)
-				error_msg(ERR_CODE_OTHERS, "function %s expect more parameters.\n",
+				error_msg(ERR_CODE_TYPE, "function %s expect more parameters.\n",
                           func_record->key);
 			break;
 		}
@@ -280,7 +280,7 @@ void neterm_args_create(token_buffer * token_buff, htab_t * symtable, String * p
 		switch (actual_token->type){
 			case IDENTIFIER :
 				if (!unique_parameter(new_func_record->data.first_par, actual_token->attr.string_value))
-					error_msg(ERR_CODE_OTHERS, "multiple parameters in function %s are called %s.\n",
+					error_msg(ERR_CODE_UNDEFINED, "multiple parameters in function %s are called %s.\n",
 							new_func_record->key, actual_token->attr.string_value);
 
 				*actual_param=malloc(sizeof(struct func_par));
@@ -342,7 +342,7 @@ void neterm_body(token_buffer * token_buff, htab_t * symtable, String * primal_c
 		case IDENTIFIER :
 			found_record = htab_find(symtable, actual_token->attr.string_value);	//search in symtable for identifier
 			if (found_record == NULL)
-			error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is not declared\n",
+			error_msg(ERR_CODE_UNDEFINED, "IDENTIFIER '%s' is not declared\n",
                       actual_token->attr.string_value);	//Does not exist.. Too bad
 	
 			if (id_is_function(found_record))	//is it function or variable name? ..can not be both, sorry.
@@ -397,7 +397,7 @@ void neterm_body_func(token_buffer * token_buff, htab_t * symtable, String * pri
 		case IDENTIFIER :
 			found_record = htab_find(symtable, actual_token->attr.string_value);	//search in symtable for identifier
 			if (found_record == NULL)
-			error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is not declared\n",
+			error_msg(ERR_CODE_UNDEFINED, "IDENTIFIER '%s' is not declared\n",
                       actual_token->attr.string_value);	//Does not exist.. Too bad
 	
 			if (id_is_function(found_record))	//is it function or variable name? ..can not be both, sorry.
@@ -442,9 +442,9 @@ void body_declaration(token_buffer * token_buff, htab_t * symtable, String * pri
 			if (found_record != NULL)
 			{
 				if (id_is_function(found_record))
-					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is function.\n", found_record->key);
+					error_msg(ERR_CODE_UNDEFINED, "IDENTIFIER '%s' is function.\n", found_record->key);
 				if (id_is_declared(found_record))
-					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' was declared before.\n", found_record->key);
+					error_msg(ERR_CODE_UNDEFINED, "IDENTIFIER '%s' was declared before.\n", found_record->key);
 			}
 			else
 			{
@@ -497,7 +497,7 @@ void body_input(token_buffer * token_buff, htab_t * symtable, String * primal_co
 			//check if exists
 			found_record = htab_find(symtable, actual_token->attr.string_value);
 			if (found_record == NULL || id_is_function(found_record))
-				error_msg(ERR_CODE_OTHERS, "identifier %s was not declared in this scope as variable.", actual_token->attr.string_value);
+				error_msg(ERR_CODE_UNDEFINED, "identifier %s was not declared in this scope as variable.", actual_token->attr.string_value);
 
 			append_str_to_str(primal_code, "READ LF@");
 			append_str_to_str(primal_code, actual_token->attr.string_value);
@@ -705,7 +705,7 @@ void parse_semantic_expression(String * primal_code, struct htab_listitem *found
 	}
 
 	else {
-		error_msg(ERR_CODE_OTHERS, "The expression value does not match the variable type\n");
+		error_msg(ERR_CODE_TYPE, "The expression value does not match the variable type\n");
 	}
 }
 
@@ -755,7 +755,7 @@ void parse_semantic_expression_modified(String * primal_code, char * name, int v
 	}
 
 	else {
-		error_msg(ERR_CODE_OTHERS, "The expression value does not match the variable type\n");
+		error_msg(ERR_CODE_TYPE, "The expression value does not match the variable type\n");
 	}
 }
 
@@ -778,10 +778,10 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 			case IDENTIFIER :
 				param_caller = htab_find(symtable, actual_token->attr.string_value);
 				if (param_caller == NULL)
-					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' does not exist.\n",
+					error_msg(ERR_CODE_UNDEFINED, "IDENTIFIER '%s' does not exist.\n",
                               actual_token->attr.string_value);
 				if (id_is_function(param_caller))
-					error_msg(ERR_CODE_OTHERS, "IDENTIFIER '%s' is function, which can not be used as parameter.\n",
+					error_msg(ERR_CODE_UNDEFINED, "IDENTIFIER '%s' is function, which can not be used as parameter.\n",
                               actual_token->attr.string_value);
 
 				if (actual_param!=NULL)
@@ -896,7 +896,7 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 			expected_token(token_buff, COMA);
 	}
 	if (actual_param != NULL)
-		error_msg(ERR_CODE_OTHERS, "function %s expect more parameters.\n",
+		error_msg(ERR_CODE_TYPE, "function %s expect more parameters.\n",
                   found_record->key);
 
 	expected_token(token_buff, RIGHT_PARANTHESIS);
@@ -1309,7 +1309,7 @@ void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned in
     append_str_to_str(primal_code,  "MOVE LF@%returnval string@0 \n"
                                     "RETURN\n"
                                     "\n");
-}*/
+}
 
 /* Creates new function record */
 struct htab_listitem * create_func_record(htab_t * symtable, char * name)
