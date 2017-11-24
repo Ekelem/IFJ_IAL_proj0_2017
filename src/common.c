@@ -19,5 +19,5 @@ htab_t * initialization(token_buffer * token_buff)
 		state = t->type;
 	}
 
-	return htab_init((token_buff->len)/16);		//wild guess (one sixteenth of all tokens)
+	return htab_init(((token_buff->len)/16)+8);		//wild guess (one sixteenth of all tokens)
 }
