@@ -364,16 +364,9 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				else if (c == '\\') {
 					state = UNUSUAL_CHAR;
 				}
-                else {
-                    if (c== '\\' || c == '#' || c == '(' || c == ')' || c == '+' || c == ']' ||
-                        (c >= 45 && c <= 63) || (c >= 65 && c <= 91) || (c >= 97 && c <= 125)){
-                        append_char_to_str(&s, c);
-                        //printf("ZNAK %d\n", c);
-                    }
-                    else
-                    {
-                        str_convert_ascii(&s, c);
-                    }
+                else
+				{
+					str_convert_ascii(&s, c);
                 }
 				break;
 
@@ -385,15 +378,14 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				else if (c == 'n') {
 					state = STRING_LITERAL_BEGINS;
 					str_convert_ascii(&s, '\n');
-					//append_char_to_str(&s, '\n');
 				}
 				else if (c == 't') {
 					state = STRING_LITERAL_BEGINS;
-					append_char_to_str(&s, '\t');
+					str_convert_ascii(&s, '\t');
 				}
 				else if (c == '\\') {
 					state = STRING_LITERAL_BEGINS;
-					append_char_to_str(&s, '\\');
+                    str_convert_ascii(&s, '\t');
 				}
 				else if (isdigit(c)){ //ASCII sequence
 					*err_pos -= 1;
@@ -416,7 +408,7 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				{
 					*err_pos -= 1;
 					ungetc(c,f);
-					append_char_to_str(&s, atoi(ascii_seq.str));
+					str_convert_ascii(&s, atoi(ascii_seq.str));
 					free_string(&ascii_seq);
 					state = STRING_LITERAL_BEGINS;
 				}
@@ -426,11 +418,12 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				}
 				else if ( isalpha(c) || c == ' ' || c == '"' || c == '\\')
 				{
-					if (ascii_seq.len < 3)
-                        			return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-                        		*err_pos -= 1;
-                    			ungetc(c, f);
-					append_char_to_str(&s, atoi(ascii_seq.str));
+					if (ascii_seq.len < 3){
+						return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+					}
+					*err_pos -= 1;
+					ungetc(c, f);
+					str_convert_ascii(&s, atoi(ascii_seq.str));
 					free_string(&ascii_seq);
 					state = STRING_LITERAL_BEGINS;
 				}

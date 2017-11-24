@@ -91,23 +91,31 @@ void str_copy_str(String *s1, String *s2)
 /* Convert int value of char to escape sequence string */
 void str_convert_ascii(String *s1, int c)
 {
-    char ascii[4];
-    sprintf(ascii, "%d", c);
-    if (c < 10)
-    {
-        append_str_to_str(s1, "\\00");
-        append_str_to_str(s1, ascii);
-    }
-    else if (c >= 10 && c < 100)
-    {
-        append_str_to_str(s1, "\\0");
-        append_str_to_str(s1, ascii);
-    }
-    else
-    {
-        append_str_to_str(s1, "\\");
-        append_str_to_str(s1, ascii);
-    }
+	if (c == '#' || c == '(' || c == ')' || c == '+' || c == ']' ||
+	   (c >= 45 && c <= 63) || (c >= 65 && c <= 91) || (c >= 97 && c <= 125))
+	{
+		append_char_to_str(s1, c);
+	}
+	else
+	{
+		char ascii[4];
+		sprintf(ascii, "%d", c);
+		if (c < 10)
+		{
+			append_str_to_str(s1, "\\00");
+			append_str_to_str(s1, ascii);
+		}
+		else if (c >= 10 && c < 100)
+		{
+			append_str_to_str(s1, "\\0");
+			append_str_to_str(s1, ascii);
+		}
+		else
+		{
+			append_str_to_str(s1, "\\");
+			append_str_to_str(s1, ascii);
+		}
+	}
 }
 
 /* Checks if string are the same */
