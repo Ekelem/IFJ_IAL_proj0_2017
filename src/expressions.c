@@ -1000,7 +1000,7 @@ bool is_valid_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 		case INTEGER_TYPE:
 			if (actual_token->t_elem->type == IDENTIFIER) {
 				if (found_record == NULL) {
-					error_msg(ERR_CODE_TYPE, "Undeclared ID detected\n");
+					error_msg(ERR_CODE_UNDEFINED, "Undeclared ID detected\n");
 				}
 				if ((found_record->data.type != INTEGER_TYPE)) {
 					return false;
@@ -1013,7 +1013,7 @@ bool is_valid_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 		case DOUBLE_TYPE:
 			if (actual_token->t_elem->type == IDENTIFIER) {
 				if (found_record == NULL) {
-					error_msg(ERR_CODE_TYPE, "Undeclared ID detected\n");
+					error_msg(ERR_CODE_UNDEFINED, "Undeclared ID detected\n");
 				}
 				if ((found_record->data.type != DOUBLE_TYPE)) {
 					return false;
@@ -1029,7 +1029,7 @@ bool is_valid_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 		case BOOLEAN_TYPE:
 			if (actual_token->t_elem->type == IDENTIFIER) {
 				if (found_record == NULL) {
-					error_msg(ERR_CODE_TYPE, "Undeclared ID detected\n");
+					error_msg(ERR_CODE_UNDEFINED, "Undeclared ID detected\n");
 				}
 				if ((found_record->data.type != BOOLEAN_TYPE)) {
 					return false;
@@ -1044,7 +1044,7 @@ bool is_valid_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 		case STRING_TYPE:
 			if (actual_token->t_elem->type == IDENTIFIER) {
 				if (found_record == NULL) {
-					error_msg(ERR_CODE_TYPE, "Undeclared ID detected\n");
+					error_msg(ERR_CODE_UNDEFINED, "Undeclared ID detected\n");
 				}
 				if ((found_record->data.type != STRING_TYPE)) {
 					return false;
@@ -1114,7 +1114,7 @@ int return_semantic_type(TStack *Out, htab_t *symtable) {
 						is_string = true;
 				}
 				else {
-					error_msg(ERR_CODE_TYPE, "Undeclared ID %s\n", tmp->t_elem->attr.string_value);
+					error_msg(ERR_CODE_UNDEFINED, "Undeclared ID %s\n", tmp->t_elem->attr.string_value);
 				}
 				break;
 

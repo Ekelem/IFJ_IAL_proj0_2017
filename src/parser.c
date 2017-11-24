@@ -98,6 +98,8 @@ void neterm_function_dec(token_buffer * token_buff, htab_t * symtable, String * 
 					error_msg(ERR_CODE_UNDEFINED, "IDENTIFIER '%s' was declared before as variable\n", found_record->key);
 				if (!id_is_declared(found_record))
 					error_msg(ERR_CODE_UNDEFINED, "IDENTIFIER '%s' was declared before.\n", found_record->key);
+				if (id_is_defined(found_record))
+					error_msg(ERR_CODE_UNDEFINED, "Function '%s' was defined before, it can' t be declared.\n", found_record->key);
 			}
 			break;
 		default :
