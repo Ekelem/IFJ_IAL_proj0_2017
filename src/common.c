@@ -15,6 +15,10 @@ htab_t * initialization(token_buffer * token_buff)
 			err_line += 1;
 			err_pos = 0;
 		}
+        else if (t->type == LEXICAL_ERROR)
+        {
+            error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
+        }
 		prev_state = state;
 		state = t->type;
 		if (state != NEW_LINE || prev_state != NEW_LINE)

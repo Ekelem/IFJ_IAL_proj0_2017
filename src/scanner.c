@@ -176,6 +176,7 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 							case ')':  return save_token(t, NULL, RIGHT_PARANTHESIS, *err_line, *err_pos);
 							case '.':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 							case '#':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+                            case '@':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 							case '%':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 							case '\"': return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 						}
@@ -465,7 +466,7 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					state = WHITE_SPACE;
 				}
 				else {
-					state = BLOCK_COMMENT;
+						state = BLOCK_COMMENT;
 				}
 				break;
 
