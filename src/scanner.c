@@ -385,7 +385,7 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				}
 				else if (c == '\\') {
 					state = STRING_LITERAL_BEGINS;
-                    str_convert_ascii(&s, '\t');
+                    str_convert_ascii(&s, '\\');
 				}
 				else if (isdigit(c)){ //ASCII sequence
 					*err_pos -= 1;
