@@ -1319,8 +1319,6 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
 									"RETURN\n"
                                     "\n");
 
-
-/*
 	//substr(s as string, i as integer, n as integer) as string
 	record = create_func_record(symtable, "substr");
 	record->data.type=STRING_TYPE;
@@ -1355,7 +1353,7 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
                                     "EQ LF@supbool LF@slen int@0\n");
     append_str_to_str(primal_code,  "JUMPIFNEQ Snzero LF@supbool bool@true\n");
     append_str_to_str(primal_code,  "LABEL SubstrEnd\n"
-                                    "MOVE LF@%returnval string@d \n"
+                                    "MOVE LF@%returnval string@\\000 \n"
                                     "RETURN\n");
     append_str_to_str(primal_code,  "LABEL Snzero\n"
                                     "EQ LF@supbool LF@i int@0\n");
@@ -1372,16 +1370,16 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
     append_str_to_str(primal_code,  "MOVE LF@n LF@slen\n"
                                     "LABEL Scontinue\n"
                                     "MOVE LF@strindex LF@i\n");
-    append_str_to_str(primal_code,  "SUB LF@strindex int@1\n"
+    append_str_to_str(primal_code,  "SUB LF@strindex LF@strindex int@1\n"
                                     "LABEL Scycle\n");
     append_str_to_str(primal_code,  "GETCHAR LF@onechr LF@s LF@strindex\n");
     append_str_to_str(primal_code,  "CONCAT LF@%returnval LF@%returnval LF@onechr\n");
-    append_str_to_str(primal_code, "LT LF@supbool LF@strindex LF@n\n");
-    append_str_to_str(primal_code,  "ADD LF@strindex int@1\n"
-                                    "JUMPIFEQ Scycle LF@supbool bool@true\n");
+    append_str_to_str(primal_code,  "LT LF@supbool LF@strindex LF@n\n");
+    append_str_to_str(primal_code,  "ADD LF@strindex LF@strindex int@1\n");
+    append_str_to_str(primal_code,  "JUMPIFEQ Scycle LF@supbool bool@true\n");
     append_str_to_str(primal_code,  "PUSHS LF@%returnval\n"
     								"RETURN\n"
-                                    "\n");*/
+                                    "\n");
 
 
 	//asc(s as string, i as integer) as integer
