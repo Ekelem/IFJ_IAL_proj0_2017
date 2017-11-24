@@ -1373,6 +1373,7 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
                                     "LABEL Scontinue\n"
                                     "MOVE LF@strindex LF@i\n");
     append_str_to_str(primal_code,  "SUB LF@strindex LF@strindex int@1\n"
+                                    "SUB LF@n LF@n int@1\n"
                                     "LABEL Scycle\n");
     append_str_to_str(primal_code,  "GETCHAR LF@onechr LF@s LF@strindex\n");
     append_str_to_str(primal_code,  "CONCAT LF@%returnval LF@%returnval LF@onechr\n");
