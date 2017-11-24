@@ -30,11 +30,6 @@ const bool  precedence_tab[TABLE_SIZE][TABLE_SIZE] = {
 
 /* Parses the given expression */
 int parse_expression(token_buffer * token_buff, htab_t * symtable, String * primal_code, int end_token) {
-	static bool first_time = true;
-	if (first_time) {
-		first_time = false;
-		append_str_to_str(primal_code, "DEFVAR GF@%SWAP\nDEFVAR GF@%SWAP2\n");
-	}
 	//1.step: check
 	semantic_expr_check_order(token_buff, symtable, primal_code, end_token);
 
@@ -71,7 +66,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 	else if (actual_token->type == LEXICAL_ERROR)
 		error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 	else {
-		error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
+		error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 	}
 	while (actual_token->type != end_token) {
 		next_token = token_buffer_peek_token(token_buff);
@@ -90,7 +85,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
+					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 				break;
 			case sem_LP:
 				if (next_token->type == LEFT_PARANTHESIS){
@@ -104,7 +99,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
+					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 				break;
 			case sem_operand:
 				if (next_token->type == LEFT_PARANTHESIS){
@@ -119,7 +114,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
+					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 				break;
 			case sem_RP:
 				if (next_token->type == RIGHT_PARANTHESIS){
@@ -131,7 +126,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
+					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 				break;
 			case sem_operand_not:
 				if (is_value(next_token))
@@ -145,7 +140,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
+					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 				break;
 			default:
 				error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
@@ -156,7 +151,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 	}
 
 	if ((state != sem_value && state != sem_RP) || (par_count != 0) || (next_token->type != end_token))
-		error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
+		error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 
 
 	token_buff->actual = start_token;
