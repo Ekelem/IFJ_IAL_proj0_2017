@@ -116,6 +116,6 @@ void copy_parameters(struct func_par * first_par, htab_t * symtable);
 /* Generates relevant instrunctions for expression*/
 void parse_semantic_expression(String * primal_code, struct htab_listitem *found_record, int variable_type, int expr_return_type);
 
-void parse_semantic_expression_modified(String * primal_code, char * name, int variable_type, int expr_return_type);
+void parse_semantic_expression_modified(String * primal_code, char * frame, char * name, int variable_type, int expr_return_type);
 
 #endif

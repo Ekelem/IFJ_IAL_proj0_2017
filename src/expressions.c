@@ -31,10 +31,14 @@ const bool  precedence_tab[TABLE_SIZE][TABLE_SIZE] = {
 /* Parses the given expression */
 int parse_expression(token_buffer * token_buff, htab_t * symtable, String * primal_code, int end_token) {
 	//1.step: check
+	int actual_end = end_token;
 	semantic_expr_check_order(token_buff, symtable, primal_code, end_token);
 
+	if (end_token == RIGHT_PARANTHESIS)
+		actual_end=NEW_LINE;
+
 	//2.step: create a double linked list(postfix expr)
-	TStack s = infix2postfix(token_buff, symtable, primal_code, end_token);
+	TStack s = infix2postfix(token_buff, symtable, primal_code, actual_end);
 
 	//3.step: calculate the value
 	int return_type = get_expr_value(token_buff, symtable, primal_code, &s);
@@ -50,6 +54,12 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 	token *next_token = token_buffer_peek_token(token_buff);
 	int state = actual_token->type;
 	int par_count = 0;
+
+	if (end_token == RIGHT_PARANTHESIS)
+	{
+		state = sem_LP;
+		par_count = 1;
+	}
 
 	if (is_value(actual_token)) {
 		state = sem_value;

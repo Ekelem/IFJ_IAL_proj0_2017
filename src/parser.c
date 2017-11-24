@@ -780,7 +780,7 @@ void body_return(token_buffer * token_buff, htab_t * symtable, String * primal_c
 	//only callable from funcbody
 	int variable_type = get_id_type(func_record);
 	int expr_return_type = parse_expression(token_buff, symtable, primal_code, NEW_LINE);
-	parse_semantic_expression_modified(primal_code, "%returnval", variable_type, expr_return_type);
+	parse_semantic_expression_modified(primal_code, "LF", "%returnval", variable_type, expr_return_type);
 
 	append_str_to_str(primal_code, "PUSHS LF@%returnval\n");
 	append_str_to_str(primal_code, "RETURN\n");
@@ -838,37 +838,50 @@ switch please..
 
 */
 
-void parse_semantic_expression_modified(String * primal_code, char * name, int variable_type, int expr_return_type) {
+void parse_semantic_expression_modified(String * primal_code, char * frame, char * name, int variable_type, int expr_return_type)
+{
 
 	if (variable_type == DOUBLE_TYPE && expr_return_type == INTEGER_TYPE) {
-		append_str_to_str(primal_code, "INT2FLOATS\nPOPS LF@");
+		append_str_to_str(primal_code, "INT2FLOATS\nPOPS ");
+		append_str_to_str(primal_code, frame);
+		append_char_to_str(primal_code, '@');
 		append_str_to_str(primal_code, name);
 		append_char_to_str(primal_code, '\n');
 	}
 	else if (variable_type == DOUBLE_TYPE && expr_return_type == DOUBLE_TYPE){
-		append_str_to_str(primal_code, "POPS LF@");
+		append_str_to_str(primal_code, "POPS ");
+		append_str_to_str(primal_code, frame);
+		append_char_to_str(primal_code, '@');
 		append_str_to_str(primal_code, name);
 		append_char_to_str(primal_code, '\n');
 	}
 	else if (variable_type == INTEGER_TYPE && expr_return_type == DOUBLE_TYPE){
-		append_str_to_str(primal_code, "FLOAT2INTS\nPOPS LF@");
+		append_str_to_str(primal_code, "FLOAT2INTS\nPOPS ");
+		append_str_to_str(primal_code, frame);
+		append_char_to_str(primal_code, '@');
 		append_str_to_str(primal_code, name);
 		append_char_to_str(primal_code, '\n');
 	}
 	else if (variable_type == INTEGER_TYPE && expr_return_type == INTEGER_TYPE){
-		append_str_to_str(primal_code, "POPS LF@");
+		append_str_to_str(primal_code, "POPS ");
+		append_str_to_str(primal_code, frame);
+		append_char_to_str(primal_code, '@');
 		append_str_to_str(primal_code, name);
 		append_char_to_str(primal_code, '\n');
 	}
 	
 	else if (variable_type == BOOLEAN_TYPE && expr_return_type == BOOLEAN_TYPE){
-		append_str_to_str(primal_code, "POPS LF@");
+		append_str_to_str(primal_code, "POPS ");
+		append_str_to_str(primal_code, frame);
+		append_char_to_str(primal_code, '@');
 		append_str_to_str(primal_code, name);
 		append_char_to_str(primal_code, '\n');
 	}
 
 	else if (variable_type == STRING_TYPE && expr_return_type == STRING_TYPE){
-		append_str_to_str(primal_code, "POPS LF@");
+		append_str_to_str(primal_code, "POPS ");
+		append_str_to_str(primal_code, frame);
+		append_char_to_str(primal_code, '@');
 		append_str_to_str(primal_code, name);
 		append_char_to_str(primal_code, '\n');
 	}
@@ -888,137 +901,42 @@ void function_call(token_buffer * token_buff, htab_t * symtable, String * primal
 	append_str_to_str(primal_code, "CREATEFRAME\n");	//prepare Temporary frame
 
 	struct func_par * actual_param = found_record->data.first_par;
-	struct htab_listitem * param_caller = NULL;
 	expected_token(token_buff, LEFT_PARANTHESIS);
-	while ((token_buffer_peek_token(token_buff)->type)!=RIGHT_PARANTHESIS)
+	if ((token_buffer_peek_token(token_buff)->type)!=RIGHT_PARANTHESIS)
 	{
-		token * actual_token = token_buffer_get_token(token_buff);
-		switch (actual_token->type){
-			case IDENTIFIER :
-				param_caller = htab_find(symtable, actual_token->attr.string_value);
-				if (param_caller == NULL)
-					error_msg(ERR_CODE_UNDEFINED, "IDENTIFIER '%s' does not exist.\n",
-                              actual_token->attr.string_value);
-				if (id_is_function(param_caller))
-					error_msg(ERR_CODE_UNDEFINED, "IDENTIFIER '%s' is function, which can not be used as parameter.\n",
-                              actual_token->attr.string_value);
+		while (actual_param!=NULL)
+		{
+			int variable_type = actual_param->par_type;
+			token_type end_token;
+			if (actual_param->par_next == NULL)
+				end_token = RIGHT_PARANTHESIS;
+			else
+				end_token = COMA;
 
-				if (actual_param!=NULL)
-				{
-					switch (actual_param->par_type)
-					{
-						case INTEGER_TYPE:
-							switch (get_id_type(param_caller))
-							{
-								case INTEGER_TYPE:
-								append_str_to_str(primal_code, "DEFVAR TF@");
-								append_str_to_str(primal_code, actual_param->par_name);
-								append_str_to_str(primal_code, "\nMOVE TF@");
-								append_str_to_str(primal_code, actual_param->par_name);
-								append_str_to_str(primal_code, " LF@");
-								append_str_to_str(primal_code, param_caller->key);
-								append_char_to_str(primal_code, '\n');
-								break;
-								case DOUBLE_TYPE:
-								append_str_to_str(primal_code, "DEFVAR TF@");
-								append_str_to_str(primal_code, actual_param->par_name);
-								append_str_to_str(primal_code, "\nFLOAT2INT TF@");
-								append_str_to_str(primal_code, actual_param->par_name);
-								append_str_to_str(primal_code, " LF@");
-								append_str_to_str(primal_code, param_caller->key);
-								append_str_to_str(primal_code, "\n");
-								break;
-								default:
-								error_msg(ERR_CODE_TYPE, "parameter in function %s expect integer or double.\n",
-                                          found_record->key);
-								break;
-							}
-						break;
-						case DOUBLE_TYPE:
-							switch (get_id_type(param_caller))
-							{
-								case DOUBLE_TYPE:
-								append_str_to_str(primal_code, "DEFVAR TF@");
-								append_str_to_str(primal_code, actual_param->par_name);
-								append_str_to_str(primal_code, "\nMOVE TF@");
-								append_str_to_str(primal_code, actual_param->par_name);
-								append_str_to_str(primal_code, " LF@");
-								append_str_to_str(primal_code, param_caller->key);
-								append_char_to_str(primal_code, '\n');
-								break;
-								case INTEGER_TYPE:
-								append_str_to_str(primal_code, "DEFVAR TF@");
-								append_str_to_str(primal_code, actual_param->par_name);
-								append_str_to_str(primal_code, "\nINT2FLOAT TF@");
-								append_str_to_str(primal_code, actual_param->par_name);
-								append_str_to_str(primal_code, " LF@");
-								append_str_to_str(primal_code, param_caller->key);
-								append_str_to_str(primal_code, "\n");
-								break;
-								default:
-								error_msg(ERR_CODE_TYPE,
-                                          "parameter in function %s expect integer or double value.\n",
-                                          found_record->key);
-								break;
-							}
-						break;
-						case STRING_TYPE:
-							if (get_id_type(param_caller) == STRING_TYPE)
-							{
-								append_str_to_str(primal_code, "DEFVAR TF@");
-								append_str_to_str(primal_code, actual_param->par_name);
-								append_str_to_str(primal_code, "\nMOVE TF@");
-								append_str_to_str(primal_code, actual_param->par_name);
-								append_str_to_str(primal_code, " LF@");
-								append_str_to_str(primal_code, param_caller->key);
-								append_char_to_str(primal_code, '\n');
-							}
-							else
-								error_msg(ERR_CODE_TYPE, "parameter in function %s expect string value.\n",
-                                          found_record->key);
-							
-							break;
-						case BOOLEAN_TYPE:
-							if (get_id_type(param_caller) == BOOLEAN_TYPE)
-							{
-								append_str_to_str(primal_code, "DEFVAR TF@");
-								append_str_to_str(primal_code, actual_param->par_name);
-								append_str_to_str(primal_code, "\nMOVE TF@");
-								append_str_to_str(primal_code, actual_param->par_name);
-								append_str_to_str(primal_code, " LF@");
-								append_str_to_str(primal_code, param_caller->key);
-								append_char_to_str(primal_code, '\n');
-							}
-							else
-								error_msg(ERR_CODE_TYPE, "parameter in function %s expect boolean value.\n",
-                                          found_record->key);
-							
-							break;
-						default:
-							error_msg(ERR_CODE_TYPE, "parameter in function calling %s have unexpected value.\n",
-                                      found_record->key);
-						break;
-					}
-				}
-				else
-				{
-					error_msg(ERR_CODE_TYPE, "function %s do not takes so much parameters.\n",
-                              found_record->key);
-				}
-				break;
-			default :
-				syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
-				break;
+			append_str_to_str(primal_code, "DEFVAR TF@");
+			append_str_to_str(primal_code, actual_param->par_name);
+			append_char_to_str(primal_code, '\n');
+
+
+			int expr_return_type = parse_expression(token_buff, symtable, primal_code, end_token);
+
+			parse_semantic_expression_modified(primal_code, "TF", actual_param->par_name, variable_type, expr_return_type);
+
+			actual_param=actual_param->par_next;
+			if (actual_param!=NULL)
+			{
+				expected_token(token_buff, COMA);
+			}
 		}
-		actual_param=actual_param->par_next;
-		if (actual_param!=NULL)
-			expected_token(token_buff, COMA);
+	}
+	else
+	{
+		expected_token(token_buff, RIGHT_PARANTHESIS);
 	}
 	if (actual_param != NULL)
 		error_msg(ERR_CODE_TYPE, "function %s expect more parameters.\n",
                   found_record->key);
 
-	expected_token(token_buff, RIGHT_PARANTHESIS);
 	append_str_to_str(primal_code, "PUSHFRAME\n");
 	append_str_to_str(primal_code, "CALL ");
 	append_str_to_str(primal_code, found_record->key);
