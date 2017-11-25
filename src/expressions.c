@@ -470,6 +470,12 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
 						}
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && is_valid_token_type(symtable, next_token, BOOLEAN_TYPE)) {
+							//Type OK
+						}
+						else if ((actual_token->is_valid && BTop(&value_stack))){
+
+						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand < can be combined only with INTEGER OR DOUBLE values\n");
 						}
@@ -491,6 +497,12 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						}
 						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
+						}
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && is_valid_token_type(symtable, next_token, BOOLEAN_TYPE)) {
+							//Type OK
+						}
+						else if ((actual_token->is_valid && BTop(&value_stack))){
+
 						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand > can be combined only with INTEGER OR DOUBLE values\n");
@@ -514,6 +526,12 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
 						}
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && is_valid_token_type(symtable, next_token, BOOLEAN_TYPE)) {
+							//Type OK
+						}
+						else if ((actual_token->is_valid && BTop(&value_stack))){
+
+						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand <= can be combined only with INTEGER OR DOUBLE values\n");
 						}
@@ -536,6 +554,12 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
 						}
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && is_valid_token_type(symtable, next_token, BOOLEAN_TYPE)) {
+							//Type OK
+						}
+						else if ((actual_token->is_valid && BTop(&value_stack))){
+
+						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand >= can be combined only with INTEGER OR DOUBLE values\n");
 						}
@@ -553,6 +577,12 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 
 					case EQUALS:
 						if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && (is_valid_token_type(symtable, next_token, STRING_TYPE))) {
+
+						}
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && is_valid_token_type(symtable, next_token, BOOLEAN_TYPE)) {
+							//Type OK
+						}
+						else if ((actual_token->is_valid && BTop(&value_stack))){
 
 						}
 						else if ((is_valid_token_type(symtable, actual_token, INTEGER_TYPE) || is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && (is_valid_token_type(symtable, next_token, INTEGER_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE))) {
@@ -574,6 +604,12 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 
 					case NOT_EQUALS:
 						if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && (is_valid_token_type(symtable, next_token, STRING_TYPE))) {
+
+						}
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && is_valid_token_type(symtable, next_token, BOOLEAN_TYPE)) {
+							//Type OK
+						}
+						else if ((actual_token->is_valid && BTop(&value_stack))){
 
 						}
 						else if ((is_valid_token_type(symtable, actual_token, INTEGER_TYPE) || is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && (is_valid_token_type(symtable, next_token, INTEGER_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE))) {

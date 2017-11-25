@@ -263,7 +263,7 @@ void BPop (BStack *s) {
 /* Returns boolean value on top of the BStack */
 bool BTop (BStack *s) {
 	if (s->First == NULL)
-		exit(42);
+		return false;
 	return s->First->is_bool_value;
 }
 
