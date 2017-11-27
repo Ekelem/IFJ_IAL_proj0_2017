@@ -1270,6 +1270,8 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
     append_str_to_str(primal_code,  "DEFVAR LF@strindex\n"
                                     "DEFVAR LF@slen\n"
                                     "DEFVAR LF@onechr\n");
+    append_str_to_str(primal_code,  "DEFVAR LF@index\n"
+                                    "MOVE LF@index int@1\n");
     append_str_to_str(primal_code,  "MOVE LF@onechr string@\n"
 									"MOVE LF@%returnval string@\n");
     append_str_to_str(primal_code,	"STRLEN LF@slen LF@s\n"
@@ -1294,12 +1296,12 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
                                     "LABEL Scontinue\n"
                                     "MOVE LF@strindex LF@i\n");
     append_str_to_str(primal_code,  "SUB LF@strindex LF@strindex int@1\n"
-                                    "SUB LF@n LF@n int@1\n"
                                     "LABEL Scycle\n");
     append_str_to_str(primal_code,  "GETCHAR LF@onechr LF@s LF@strindex\n");
     append_str_to_str(primal_code,  "CONCAT LF@%returnval LF@%returnval LF@onechr\n");
-    append_str_to_str(primal_code,  "LT LF@supbool LF@strindex LF@n\n");
-    append_str_to_str(primal_code,  "ADD LF@strindex LF@strindex int@1\n");
+    append_str_to_str(primal_code,  "LT LF@supbool LF@index LF@n\n");
+    append_str_to_str(primal_code,  "ADD LF@strindex LF@strindex int@1\n"
+                                    "ADD LF@index LF@index int@1\n");
     append_str_to_str(primal_code,  "JUMPIFEQ Scycle LF@supbool bool@true\n");
     append_str_to_str(primal_code,  "PUSHS LF@%returnval\n"
     								"RETURN\n"
@@ -1372,7 +1374,7 @@ void add_build_in_functions(htab_t * symtable, String * primal_code)
     								"PUSHS LF@%returnval\n"
                                     "RETURN\n"
                                     "LABEL CTrue\n");
-    append_str_to_str(primal_code,  "MOVE LF@%returnval string@0 \n"
+    append_str_to_str(primal_code,  "MOVE LF@%returnval string@\n"
     								"PUSHS LF@%returnval\n"
                                     "RETURN\n"
                                     "\n");
