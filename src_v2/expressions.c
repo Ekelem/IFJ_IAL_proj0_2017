@@ -469,7 +469,7 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						}
 						else if (next_token->t_elem->type == INT_VALUE) {
 							if (next_token->t_elem->attr.int_value == 0) {
-								error_msg(ERR_CODE_TYPE, "Can not divide by Zero\n");
+								append_str_to_str(primal_code, "\n\n");
 							}
 						}
 						else if (next_token->t_elem->type == IDENTIFIER) {
@@ -809,7 +809,7 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 							break;
 						case DIV:
 							BPop(&value_stack);
-							if (!next_token->is_valid){
+							if (pushed && !pushed2){
 								append_str_to_str(primal_code, "POPS GF@%SWAP\n");
 								append_str_to_str(primal_code, "POPS GF@%SWAP2\n");
 								append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
