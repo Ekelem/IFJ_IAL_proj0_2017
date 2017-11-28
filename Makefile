@@ -18,10 +18,10 @@ OBJS = $(addprefix obj/, $(addsuffix .o,$(MODULES)))
 all: $(TARGET)
 .PHONY: clean, dokumentace
 
-$(TARGET) : $(OBJS) src/main.c
-	$(CC) $(CFLAGS) $(OBJS) src/main.c -o $@
+$(TARGET) : $(OBJS) src_v2/main.c
+	$(CC) $(CFLAGS) $(OBJS) src_v2/main.c -o $@
 
-obj/%.o : src/%.c src/%.h
+obj/%.o : src_v2/%.c src_v2/%.h
 	mkdir -p obj
 	$(CC) $(CFLAGS) -c -o $@ $<
 

@@ -106,7 +106,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 						if(actual_tok->type == IDENTIFIER)
 							break;
 						actual_tok = token_buffer_get_prev(token_buff, counter++);
-						
+
 					}
 					if(actual_tok->type == IDENTIFIER)
 					{
@@ -115,12 +115,12 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 						if(!found)
 							error_msg(ERR_CODE_SEM, "Undeclared variable '%s' in expression\n", actual_tok->attr.string_value);
 						else
-							error_msg(ERR_CODE_SYNTAX, "Syntactic error detected22222222222\n");	
+							error_msg(ERR_CODE_SYNTAX, "Syntactic error detected22222222222\n");
 					break;
-					}	
+					}
 						else
-							error_msg(ERR_CODE_SYNTAX, "Syntactic error detected22222222222\n");	
-					
+							error_msg(ERR_CODE_SYNTAX, "Syntactic error detected22222222222\n");
+
 				}
 				break;
 			case sem_LP:
@@ -160,7 +160,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 						if(actual_tok->type == IDENTIFIER)
 							break;
 						actual_tok = token_buffer_get_prev(token_buff, counter++);
-						
+
 					}
 
 					if(actual_tok->type == IDENTIFIER)
@@ -221,7 +221,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 
 		while(actual_tok->type != WHILE && actual_tok->type != IF && actual_tok->type != PRINT && actual_tok->type != EQUALS)
 		{
-			actual_tok = token_buffer_get_prev(token_buff, ++counter);			
+			actual_tok = token_buffer_get_prev(token_buff, ++counter);
 		}
 
 		actual_tok = token_buffer_next_token(token_buff);
@@ -493,12 +493,11 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						break;
 
 					case DIV2:
-						if (is_valid_token_type(symtable, actual_token, INTEGER_TYPE) && is_valid_token_type(symtable, next_token, INTEGER_TYPE))  {
-							if (actual_token->conv_double || next_token->conv_double)
-								error_msg(ERR_CODE_TYPE, "Operand MODULE can be combined only with INTEGER values\n");
+						if ((is_valid_token_type(symtable, actual_token, INTEGER_TYPE) || is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && (is_valid_token_type(symtable, next_token, INTEGER_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE))) {
+							//Type OK
 						}
 						else {
-							error_msg(ERR_CODE_TYPE, "Operand MODULE can be combined only with INTEGER values\n");
+							error_msg(ERR_CODE_TYPE, "Operand DIV can be combined only with INTEGER or DOUBLE values\n");
 						}
 						if (!(is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && !actual_token->conv_double) {
 							conv_first = true;
@@ -703,7 +702,8 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 					if (conv_first) {
 						if (!pushed && !next_token->is_valid){
 							append_str_to_str(primal_code, "POPS GF@%SWAP\n");
-							append_str_to_str(primal_code, "INT2FLOATS\nPUSHS GF@%SWAP\n");
+							append_str_to_str(primal_code, "INT2FLOATS\n");
+							append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
 						}
 						else {
 							append_str_to_str(primal_code, "INT2FLOATS\n");
@@ -837,8 +837,16 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 								append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
 								append_str_to_str(primal_code, "PUSHS GF@%SWAP2\n");
 							}
+
+							append_str_to_str(primal_code, "POPS GF@%SWAP\n");
+							append_str_to_str(primal_code, "FLOAT2R2EINTS\nINT2FLOATS\n");
+							append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
+
+							append_str_to_str(primal_code, "FLOAT2R2EINTS\nINT2FLOATS\n");
+
 							append_str_to_str(primal_code, "DIVS\nFLOAT2INTS\n");
 							actual_token->conv_double=false;
+							next_token->conv_double=false;
 							break;
 						case LESS_THAN:
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
@@ -889,7 +897,7 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 	}
 
 	dealloc_BStack(&value_stack);
-	//free_string(&str);			
+	//free_string(&str);
 	return return_type;
 }
 
@@ -1002,7 +1010,7 @@ bool has_higher_priority(t_expressions op1, t_expressions op2) {
 	return (precedence_tab[op1][op2]);
 }
 
-/* Checks if given token is operator */ 
+/* Checks if given token is operator */
 bool is_operand(token *token_type, bool in_condition) {
 	if (token_type == NULL){
 		return false;
