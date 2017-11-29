@@ -22,7 +22,7 @@ const bool  precedence_tab[TABLE_SIZE][TABLE_SIZE] = {
 /*RPAR*/	{ true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  ERROR, true,  true,  true,  true,  true,  true   },
 /*ID*/		{ false, false, false, false, false, false, false, false, false, false, false, false, ERROR, ERROR, ERROR, false, false, false  },
 /*LITERAL*/	{ false, false, false, false, false, false, false, false, false, false, false, false, ERROR, ERROR, ERROR, false, false, false  },
-/*AND*/		{ true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  false, true,  true,  true,  true,  true,  true   },
+/*AND*/		{ true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  false, true,  true,  true,  true,  false, true   },
 /*OR*/		{ true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  false, true,  true,  true,  true,  true,  true   },
 /*NOT*/		{ false, false, false, false, false, false, false, false, false, false, false, false, true,  ERROR, ERROR, false, false, false  }
 };
