@@ -1769,36 +1769,21 @@ void parse_semantic_expression_modified(String * primal_code, char * frame, char
 void generate_chr(String *primal_code)
 {
 	append_str_to_str(primal_code,  "LABEL chr\n"
-                                    "DEFVAR LF@%returnval\n");
-	append_str_to_str(primal_code,  "PUSHS LF@i\n"
-									"PUSHS int@0\n");
-	append_str_to_str(primal_code,  "LTS\n");
-	append_str_to_str(primal_code,  "PUSHS bool@true\n"
-									"JUMPIFEQS Out\n");
-	append_str_to_str(primal_code,  "PUSHS LF@i\n"
-									"PUSHS int@255\n");
-	append_str_to_str(primal_code,  "GTS\n"
-									"PUSHS bool@true\n"
-									"JUMPIEFQS Out\n");
-    append_str_to_str(primal_code,  "INT2CHAR LF@%returnval LF@i\n"
-    								"PUSHS LF@%returnval\n"
-                                    "RETURN\n");
-	append_str_to_str(primal_code,  "LABEL Out\n"
-									"MOVE LF@%returnval string@\n"
-									"PUSH LF@%returnval\n");
-	append_str_to_str(primal_code,	"RETURN\n"
-									"\n");
-
+                                    	"DEFVAR LF@%returnval\n");
+    	append_str_to_str(primal_code,  "INT2CHAR LF@%returnval LF@i\n"
+    				    	"PUSHS LF@%returnval\n"
+                                    	"RETURN\n"
+			 		"\n");
 }
 
 void generate_length(String *primal_code)
 {
-	append_str_to_str(primal_code, "LABEL length\n"
-									"DEFVAR LF@%returnval\n"
-									"STRLEN LF@%returnval LF@s\n"
-									"PUSHS LF@%returnval\n"
-									"RETURN\n"
-                                    "\n");
+	append_str_to_str(primal_code, 	"LABEL length\n"
+					"DEFVAR LF@%returnval\n"
+					"STRLEN LF@%returnval LF@s\n"
+					"PUSHS LF@%returnval\n"
+					"RETURN\n"
+                                    	"\n");
 }
 
 void generate_substr(String *primal_code)
@@ -1842,27 +1827,27 @@ void generate_substr(String *primal_code)
 void generate_asc(String *primal_code)
 {
 	append_str_to_str(primal_code,  "LABEL asc\n"
-									"DEFVAR LF@%returnval\n"
-									"STRLEN LF@%returnval LF@s\n");
-    append_str_to_str(primal_code,  "PUSHS LF@i\n"
-									"PUSHS int@0\n"
-									"GTS\nNOTS\n");
-    append_str_to_str(primal_code,  "PUSHS bool@true\n"
-									"JUMPIFEQS ATrue\n"
-									"PUSHS LF@i\n");
-    append_str_to_str(primal_code,  "PUSHS LF@%returnval\n"
-									"GTS\n"
-									"PUSHS bool@true\n");
-    append_str_to_str(primal_code,  "JUMPIFEQS ATrue\n"
-    								"SUB LF@i LF@i int@1\n"
-									"STRI2INT LF@%returnval LF@s LF@i\n"
-									"PUSHS LF@%returnval\n"
-									"RETURN\n");
-    append_str_to_str(primal_code,  "LABEL ATrue\n"
-									"MOVE LF@%returnval int@0\n"
-									"PUSHS LF@%returnval\n"
-									"RETURN\n"
-                                    "\n");
+					"DEFVAR LF@%returnval\n"
+					"STRLEN LF@%returnval LF@s\n");
+    append_str_to_str(primal_code,  	"PUSHS LF@i\n"
+					"PUSHS int@0\n"
+					"GTS\nNOTS\n");
+    append_str_to_str(primal_code,  	"PUSHS bool@true\n"
+					"JUMPIFEQS ATrue\n"
+					"PUSHS LF@i\n");
+    append_str_to_str(primal_code,  	"PUSHS LF@%returnval\n"
+					"GTS\n"
+					"PUSHS bool@true\n");
+    append_str_to_str(primal_code,  	"JUMPIFEQS ATrue\n"
+    					"SUB LF@i LF@i int@1\n"
+					"STRI2INT LF@%returnval LF@s LF@i\n"
+					"PUSHS LF@%returnval\n"
+					"RETURN\n");
+    append_str_to_str(primal_code, 	"LABEL ATrue\n"
+					"MOVE LF@%returnval int@0\n"
+					"PUSHS LF@%returnval\n"
+					"RETURN\n"
+                                    	"\n");
 }
 
 struct htab_listitem *create_fun_record(htab_t * symtable, char *name)
