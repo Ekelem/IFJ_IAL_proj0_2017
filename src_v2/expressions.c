@@ -548,6 +548,12 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
 						}
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && (is_valid_token_type(symtable, next_token, BOOLEAN_TYPE))) {
+							//Type OK
+						}
+						else if (BTop_equals(&value_stack)){
+							//Type OK
+						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand < can be combined only with INTEGER OR DOUBLE values\n");
 						}
@@ -568,6 +574,12 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 							//Type OK
 						}
 						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
+							//Type OK
+						}
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && (is_valid_token_type(symtable, next_token, BOOLEAN_TYPE))) {
+							//Type OK
+						}
+						else if (BTop_equals(&value_stack)){
 							//Type OK
 						}
 						else {
@@ -592,6 +604,12 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
 						}
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && (is_valid_token_type(symtable, next_token, BOOLEAN_TYPE))) {
+							//Type OK
+						}
+						else if (BTop_equals(&value_stack)){
+							//Type OK
+						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand <= can be combined only with INTEGER OR DOUBLE values\n");
 						}
@@ -614,6 +632,12 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
 						}
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && (is_valid_token_type(symtable, next_token, BOOLEAN_TYPE))) {
+							//Type OK
+						}
+						else if (BTop_equals(&value_stack)){
+							//Type OK
+						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand >= can be combined only with INTEGER OR DOUBLE values\n");
 						}
@@ -632,6 +656,12 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 					case EQUALS:
 						if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && (is_valid_token_type(symtable, next_token, STRING_TYPE))) {
 
+						}
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && (is_valid_token_type(symtable, next_token, BOOLEAN_TYPE))) {
+							//Type OK
+						}
+						else if (BTop_equals(&value_stack)){
+							//Type OK
 						}
 						else if ((is_valid_token_type(symtable, actual_token, INTEGER_TYPE) || is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && (is_valid_token_type(symtable, next_token, INTEGER_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE))) {
 							if ((is_valid_token_type(symtable, actual_token, DOUBLE_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE)) || actual_token->conv_double || next_token->conv_double ) {
@@ -653,6 +683,15 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 					case NOT_EQUALS:
 						if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && (is_valid_token_type(symtable, next_token, STRING_TYPE))) {
 
+						}
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && (is_valid_token_type(symtable, next_token, BOOLEAN_TYPE))) {
+							//Type OK
+						}
+						else if (BTop_equals(&value_stack)){
+							//Type OK
+						}
+						else if (BTop_equals(&value_stack)){
+							//Type OK
 						}
 						else if ((is_valid_token_type(symtable, actual_token, INTEGER_TYPE) || is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && (is_valid_token_type(symtable, next_token, INTEGER_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE))) {
 							if ((is_valid_token_type(symtable, actual_token, DOUBLE_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE)) || actual_token->conv_double || next_token->conv_double ) {
