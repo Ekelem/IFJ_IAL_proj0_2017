@@ -1770,10 +1770,24 @@ void generate_chr(String *primal_code)
 {
 	append_str_to_str(primal_code,  "LABEL chr\n"
                                     "DEFVAR LF@%returnval\n");
+	append_str_to_str(primal_code,  "PUSHS LF@i\n"
+									"PUSHS int@0\n");
+	append_str_to_str(primal_code,  "LTS\n");
+	append_str_to_str(primal_code,  "PUSHS bool@true\n"
+									"JUMPIFEQS Out\n");
+	append_str_to_str(primal_code,  "PUSHS LF@i\n"
+									"PUSHS int@255\n");
+	append_str_to_str(primal_code,  "GTS\n"
+									"PUSHS bool@true\n"
+									"JUMPIEFQS Out\n");
     append_str_to_str(primal_code,  "INT2CHAR LF@%returnval LF@i\n"
     								"PUSHS LF@%returnval\n"
-                                    "RETURN\n"
-                                    "\n");
+                                    "RETURN\n");
+	append_str_to_str(primal_code,  "LABEL Out\n"
+									"MOVE LF@%returnval string@\n"
+									"PUSH LF@%returnval\n");
+	append_str_to_str(primal_code,	"RETURN\n"
+									"\n");
 
 }
 
