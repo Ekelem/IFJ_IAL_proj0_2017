@@ -1,1 +1,3 @@
-
+scope
+    print !"hello"=!"Hello" or 5*3=true;
+end scope

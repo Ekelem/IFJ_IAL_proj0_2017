@@ -1,1 +1,4 @@
-
+'Input test for undefined ID
+scope
+    input a
+end scope

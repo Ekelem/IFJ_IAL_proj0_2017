@@ -1,1 +1,5 @@
-
+'Undefined/undeclared function_call
+scope
+    dim a as integer
+    a = max(1, 2)
+end scope

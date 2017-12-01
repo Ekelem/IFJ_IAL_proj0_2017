@@ -1,1 +1,7 @@
-
+'Return in main scope
+scope
+    if 1>2+5 then
+        print !"GTS"
+    else
+        return !"LTS"
+end scope

@@ -1,1 +1,10 @@
+'Less params in func definition than in func declaration
+declare function max(a as integer, b as integer) as integer
 
+function max(a as integer) as integer
+
+end function
+
+scope
+
+end scope

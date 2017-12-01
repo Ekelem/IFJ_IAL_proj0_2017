@@ -1,1 +1,11 @@
+declare function max(a as integer, b as integer) as integer
+function max(a as integer, c as integer) as integer
+    if a > b then
+        return a
+    else
+        return b
+    end if
+end function
+scope
 
+end scope

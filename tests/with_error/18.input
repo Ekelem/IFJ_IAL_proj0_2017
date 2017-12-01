@@ -1,1 +1,4 @@
-
+'Expression error
+scope
+    print !"Hello"+!"World" or !"HelloWorld";
+end scope

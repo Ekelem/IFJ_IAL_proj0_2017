@@ -1,1 +1,4 @@
-
+'Expression error
+scope
+    print true or true and 5*3=15 * !"String";
+end scope

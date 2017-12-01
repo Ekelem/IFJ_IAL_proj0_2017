@@ -1,1 +1,4 @@
-
+'Expression error, bad assignment
+scope
+    print !"Hello"+!"WOrld"=5;
+end scope

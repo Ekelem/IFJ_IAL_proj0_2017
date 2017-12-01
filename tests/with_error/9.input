@@ -1,1 +1,10 @@
+'Function dec. and def. return type is not the same
 
+declare function max(a as integer, b as integer) as integer
+
+function max(a as integer, b as integer) as string
+
+end function
+
+scope
+end scope

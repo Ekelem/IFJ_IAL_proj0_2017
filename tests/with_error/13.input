@@ -1,1 +1,13 @@
+'Less params in function_call
+function max(a as integer, b as integer) as integer
+    if a > b then
+        return a
+    else
+        return b
+    end if
+end function
 
+scope
+    dim a as integer
+    a = max(1)
+end scope

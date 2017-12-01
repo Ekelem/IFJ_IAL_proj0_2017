@@ -1,1 +1,4 @@
+declare function max(a as integer, b as integer) as integer
+scope
 
+end scope

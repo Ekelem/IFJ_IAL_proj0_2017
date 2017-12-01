@@ -1,1 +1,4 @@
-
+'Expression error
+scope
+    print 5*3+4 = 19 and !"ASD";
+end scope

@@ -1,1 +1,4 @@
-
+'Ascii seq. error
+scope
+    print !"Hello"+!"World"+!"\900";
+end scope

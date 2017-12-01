@@ -1,1 +1,7 @@
+'2 scopes
+scope
+    scope
+        dim a as integer = 5
+    end scope
 
+end scope

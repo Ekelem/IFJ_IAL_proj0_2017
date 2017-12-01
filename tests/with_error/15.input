@@ -1,1 +1,13 @@
+'Return type does not match the expected type
+function max(a as integer, b as integer) as integer
+    if a > b then
+        return !"ASD"
+    else
+        return b
+    end if
+end function
 
+scope
+    dim a as integer
+    a = max(1, 2)
+end scope

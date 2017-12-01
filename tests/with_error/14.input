@@ -1,1 +1,14 @@
+'Return type of function does not match the variable type in function call
 
+function max(a as integer, b as integer) as string
+    if a > b then
+        return a
+    else
+        return b
+    end if
+end function
+
+scope
+    dim a as integer
+    a = max(1, 2, 3)
+end scope

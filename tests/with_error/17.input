@@ -1,1 +1,4 @@
-
+'Expression error
+scope
+    print !"Hello"+5;
+end scope
