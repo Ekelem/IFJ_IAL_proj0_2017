@@ -1,5 +1,6 @@
 scope
 
-	dim a as string = !""
+	dim a as string = !"" + !"a"
+	print a;
 
 end scope
