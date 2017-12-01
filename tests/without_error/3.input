@@ -1,0 +1,4 @@
+scope
+    dim a as boolean = (5.3+(1.366-9+9*1.6)*9/3) > 12.798 and !"Hello"+!", World"=!"Hello, World"
+    print a;
+end scope

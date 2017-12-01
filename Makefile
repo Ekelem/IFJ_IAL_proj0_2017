@@ -28,5 +28,9 @@ obj/%.o : src_v2/%.c src_v2/%.h
 clean:
 	rm -f ./obj/*.o $(TARGET)
 
+test:
+	chmod +x test.sh
+	./test.sh
+
 dokumentace: doc/dokumentace.tex
 	pdflatex doc/dokumentace.tex
