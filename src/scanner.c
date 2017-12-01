@@ -114,6 +114,7 @@ token * save_token(token *t, String *str, int type, int line, int pos)
 				str->str[strlen(str->str)+1] = '\0';
 				t->attr.string_value = str->str;
 				break;
+				
 			case STRING_VALUE:
 				t->attr.string_value = str->str;
 				break;
@@ -164,19 +165,19 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 							case '!':  state = EXCLAMATION_MARK; break;
 							case '\'': state = LINE_COMMENT;     break;
 							case '&':  state = BASE;	break;
-							case '+':  state = ADD_EQ; 	break;
-							case '-':  state = SUB_EQ;	break;
-							case '*':  state = MUL_EQ;	break;
-							case '\\': state = DIV2_EQ; break;
+							case '+':  return save_token(t, NULL, ADD, *err_line, *err_pos);
+							case '-':  return save_token(t, NULL, SUB, *err_line, *err_pos);
+							case '*':  return save_token(t, NULL, MUL, *err_line, *err_pos);
+							case '\\': return save_token(t, NULL, DIV2, *err_line, *err_pos);
 							case ',':  return save_token(t, NULL, COMA, *err_line, *err_pos);
-							case '=':  return save_token(t, NULL, EQUALS, *err_line, *err_pos);
-							case ';':  return save_token(t, NULL, SEMICOLON, *err_line, *err_pos);
-							case '(':  return save_token(t, NULL, LEFT_PARANTHESIS, *err_line, *err_pos);
-							case ')':  return save_token(t, NULL, RIGHT_PARANTHESIS, *err_line, *err_pos);
-							case '.':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-							case '#':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+                            case '=':  return save_token(t, NULL, EQUALS, *err_line, *err_pos);
+                            case ';':  return save_token(t, NULL, SEMICOLON, *err_line, *err_pos);
+                            case '(':  return save_token(t, NULL, LEFT_PARANTHESIS, *err_line, *err_pos);
+                            case ')':  return save_token(t, NULL, RIGHT_PARANTHESIS, *err_line, *err_pos);
+                            case '.':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+                            case '#':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
                             case '@':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-							case '%':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+                            case '%':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
                             case '|':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
                             case '~':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
                             case '}':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
@@ -188,12 +189,12 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
                             case '?':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
                             case '^':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
                             case '`':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-							case '\"': return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+                            case '\"': return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
                             default:
-                                if (c >= 127){
-                                    return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-                                }
-                                break;
+								if (c >= 127){
+							    		return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+								}
+								break;
 						}
 					}
 				}
@@ -456,14 +457,9 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					state = BLOCK_COMMENT;
 				}
 				else {
-					if (c == '='){
-						return save_token(t, NULL, DIV_EQUALS, *err_line, *err_pos);
-					}
-					else {
-						*err_pos -= 1;
-						ungetc(c, f);
-						return save_token(t, NULL, DIV, *err_line, *err_pos);
-					}
+                    *err_pos -= 1;
+                    ungetc(c, f);
+                    return save_token(t, NULL, DIV, *err_line, *err_pos);
 				}
 				break;
 
@@ -507,9 +503,6 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 				if (c >= '0' &&  c <= '1'){
 					append_char_to_str(&s, c);
 				}
-				else if ((c >= '2' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ) {
-					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-				}
 				else {
 					*err_pos -= 1;
 					ungetc(c, f);
@@ -520,9 +513,6 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 			case BASE_8:
 				if (c >= '0' &&  c <= '7')
 					append_char_to_str(&s, c);
-				else if ((c >= '8' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
-					return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
-				}
 				else {
 					*err_pos -= 1;
 					ungetc(c, f);
@@ -539,53 +529,10 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
 					return save_token (t, &s, INT_16, *err_line, *err_pos);
 				}
 				break;
-
-			case ADD_EQ:
-				if (c == '=') {
-					return save_token(t, NULL, ADD_EQUALS, *err_line, *err_pos);
-				}
-				else {
-					*err_pos -= 1;
-					ungetc(c, f);
-					return save_token(t, NULL, ADD, *err_line, *err_pos);
-				}
-				break;
-
-			case SUB_EQ:
-				if (c == '=') {
-					return save_token(t, NULL, SUB_EQUALS, *err_line, *err_pos);
-				}
-				else {
-					*err_pos -= 1;
-					ungetc(c, f);
-					return save_token(t, NULL, SUB, *err_line, *err_pos);
-				}
-				break;
-
-			case MUL_EQ:
-				if (c == '=') {
-					return save_token(t, NULL, MUL_EQUALS, *err_line, *err_pos);
-				}
-				else {
-					*err_pos -= 1;
-					ungetc(c, f);
-					return save_token(t, NULL, MUL, *err_line, *err_pos);
-				}
-				break;
-
-			case DIV2_EQ:
-				if (c == '=') {
-					return save_token(t, NULL, DIV2_EQUALS, *err_line, *err_pos);
-				}
-				else {
-					*err_pos -= 1;
-					ungetc(c, f);
-					return save_token(t, NULL, DIV2, *err_line, *err_pos);
-				}
-				break;
             default:
                 return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
                 break;
+
 		}
 		if (c == EOF)
 			break;

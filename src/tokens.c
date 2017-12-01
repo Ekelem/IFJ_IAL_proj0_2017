@@ -1,9 +1,15 @@
 #include "tokens.h"
 
-/* Initializes token buffer */
+
 token_buffer * init_token_buffer() {
 	token_buffer *t = malloc(sizeof(token_buffer));
-	if ((t->arr = (token **)calloc(DEFAULT_TOKEN_MALLOC, sizeof(token))) == NULL) {
+	if(t==NULL)
+	{
+		fprintf(stderr, "Not enough memory\n");
+		exit(MALLOC_ERROR);
+
+	}
+	if ((t->arr = (token **)calloc(DEFAULT_TOKEN_MALLOC, sizeof(token*))) == NULL) {
 		fprintf(stderr, "Not enough memory\n");
 		exit(MALLOC_ERROR);
 	}
@@ -13,11 +19,10 @@ token_buffer * init_token_buffer() {
 	return t;
 }
 
-/* Adds token to token buffer */
 void add_token(token_buffer *t, token *elem) {
 	if (t->arr != NULL && elem != NULL) {
 		if (t->len+1  >= t->size) {
-			if ((t->arr = realloc(t->arr, t->size + DEFAULT_TOKEN_MALLOC * sizeof(token))) == NULL) {
+			if ((t->arr = realloc(t->arr, (t->size + DEFAULT_TOKEN_MALLOC) * sizeof(token*))) == NULL) { //problem
 				fprintf(stderr, "Not enough memory\n");
 				exit(MALLOC_ERROR);
 			}
@@ -29,7 +34,6 @@ void add_token(token_buffer *t, token *elem) {
 	t->len += 1;
 }
 
-/* Frees tokens from token buffer */
 void free_tokens(token_buffer *t) {
 	if (t->arr) {
 		for(unsigned i = 0; i < t->size; i++) {
@@ -46,7 +50,6 @@ void free_tokens(token_buffer *t) {
 	}
 }
 
-/* Returns next token from token buffer and pops it*/
 token * token_buffer_get_token(token_buffer *t)
 {
 	if (t->actual < t->len)
@@ -55,7 +58,11 @@ token * token_buffer_get_token(token_buffer *t)
 		return NULL;
 }
 
-/*Returns next token from token buffer */
+token * token_buffer_unget_token(token_buffer *t)
+{
+	return t->arr[t->actual--];
+}
+
 token * token_buffer_peek_token(token_buffer *t)
 {
 	if ((t->actual) < t->len)
@@ -63,3 +70,26 @@ token * token_buffer_peek_token(token_buffer *t)
 	else
 		return NULL;
 }
+
+token * token_buffer_get_next(token_buffer *t, int counter)
+{
+	if ((t->actual) < t->len)
+		return t->arr[(t->actual) + counter];
+	else
+		return NULL;
+}
+
+token * token_buffer_get_prev(token_buffer *t, int counter)
+{
+	return t->arr[(t->actual) - counter];
+}
+
+token * token_buffer_next_token(token_buffer *t)
+{
+	if ((t->actual) < t->len)
+		return t->arr[(t->actual)+1];
+	else
+		return NULL;
+}
+
+

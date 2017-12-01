@@ -1,7 +1,7 @@
 #ifndef STRING_H
 #define STRING_H
 
-
+#include "error.h"
 typedef struct
 {
 	char *str;

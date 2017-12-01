@@ -1,9 +1,9 @@
 #include "stack.h"
 
-#define malloc(size) garbage_malloc(size)
+/*#define malloc(size) garbage_malloc(size)
 #define free(addr) garbage_free(addr)
 #define realloc(addr, size) garbage_realloc(addr, size)
-
+*/
 /* Initializes dynamic stack */
 struct dynamic_stack * dynamic_stack_init()
 {
@@ -263,7 +263,7 @@ void BPop (BStack *s) {
 /* Returns boolean value on top of the BStack */
 bool BTop (BStack *s) {
 	if (s->First == NULL)
-		return false;
+		exit(42);
 	return s->First->is_bool_value;
 }
 

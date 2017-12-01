@@ -1,4 +1,5 @@
 #include "expressions.h"
+#include "parser.h"
 
 #define TABLE_SIZE 20
 #define ERROR false
@@ -21,7 +22,7 @@ const bool  precedence_tab[TABLE_SIZE][TABLE_SIZE] = {
 /*RPAR*/	{ true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  ERROR, true,  true,  true,  true,  true,  true   },
 /*ID*/		{ false, false, false, false, false, false, false, false, false, false, false, false, ERROR, ERROR, ERROR, false, false, false  },
 /*LITERAL*/	{ false, false, false, false, false, false, false, false, false, false, false, false, ERROR, ERROR, ERROR, false, false, false  },
-/*AND*/		{ true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  false, true,  true,  true,  true,  true,  true   },
+/*AND*/		{ true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  false, true,  true,  true,  true,  false, true   },
 /*OR*/		{ true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  true,  false, true,  true,  true,  true,  true,  true   },
 /*NOT*/		{ false, false, false, false, false, false, false, false, false, false, false, false, true,  ERROR, ERROR, false, false, false  }
 };
@@ -76,7 +77,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 	else if (actual_token->type == LEXICAL_ERROR)
 		error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 	else {
-		error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
+		error_msg(ERR_CODE_SYNTAX, "Syntactic error detected1111111111111111\n");
 	}
 	while (actual_token->type != end_token) {
 		next_token = token_buffer_peek_token(token_buff);
@@ -95,7 +96,32 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
+				{
+					int counter = 0;
+					token *actual_tok= token_buffer_peek_token(token_buff);
+					actual_tok->type = end_token;
+
+					while(actual_tok->type != WHILE && actual_tok->type != IF && actual_tok->type != PRINT && actual_tok->type != EQUALS)
+					{
+						if(actual_tok->type == IDENTIFIER)
+							break;
+						actual_tok = token_buffer_get_prev(token_buff, counter++);
+
+					}
+					if(actual_tok->type == IDENTIFIER)
+					{
+						htab_listitem *found = htab_find(symtable, actual_tok->attr.string_value);
+
+						if(!found)
+							error_msg(ERR_CODE_SEM, "Undeclared variable '%s' in expression\n", actual_tok->attr.string_value);
+						else
+							error_msg(ERR_CODE_SYNTAX, "Syntactic error detected22222222222\n");
+					break;
+					}
+						else
+							error_msg(ERR_CODE_SYNTAX, "Syntactic error detected22222222222\n");
+
+				}
 				break;
 			case sem_LP:
 				if (next_token->type == LEFT_PARANTHESIS){
@@ -109,7 +135,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
+					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected33333333333\n");
 				break;
 			case sem_operand:
 				if (next_token->type == LEFT_PARANTHESIS){
@@ -124,7 +150,30 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
+				{
+					int counter = 0;
+					token *actual_tok= token_buffer_peek_token(token_buff);
+					actual_tok->type = end_token;
+
+					while(actual_tok->type != WHILE && actual_tok->type != IF && actual_tok->type != PRINT && actual_tok->type != EQUALS)
+					{
+						if(actual_tok->type == IDENTIFIER)
+							break;
+						actual_tok = token_buffer_get_prev(token_buff, counter++);
+
+					}
+
+					if(actual_tok->type == IDENTIFIER)
+					{
+						htab_listitem *found = htab_find(symtable, actual_tok->attr.string_value);
+
+						if(!found)
+							error_msg(ERR_CODE_SEM, "Undeclared variable '%s' in expression\n", actual_tok->attr.string_value);
+						break;
+					}
+					else
+						error_msg(ERR_CODE_SYNTAX, "Syntactic error detected44444444444444\n");
+				}
 				break;
 			case sem_RP:
 				if (next_token->type == RIGHT_PARANTHESIS){
@@ -136,7 +185,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
+					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected55555555555555\n");
 				break;
 			case sem_operand_not:
 				if (is_value(next_token))
@@ -150,7 +199,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
+					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected66666666666666\n");
 				break;
 			default:
 				error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
@@ -161,7 +210,30 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 	}
 
 	if ((state != sem_value && state != sem_RP) || (par_count != 0) || (next_token->type != end_token))
-		error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
+	{
+		//token *actual_tok = token_buffer_peek_token(token_buff);
+		//print_token(actual_tok->type, actual_tok);
+		//printf("type number: %d", next_token->type);
+
+		int counter = 0;
+		token *actual_tok= next_token;
+		//actual_tok->type = end_token;
+
+		while(actual_tok->type != WHILE && actual_tok->type != IF && actual_tok->type != PRINT && actual_tok->type != EQUALS)
+		{
+			actual_tok = token_buffer_get_prev(token_buff, ++counter);
+		}
+
+		actual_tok = token_buffer_next_token(token_buff);
+		if(actual_tok->type == IDENTIFIER)
+		{
+				htab_listitem *found = htab_find(symtable, actual_tok->attr.string_value);
+				if(!found)
+					error_msg(ERR_CODE_SEM, "undeclared\n");
+		}
+
+		error_msg(ERR_CODE_SYNTAX, "Syntactic error detected777777777777\n");
+	}
 
 
 	token_buff->actual = start_token;
@@ -240,9 +312,9 @@ TStack infix2postfix (token_buffer * token_buff, htab_t * symtable, String * pri
 		else if ( t->type == RIGHT_PARANTHESIS) {
 			untilLeftPar(&sTemp, &sOut);
 		}
-		else {
-			fprintf(stderr, "Ooopps, we are fucked :/\n");
-		}
+		//else {
+		//	fprintf(stderr, "Ooopps, we are fucked :/\n");
+		//}
 
 		t = token_buffer_get_token(token_buff);
 	}
@@ -397,11 +469,15 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						}
 						else if (next_token->t_elem->type == INT_VALUE) {
 							if (next_token->t_elem->attr.int_value == 0) {
-								error_msg(ERR_CODE_TYPE, "Can not divide by Zero\n");
+								append_str_to_str(primal_code, "\n\n");
 							}
 						}
 						else if (next_token->t_elem->type == IDENTIFIER) {
 							struct htab_listitem *found_record = htab_find(symtable, next_token->t_elem->attr.string_value);
+
+							if(is_function(found_record))
+								error_msg(ERR_CODE_SEM, "Function '%s' used in expression\n", found_record->key);
+
 
 							if (found_record->data.type == INTEGER_TYPE) {
 								if (next_token->t_elem->attr.int_value == 0) {
@@ -417,12 +493,11 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						break;
 
 					case DIV2:
-						if (is_valid_token_type(symtable, actual_token, INTEGER_TYPE) && is_valid_token_type(symtable, next_token, INTEGER_TYPE))  {
-							if (actual_token->conv_double || next_token->conv_double)
-								error_msg(ERR_CODE_TYPE, "Operand MODULE can be combined only with INTEGER values\n");
+						if ((is_valid_token_type(symtable, actual_token, INTEGER_TYPE) || is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && (is_valid_token_type(symtable, next_token, INTEGER_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE))) {
+							//Type OK
 						}
 						else {
-							error_msg(ERR_CODE_TYPE, "Operand MODULE can be combined only with INTEGER values\n");
+							error_msg(ERR_CODE_TYPE, "Operand DIV can be combined only with INTEGER or DOUBLE values\n");
 						}
 						if (!(is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && !actual_token->conv_double) {
 							conv_first = true;
@@ -444,6 +519,9 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						}
 						else if (next_token->t_elem->type == IDENTIFIER) {
 							struct htab_listitem *found_record = htab_find(symtable, next_token->t_elem->attr.string_value);
+
+							if(is_function(found_record))
+								error_msg(ERR_CODE_SEM, "Function '%s' used in expression\n", found_record->key);
 
 							if (found_record->data.type == INTEGER_TYPE) {
 								if (next_token->t_elem->attr.int_value == 0) {
@@ -470,11 +548,11 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
 						}
-						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && is_valid_token_type(symtable, next_token, BOOLEAN_TYPE)) {
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && (is_valid_token_type(symtable, next_token, BOOLEAN_TYPE))) {
 							//Type OK
 						}
-						else if ((actual_token->is_valid && BTop(&value_stack))){
-
+						else if (BTop_equals(&value_stack)){
+							//Type OK
 						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand < can be combined only with INTEGER OR DOUBLE values\n");
@@ -498,11 +576,11 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
 						}
-						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && is_valid_token_type(symtable, next_token, BOOLEAN_TYPE)) {
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && (is_valid_token_type(symtable, next_token, BOOLEAN_TYPE))) {
 							//Type OK
 						}
-						else if ((actual_token->is_valid && BTop(&value_stack))){
-
+						else if (BTop_equals(&value_stack)){
+							//Type OK
 						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand > can be combined only with INTEGER OR DOUBLE values\n");
@@ -526,11 +604,11 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
 						}
-						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && is_valid_token_type(symtable, next_token, BOOLEAN_TYPE)) {
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && (is_valid_token_type(symtable, next_token, BOOLEAN_TYPE))) {
 							//Type OK
 						}
-						else if ((actual_token->is_valid && BTop(&value_stack))){
-
+						else if (BTop_equals(&value_stack)){
+							//Type OK
 						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand <= can be combined only with INTEGER OR DOUBLE values\n");
@@ -554,11 +632,11 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						else if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && is_valid_token_type(symtable, next_token, STRING_TYPE)) {
 							//Type OK
 						}
-						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && is_valid_token_type(symtable, next_token, BOOLEAN_TYPE)) {
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && (is_valid_token_type(symtable, next_token, BOOLEAN_TYPE))) {
 							//Type OK
 						}
-						else if ((actual_token->is_valid && BTop(&value_stack))){
-
+						else if (BTop_equals(&value_stack)){
+							//Type OK
 						}
 						else {
 							error_msg(ERR_CODE_TYPE, "Operand >= can be combined only with INTEGER OR DOUBLE values\n");
@@ -579,11 +657,11 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && (is_valid_token_type(symtable, next_token, STRING_TYPE))) {
 
 						}
-						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && is_valid_token_type(symtable, next_token, BOOLEAN_TYPE)) {
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && (is_valid_token_type(symtable, next_token, BOOLEAN_TYPE))) {
 							//Type OK
 						}
-						else if ((actual_token->is_valid && BTop(&value_stack))){
-
+						else if (BTop_equals(&value_stack)){
+							//Type OK
 						}
 						else if ((is_valid_token_type(symtable, actual_token, INTEGER_TYPE) || is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && (is_valid_token_type(symtable, next_token, INTEGER_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE))) {
 							if ((is_valid_token_type(symtable, actual_token, DOUBLE_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE)) || actual_token->conv_double || next_token->conv_double ) {
@@ -606,11 +684,14 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 						if (is_valid_token_type(symtable, actual_token, STRING_TYPE) && (is_valid_token_type(symtable, next_token, STRING_TYPE))) {
 
 						}
-						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && is_valid_token_type(symtable, next_token, BOOLEAN_TYPE)) {
+						else if (is_valid_token_type(symtable, actual_token, BOOLEAN_TYPE) && (is_valid_token_type(symtable, next_token, BOOLEAN_TYPE))) {
 							//Type OK
 						}
-						else if ((actual_token->is_valid && BTop(&value_stack))){
-
+						else if (BTop_equals(&value_stack)){
+							//Type OK
+						}
+						else if (BTop_equals(&value_stack)){
+							//Type OK
 						}
 						else if ((is_valid_token_type(symtable, actual_token, INTEGER_TYPE) || is_valid_token_type(symtable, actual_token, DOUBLE_TYPE)) && (is_valid_token_type(symtable, next_token, INTEGER_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE))) {
 							if ((is_valid_token_type(symtable, actual_token, DOUBLE_TYPE) || is_valid_token_type(symtable, next_token, DOUBLE_TYPE)) || actual_token->conv_double || next_token->conv_double ) {
@@ -660,7 +741,8 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 					if (conv_first) {
 						if (!pushed && !next_token->is_valid){
 							append_str_to_str(primal_code, "POPS GF@%SWAP\n");
-							append_str_to_str(primal_code, "INT2FLOATS\nPUSHS GF@%SWAP\n");
+							append_str_to_str(primal_code, "INT2FLOATS\n");
+							append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
 						}
 						else {
 							append_str_to_str(primal_code, "INT2FLOATS\n");
@@ -766,7 +848,7 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 							break;
 						case DIV:
 							BPop(&value_stack);
-							if (!next_token->is_valid){
+							if (pushed && !pushed2){
 								append_str_to_str(primal_code, "POPS GF@%SWAP\n");
 								append_str_to_str(primal_code, "POPS GF@%SWAP2\n");
 								append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
@@ -794,8 +876,16 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 								append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
 								append_str_to_str(primal_code, "PUSHS GF@%SWAP2\n");
 							}
+
+							append_str_to_str(primal_code, "POPS GF@%SWAP\n");
+							append_str_to_str(primal_code, "FLOAT2R2EINTS\nINT2FLOATS\n");
+							append_str_to_str(primal_code, "PUSHS GF@%SWAP\n");
+
+							append_str_to_str(primal_code, "FLOAT2R2EINTS\nINT2FLOATS\n");
+
 							append_str_to_str(primal_code, "DIVS\nFLOAT2INTS\n");
 							actual_token->conv_double=false;
+							next_token->conv_double=false;
 							break;
 						case LESS_THAN:
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
@@ -846,7 +936,7 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 	}
 
 	dealloc_BStack(&value_stack);
-	free_string(&str);
+	//free_string(&str);
 	return return_type;
 }
 
@@ -896,6 +986,10 @@ bool e_push(htab_t *symtable, String *primal_code, TSElem *t, String *str, BStac
 
 			case IDENTIFIER:
 				found_record = htab_find(symtable, t->t_elem->attr.string_value);
+
+				if(is_function(found_record))
+					error_msg(ERR_CODE_SEM, "Function '%s' used in expression\n", found_record->key);
+
 				if (found_record != NULL) {
 					if (found_record->data.type == BOOLEAN_TYPE)
 						BPush(value_stack, true);
@@ -955,7 +1049,7 @@ bool has_higher_priority(t_expressions op1, t_expressions op2) {
 	return (precedence_tab[op1][op2]);
 }
 
-/* Checks if given token is operator */ 
+/* Checks if given token is operator */
 bool is_operand(token *token_type, bool in_condition) {
 	if (token_type == NULL){
 		return false;
@@ -1012,6 +1106,10 @@ bool is_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 	if (actual_token != NULL) {
 		if (actual_token->t_elem->type == IDENTIFIER) {
 			struct htab_listitem *found_record = htab_find(symtable, actual_token->t_elem->attr.string_value);
+
+			if(is_function(found_record))
+				error_msg(ERR_CODE_SEM, "Function '%s' used in expression\n", found_record->key);
+
 			if (found_record != NULL){
 				if (found_record->data.type == type)
 					return true;
@@ -1030,13 +1128,16 @@ bool is_valid_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 	struct htab_listitem *found_record = NULL;
 	if (actual_token->t_elem->type == IDENTIFIER) {
 		found_record = htab_find(symtable, actual_token->t_elem->attr.string_value);
+
+		if(is_function(found_record))
+			error_msg(ERR_CODE_SEM, "Function '%s' used in expression\n", found_record->key);
 	}
 
 	switch(type) {
 		case INTEGER_TYPE:
 			if (actual_token->t_elem->type == IDENTIFIER) {
 				if (found_record == NULL) {
-					error_msg(ERR_CODE_UNDEFINED, "Undeclared ID detected\n");
+					error_msg(ERR_CODE_SEM, "Undeclared ID detected\n");
 				}
 				if ((found_record->data.type != INTEGER_TYPE)) {
 					return false;
@@ -1049,7 +1150,7 @@ bool is_valid_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 		case DOUBLE_TYPE:
 			if (actual_token->t_elem->type == IDENTIFIER) {
 				if (found_record == NULL) {
-					error_msg(ERR_CODE_UNDEFINED, "Undeclared ID detected\n");
+					error_msg(ERR_CODE_SEM, "Undeclared ID detected\n");
 				}
 				if ((found_record->data.type != DOUBLE_TYPE)) {
 					return false;
@@ -1065,7 +1166,7 @@ bool is_valid_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 		case BOOLEAN_TYPE:
 			if (actual_token->t_elem->type == IDENTIFIER) {
 				if (found_record == NULL) {
-					error_msg(ERR_CODE_UNDEFINED, "Undeclared ID detected\n");
+					error_msg(ERR_CODE_SEM, "Undeclared ID detected\n");
 				}
 				if ((found_record->data.type != BOOLEAN_TYPE)) {
 					return false;
@@ -1080,7 +1181,7 @@ bool is_valid_token_type(htab_t * symtable, TSElem *actual_token, int type) {
 		case STRING_TYPE:
 			if (actual_token->t_elem->type == IDENTIFIER) {
 				if (found_record == NULL) {
-					error_msg(ERR_CODE_UNDEFINED, "Undeclared ID detected\n");
+					error_msg(ERR_CODE_SEM, "Undeclared ID detected\n");
 				}
 				if ((found_record->data.type != STRING_TYPE)) {
 					return false;
@@ -1142,6 +1243,10 @@ int return_semantic_type(TStack *Out, htab_t *symtable) {
 			case IDENTIFIER:
 				found_record = htab_find(symtable, tmp->t_elem->attr.string_value);
 				if (found_record != NULL) {
+
+					if(is_function(found_record))
+						error_msg(ERR_CODE_SEM, "Function '%s' used in expression\n", found_record->key);
+
 					if (found_record->data.type == BOOLEAN_TYPE)
 						return BOOLEAN_TYPE;
 					else if (found_record->data.type == DOUBLE_TYPE)
@@ -1150,7 +1255,7 @@ int return_semantic_type(TStack *Out, htab_t *symtable) {
 						is_string = true;
 				}
 				else {
-					error_msg(ERR_CODE_UNDEFINED, "Undeclared ID %s\n", tmp->t_elem->attr.string_value);
+					error_msg(ERR_CODE_SEM, "Undeclared ID %s\n", tmp->t_elem->attr.string_value);
 				}
 				break;
 

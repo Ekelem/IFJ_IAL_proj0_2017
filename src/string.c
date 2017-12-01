@@ -100,6 +100,10 @@ void str_copy_str(String *s1, String *s2)
 /* Convert int value of char to escape sequence string */
 void str_convert_ascii(String *s1, int c)
 {
+	if(c > 255 || c < 1)
+		error_msg(ERR_CODE_LEXICAL, "ASCII value is above\n");
+
+
 	if (c == '#' || c == '(' || c == ')' || c == '+' || c == ']' ||
 	   (c >= 45 && c <= 63) || (c >= 65 && c <= 91) || (c >= 97 && c <= 125))
 	{

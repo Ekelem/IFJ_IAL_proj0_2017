@@ -14,5 +14,5 @@
 extern struct dynamic_stack * GARBAGE_COLLECTOR;
 /* Initializes hash table before it has been used */
 htab_t * initialization(token_buffer * token_buff);
-
+void print_token(int tk, token *t);
 #endif

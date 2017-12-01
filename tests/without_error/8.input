@@ -1,1 +1,6 @@
+scope
+    dim a as boolean = not false
+    dim b as boolean = true and false
 
+    print true and 2>1 and not b and a;
+end scope

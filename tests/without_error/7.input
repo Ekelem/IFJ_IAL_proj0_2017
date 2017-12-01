@@ -1,1 +1,3 @@
-
+scope
+    print !"Hello, "+!"World" = !"Hello, World";
+end scope

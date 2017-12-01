@@ -12,9 +12,8 @@
 /* Program error in syntactic analysis (wrong syntax of program)*/
 #define ERR_CODE_SYNTAX 2
 
-
 /* Program semantic error (undefined function/varaible, attempt to redefine function/variable etc.)*/
-#define ERR_CODE_UNDEFINED 3
+#define ERR_CODE_SEM 3
 
 /* Semantic errors of type compatibility in arithmetic, string and relational expressions. 
    Eventually, wrong number or type of parameters in function call.*/

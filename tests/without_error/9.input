@@ -1,1 +1,7 @@
-
+scope
+    dim a as integer = 1
+    do while a < 10
+        a = a + 1
+    loop
+    print a;
+end scope
