@@ -1410,6 +1410,8 @@ void check_fun_definiton_params(token_buffer * token_buff, htab_listitem *record
 
 
 	int par_count = record->data.par_count;
+
+	//printf("parcount: %d\n", par_count);
 	struct fun_par **pardec = &(record->data.first_par);
 
 	while(actual_token->type != RIGHT_PARANTHESIS)
@@ -1417,12 +1419,15 @@ void check_fun_definiton_params(token_buffer * token_buff, htab_listitem *record
 		actual_token = token_buffer_get_next(token_buff, ++counter);
 		if(actual_token->type == IDENTIFIER)
 		{
-			if(--par_count)
+			if(!par_count)
 				error_msg(ERR_CODE_SEM, "Function declaration and function definition parameters count doesnt match\n");
+
 			if(strcmp(actual_token->attr.string_value, (*pardec)->par_name))
 			{
 				(*pardec)->par_name = actual_token->attr.string_value;
 			}
+
+			par_count--;
 			pardec = &((*pardec)->par_next);
 		}
 	}
