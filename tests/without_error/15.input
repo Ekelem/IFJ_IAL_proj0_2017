@@ -1,1 +1,10 @@
-
+scope
+    Dim a as     string = !"hello"
+	Dim   b as integer = 1000
+	Dim b0_ as integer =   0045
+	Dim c   as double = 10.50
+	Dim d as double = 10e2
+	Dim   e as double =     10e-3
+    Dim f   as double   = 10E2
+    print c;
+end scope

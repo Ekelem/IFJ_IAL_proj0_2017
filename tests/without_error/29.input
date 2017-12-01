@@ -1,1 +1,15 @@
-
+scope
+	if 8 >= (10*1) then
+		if 7-5 > 8 then
+			print 4;
+		else
+			print 2;
+		end if
+	else
+		if 4 > (5 - 7) then
+			print 8;
+		else
+			print 6;
+		end if
+	end if
+end scope

@@ -1,1 +1,4 @@
-
+scope
+	dim x as integer = 100
+	print !"hello"; x;
+end scope

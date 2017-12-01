@@ -1,1 +1,8 @@
 
+scope 
+	dim str as string = !"nazdar co si ma nepamatas"
+	str = substr(str, 8, 5)
+	dim a as integer
+	a = length(str)
+	print a;
+end scope

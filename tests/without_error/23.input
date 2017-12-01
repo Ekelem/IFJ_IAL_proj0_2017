@@ -1,1 +1,5 @@
+scope
+	dim a as integer = 1e1 - 0.2e1
+	print a;
+end scope
 

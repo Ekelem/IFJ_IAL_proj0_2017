@@ -1,1 +1,17 @@
 
+declare function foo(boom as double) as integer
+
+function foo(a as double) as integer
+        dim k as integer = 30.50
+        dim k2 as double = 30
+        k = k + k2
+        return k\2 + a
+end function
+
+scope
+
+        dim b as double
+        b = foo(10)
+        print b;
+end scope
+            

@@ -1,1 +1,11 @@
 
+
+scope
+	dim x as integer = 3
+	dim a as double = 36.36
+	do while x > (18 - 17*1 - 1)
+		print a;
+		x = x - 1
+		a = a - 6.4
+	loop
+end scope

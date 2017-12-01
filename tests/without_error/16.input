@@ -1,1 +1,10 @@
 
+scope
+	/' comment '/
+	dim b as string '
+	dim a as string ' line comm
+	' line comm
+	b = !"cau"
+	print b;
+	/' test ' '/
+end scope

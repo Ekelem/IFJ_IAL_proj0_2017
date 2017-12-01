@@ -1,1 +1,11 @@
 
+scope
+
+    if 2 > 3 then
+        print 10;
+    else
+        print 20;
+    end if
+
+end scope
+

@@ -1,1 +1,4 @@
 
+scope
+	print !"hi" + !"bi" + !"ni";
+end scope

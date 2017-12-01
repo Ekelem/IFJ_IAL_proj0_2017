@@ -1,1 +1,12 @@
 
+scope
+
+	dim a as integer = 100
+    if a > -1 then
+        print 10;
+    else
+        print 20;
+    end if
+
+end scope
+

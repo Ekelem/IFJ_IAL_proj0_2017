@@ -1,1 +1,4 @@
 
+scope
+	print !"Ahoj\nSve'te\\\034";
+end scope

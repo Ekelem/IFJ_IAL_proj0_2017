@@ -1,1 +1,12 @@
 
+scope
+    dim a as integer = 3
+    dim b as integer = 7
+    if a > 0 then
+   		a = b + a * b + b
+   	else
+   		a = 8.33e2
+   	end if
+
+    print a+17;
+end scope

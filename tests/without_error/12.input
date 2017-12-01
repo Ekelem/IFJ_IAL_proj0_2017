@@ -1,1 +1,10 @@
+function b(x as integer) as double
+	return x
+end function
 
+scope
+	dim ddd as double
+	ddd = b(15.5555)
+	print ddd;
+
+end scope
