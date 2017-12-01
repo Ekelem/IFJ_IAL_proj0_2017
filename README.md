@@ -1,6 +1,6 @@
 ## Projekt IFJ/IAL
 
-Implementácia prekladača imperatívneho jazyka IFJ12
+Implementácia prekladača imperatívneho jazyka IFJ17
 
 ## Motivation
 
@@ -11,5 +11,9 @@ Implementácia prekladača imperatívneho jazyka IFJ12
 xkelem01
 
 xlakat01
+
+xsober00
+
+xzubri00
 
 ## License
