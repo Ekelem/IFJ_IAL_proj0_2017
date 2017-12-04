@@ -1,1 +1,7 @@
-
+scope
+    if (2 > 1) or (1 > 2) then
+        print !"OK";
+    else
+        print !"BAD";
+    end if
+end scope

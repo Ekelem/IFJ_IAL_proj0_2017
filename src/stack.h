@@ -130,4 +130,6 @@ void dealloc_BStack(BStack *s);
 /* Prints whole BStacl*/
 void print_BStack(BStack *s);
 
+bool is_top_ok(BStack *s);
+
 #endif

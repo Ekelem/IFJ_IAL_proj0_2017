@@ -10,7 +10,7 @@ struct dynamic_stack * dynamic_stack_init()
 	struct dynamic_stack * result = malloc(sizeof(struct dynamic_stack));
 	if (result==NULL)
 		error_msg(ERR_CODE_INTERN, "Could not allocate %d bytes", sizeof(struct dynamic_stack));
-	
+
 	result->start=malloc(STACK_ALLOC_STEP);
 	result->actual=-1;
 	result->size=STACK_ALLOC_STEP;
@@ -304,4 +304,15 @@ void print_BStack(BStack *s) {
 		printf("%d\n", tmp->is_bool_value);
 		tmp = tmp->next;
 	}
+}
+
+bool is_top_ok(BStack *s) {
+	if (s->First == NULL || s->First->next == NULL) {
+		return false;
+	}
+	if ((s->First->is_bool_value && s->First->next->is_bool_value) || (!s->First->is_bool_value && !s->First->next->is_bool_value)){
+		return true;
+	}
+
+	return false;
 }

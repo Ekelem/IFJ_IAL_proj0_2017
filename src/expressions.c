@@ -782,33 +782,51 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 							break;
 
 						case GREATER_THAN:
+							if (!is_top_ok(&value_stack)){
+								error_msg(ERR_CODE_SYNTAX, "Invalid argument assignment\n");
+							}
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 							append_str_to_str(primal_code, "GTS\n");
 							break;
 
 						case GREATER_OR_EQUALS:
+							if (!is_top_ok(&value_stack)){
+								error_msg(ERR_CODE_SYNTAX, "Invalid argument assignment\n");
+							}
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 							append_str_to_str(primal_code, "LTS\n");
 							append_str_to_str(primal_code, "NOTS\n");
 							break;
 
 						case LESS_THAN:
+							if (!is_top_ok(&value_stack)){
+								error_msg(ERR_CODE_SYNTAX, "Invalid argument assignment\n");
+							}
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 							append_str_to_str(primal_code, "LTS\n");
 							break;
 
 						case LESS_OR_EQUALS:
+							if (!is_top_ok(&value_stack)){
+								error_msg(ERR_CODE_SYNTAX, "Invalid argument assignment\n");
+							}
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 							append_str_to_str(primal_code, "GTS\n");
 							append_str_to_str(primal_code, "NOTS\n");
 							break;
 
 						case EQUALS:
+							if (!is_top_ok(&value_stack)){
+								error_msg(ERR_CODE_SYNTAX, "Invalid argument assignment\n");
+							}
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 							append_str_to_str(primal_code, "EQS\n");
 							break;
 
 						case NOT_EQUALS:
+							if (!is_top_ok(&value_stack)){
+								error_msg(ERR_CODE_SYNTAX, "Invalid argument assignment\n");
+							}
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 							append_str_to_str(primal_code, "EQS\nNOTS\n");
 							break;
@@ -892,28 +910,46 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 							next_token->conv_double=false;
 							break;
 						case LESS_THAN:
+							if (!is_top_ok(&value_stack)){
+								error_msg(ERR_CODE_SYNTAX, "Invalid argument assignment\n");
+							}
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 							append_str_to_str(primal_code, "LTS\n");
 							break;
 						case GREATER_THAN:
+							if (!is_top_ok(&value_stack)){
+								error_msg(ERR_CODE_SYNTAX, "Invalid argument assignment\n");
+							}
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 							append_str_to_str(primal_code, "GTS\n");
 							break;
 						case LESS_OR_EQUALS:
+							if (!is_top_ok(&value_stack)){
+								error_msg(ERR_CODE_SYNTAX, "Invalid argument assignment\n");
+							}
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 							append_str_to_str(primal_code, "GTS\n");
 							append_str_to_str(primal_code, "NOTS\n");
 							break;
 						case GREATER_OR_EQUALS:
+							if (!is_top_ok(&value_stack)){
+								error_msg(ERR_CODE_SYNTAX, "Invalid argument assignment\n");
+							}
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 							append_str_to_str(primal_code, "LTS\n");
 							append_str_to_str(primal_code, "NOTS\n");
 							break;
 						case EQUALS:
+							if (!is_top_ok(&value_stack)){
+								error_msg(ERR_CODE_SYNTAX, "Invalid argument assignment\n");
+							}
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 							append_str_to_str(primal_code, "EQS\n");
 							break;
 						case NOT_EQUALS:
+							if (!is_top_ok(&value_stack)){
+								error_msg(ERR_CODE_SYNTAX, "Invalid argument assignment\n");
+							}
 							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
 							append_str_to_str(primal_code, "EQS\n");
 							append_str_to_str(primal_code, "NOTS\n");
