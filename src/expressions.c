@@ -768,12 +768,16 @@ int get_expr_value(token_buffer * token_buff, htab_t * symtable, String * primal
 				if (actual_token->t_elem->type == STRING_VALUE || is_token_type(symtable, actual_token, STRING_TYPE)) {
 					switch(next_token->next->t_elem->type){
 						case AND:
-							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
+							if (!BTop_equals(&value_stack)){
+								error_msg(ERR_CODE_TYPE, "Operand AND can work only with BOOLEAN values\n");
+							}
 							append_str_to_str(primal_code, "ANDS\n");
 							break;
 
 						case OR:
-							BPop(&value_stack); BPop(&value_stack); BPush(&value_stack, true);
+							if (!BTop_equals(&value_stack)){
+								error_msg(ERR_CODE_TYPE, "Operand AND can work only with BOOLEAN values\n");
+							}
 							append_str_to_str(primal_code, "ORS\n");
 							break;
 

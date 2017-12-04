@@ -1,1 +1,3 @@
-
+scope
+    print !"Hello" or !"World";
+end scope
