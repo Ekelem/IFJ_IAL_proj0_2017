@@ -1,3 +1,14 @@
+/*
+ * IFJ17 Compiler Project, FIT VUT Brno 2017
+ *
+ * Authors:
+ * Erik Kelemen    - xkelem01
+ * Attila Lakatos  - xlakat01
+ * Patrik Sober    - xsober00
+ * Tomas Zubrik    - xzubri00
+ *
+ */
+
 #ifndef STACK_H
 #define STACK_H 42
 
@@ -43,7 +54,7 @@ bool dynamic_stack_empty(struct dynamic_stack * stack);
 bool dynamic_stack_full(struct dynamic_stack * stack);
 
 
-/****************Expression stack structures*****************/
+/****************Expression stack structures and functions*****************/
 
 /* Element of expression stack structure*/
 typedef struct tselem {
@@ -100,7 +111,7 @@ int stack_valid_counter(TStack *s);
 TStack stack_copy(TStack *s);
 
 
-/****************Booleam value stack*****************/
+/****************Boolean value stack*****************/
 
 /* Boolean element in boolean structure*/
 typedef struct bselem {
@@ -115,21 +126,29 @@ typedef struct bstack {
 
 /* Initializes BStack */
 void BInit (BStack *s);
+
 /* Pushes boolean value on stack */
 void BPush (BStack *s, bool is_bool_value);
+
 /* Pops boolean value on stack */
 void BPop (BStack *s);
+
 /* Returns boolean value on top of the BStack */
 bool BTop (BStack *s);
+
 /* Checks if BStack is empty */
 bool BEmpty (BStack *s);
+
 /* Checks two first in row values if they are boolean*/
 bool BTop_equals(BStack *s);
+
 /* Frees whole BStack*/
 void dealloc_BStack(BStack *s);
+
 /* Prints whole BStacl*/
 void print_BStack(BStack *s);
 
+/* Checks if value on the top is ok*/
 bool is_top_ok(BStack *s);
 
 #endif

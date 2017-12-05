@@ -1,16 +1,23 @@
+/*
+ * IFJ17 Compiler Project, FIT VUT Brno 2017
+ *
+ * Authors:
+ * Erik Kelemen    - xkelem01
+ * Attila Lakatos  - xlakat01
+ * Patrik Sober    - xsober00
+ * Tomas Zubrik    - xzubri00
+ *
+ */
+
 #include "stack.h"
 
-/*#define malloc(size) garbage_malloc(size)
-#define free(addr) garbage_free(addr)
-#define realloc(addr, size) garbage_realloc(addr, size)
-*/
 /* Initializes dynamic stack */
 struct dynamic_stack * dynamic_stack_init()
 {
 	struct dynamic_stack * result = malloc(sizeof(struct dynamic_stack));
 	if (result==NULL)
 		error_msg(ERR_CODE_INTERN, "Could not allocate %d bytes", sizeof(struct dynamic_stack));
-
+	
 	result->start=malloc(STACK_ALLOC_STEP);
 	result->actual=-1;
 	result->size=STACK_ALLOC_STEP;
@@ -75,9 +82,7 @@ bool dynamic_stack_full(struct dynamic_stack * stack)
 }
 
 
-/********************************************/
-/****************EXPRESSSION*****************/
-/********************************************/
+/****************Functions for expressions*****************/
 
 /* Initializes stack for expressions */
 void stack_init (TStack *s) {
@@ -306,6 +311,7 @@ void print_BStack(BStack *s) {
 	}
 }
 
+/* Checks if value on the top is ok*/
 bool is_top_ok(BStack *s) {
 	if (s->First == NULL || s->First->next == NULL) {
 		return false;

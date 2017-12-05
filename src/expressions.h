@@ -1,3 +1,14 @@
+/*
+ * IFJ17 Compiler Project, FIT VUT Brno 2017
+ *
+ * Authors:
+ * Erik Kelemen    - xkelem01
+ * Attila Lakatos  - xlakat01
+ * Patrik Sober    - xsober00
+ * Tomas Zubrik    - xzubri00
+ *
+ */
+
 #ifndef EXPRESSIONS_H
 #define EXPRESSIONS_H
 
@@ -46,10 +57,6 @@ typedef enum {
 	sem_RP,
 	sem_operand_not
 } semantic_expr_states;
-
-
-/****************Has to be deleted ************************/
-void operand_module(htab_t *symtable, String *primal_code, TSElem *t, BStack *value_stack);
 
 
 /* Returns priority of operators using precedence table*/

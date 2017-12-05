@@ -1,11 +1,18 @@
 /*
- *	IFJ/IAL project 2017
- *	author/s: Erik Kelemen
-*/
+ * IFJ17 Compiler Project, FIT VUT Brno 2017
+ *
+ * Authors:
+ * Erik Kelemen    - xkelem01
+ * Attila Lakatos  - xlakat01
+ * Patrik Sober    - xsober00
+ * Tomas Zubrik    - xzubri00
+ *
+ */
 
 #include "symtable.h"
 #include <stdbool.h>
 
+/* Hash function */
 unsigned int hash_function(const char *str)
 {
 	unsigned int h=0;
@@ -15,76 +22,55 @@ unsigned int hash_function(const char *str)
 	return h;
 }
 
-
+/* Sets identifier type */
 void set_id_type(struct htab_listitem * item, int set_type){
 	item->data.type= set_type;}
 
+/* Returns identifier type */
 int get_id_type(struct htab_listitem * item){
 	return item->data.type;}
 
+/* Sets identifier declared */
 void set_id_declared(struct htab_listitem * item){
 	item->data.flags|= 2;}
 
+/* Sets identifier defined */
 void set_id_defined(struct htab_listitem * item){
 	item->data.flags|= 4;}
 
+/* Sets identifier function */
 void set_id_function(struct htab_listitem * item){
 	item->data.flags|= 8;}
 
+/* Returns if identifier is declared */
 bool is_declared(struct htab_listitem * item){
 	return (item->data.flags & 2);}
 
+/* Returns if identifier is defined */
 bool is_defined(struct htab_listitem * item){
 	return (item->data.flags & 4);}
 
+/* Returns if identifier is function */
 bool is_function(struct htab_listitem * item){
 	return (item->data.flags & 8);}
 
+/* Sets number of parameters of function*/
 void set_func_par_count(struct htab_listitem * item, unsigned int count){
 	item->data.par_count= count;}
 
+/* Increments number of parameters of function*/
 void add_func_par_count(struct htab_listitem * item){
 	item->data.par_count+= 1;}
-
-
-/*void set_id_type(struct htab_listitem * item, int set_type){
-	item->data.type= set_type;}
-
-int get_id_type(struct htab_listitem * item){
-	return item->data.type;}
-
-void set_id_function(struct htab_listitem * item){
-	item->data.is_function = true;}
-
-void set_id_declared(struct htab_listitem * item){
-	item->data.is_declared = true;}
-
-void set_id_defined(struct htab_listitem * item){
-	item->data.is_defined = true;}
-
-void set_func_par_count(struct htab_listitem * item, unsigned int count){
-	item->data.par_count= count;}
-
-void add_func_par_count(struct htab_listitem * item){
-	item->data.par_count+= 1;}
-
-bool is_function(struct htab_listitem * item){
-	return (item->data.is_function);}
-
-bool is_declared(struct htab_listitem * item){
-	return (item->data.is_declared);}
-
-bool is_defined(struct htab_listitem * item){
-	return (item->data.is_defined);}
-*/
 
 /* Hash table functions */
 
+/* Returns size of symtable */
 size_t htab_bucket_count(struct htab_t *t)
 {
 	return t->arr_size;
 }
 
+/* Initializes symtable */
 struct htab_t * htab_init(size_t size)
 {
 	const size_t allocmem = (sizeof(struct htab_t)+(size*(sizeof(struct htab_listitem*))));
@@ -102,6 +88,7 @@ struct htab_t * htab_init(size_t size)
 	return result;
 }
 
+/* Makes new record*/
 struct htab_listitem * htab_make_item(const char * key)
 {
 	struct htab_listitem * item = malloc(sizeof(struct htab_listitem));
@@ -115,16 +102,13 @@ struct htab_listitem * htab_make_item(const char * key)
 	}
 	strcpy(item->key, key);
 	item->data.type = VOID_TYPE;
-	/*
-	item->data.is_function = false;
-	item->data.is_declared = false;
-	item->data.is_defined = false;*/
 	item->data.flags = 0;
 	item->data.first_par = NULL;
 	item->next=NULL;
 	return item;
 }
 
+/* Appends new record into symtable*/
 void htab_append(struct htab_listitem *item, struct htab_t *t)
 {
 	unsigned int index = (hash_function(item->key) % (htab_bucket_count(t)));
@@ -142,6 +126,7 @@ void htab_append(struct htab_listitem *item, struct htab_t *t)
 	end->next->next=NULL;
 }
 
+/* Finds last item on relevant index in symtable */
 struct htab_listitem * htab_last(struct htab_t *t, const char * key)
 {
 	unsigned int index = (hash_function(key) % htab_bucket_count(t));
@@ -155,6 +140,7 @@ struct htab_listitem * htab_last(struct htab_t *t, const char * key)
 	return item;
 }
 
+/* Finds item in symtable according to its key */
 struct htab_listitem * htab_find(struct htab_t *t, const char * key)
 {
 	unsigned int index = (hash_function(key) % htab_bucket_count(t));
@@ -170,6 +156,7 @@ struct htab_listitem * htab_find(struct htab_t *t, const char * key)
 		return NULL;
 }
 
+/* Cleares whole symtable */
 void htab_clear (struct htab_t * t)
 {
 	struct htab_listitem * item;
@@ -189,12 +176,14 @@ void htab_clear (struct htab_t * t)
 	t->n=0;
 }
 
+/* Frees symtable from memory */
 void htab_free(struct htab_t * t)
 {
 	htab_clear(t);
 	free(t);
 }
 
+/* Returns found record */
 struct htab_listitem * htab_lookup_add(struct htab_t *t, const char * key)
 {
 	struct htab_listitem * item=htab_find(t, key); 
@@ -220,6 +209,7 @@ struct htab_listitem * htab_lookup_add(struct htab_t *t, const char * key)
 		return item;
 }
 
+/* Moves items from one symtable to another*/
 struct htab_t *htab_move(long newsize, struct htab_t *t2) {
 	if (newsize < 1) {
 		fprintf(stderr, "Invalid parameter, newsize < 1\n");
@@ -249,11 +239,11 @@ struct htab_t *htab_move(long newsize, struct htab_t *t2) {
 	return tmp;
 }
 
+/* Prints actual symtable */
 void htab_print(struct htab_t *symtable)
 {
 	if(symtable)
-	{
-		printf("Symtable:   ");
+	{	
 		size_t size = htab_bucket_count(symtable);
 		for(unsigned long i = 0; i < size; i++)
 		{
@@ -268,18 +258,4 @@ void htab_print(struct htab_t *symtable)
 	}
 	else
 		printf("Symtable doesnt exist!\n");
-}
-
-
-void htab_foreach(htab_t* t, htab_t * other_symtable, String * primal_code, void(*function)(struct htab_listitem * item, htab_t * other_symtable, String * primal_code))
-{
-	for (unsigned int i=0; i<(htab_bucket_count(t)); i++)
-	{
-		struct htab_listitem * item =t->buckets[i];
-		while (item!=NULL)
-		{
-			function(item, other_symtable, primal_code);
-			item=item->next;
-		}
-	}
 }

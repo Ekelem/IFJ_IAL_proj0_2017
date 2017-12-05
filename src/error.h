@@ -1,7 +1,13 @@
 /*
- *	IFJ/IAL project 2017
- *	author/s: Erik Kelemen
-*/
+ * IFJ17 Compiler Project, FIT VUT Brno 2017
+ *
+ * Authors:
+ * Erik Kelemen    - xkelem01
+ * Attila Lakatos  - xlakat01
+ * Patrik Sober    - xsober00
+ * Tomas Zubrik    - xzubri00
+ *
+ */
 
 #ifndef ERROR_H
 #define ERROR_H 42
@@ -34,8 +40,10 @@
 
 /* Writes error message and exits program with corresponding error code */
 void error_msg(int err_code, const char *fmt, ...);
+
 /* Writes error warning */
 void warn_msg(const char *fmt, ...);
+
 /* Writes number of line and position of error. Exits program with corresponding error code */
 void syntax_error_unexpexted(int line, int pos, int unexpected_type, int numb, ...);
 

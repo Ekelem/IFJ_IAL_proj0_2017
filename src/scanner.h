@@ -1,14 +1,18 @@
 /*
- *	IFJ/IAL project 2017
- *	author/s: Erik Kelemen
-*/
+ * IFJ17 Compiler Project, FIT VUT Brno 2017
+ *
+ * Authors:
+ * Erik Kelemen    - xkelem01
+ * Attila Lakatos  - xlakat01
+ * Patrik Sober    - xsober00
+ * Tomas Zubrik    - xzubri00
+ *
+ */
 
 #ifndef SCANNER_H
 #define SCANNER_H
 
 #include "string.h"
-//#include "tokens.h"
-
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -72,12 +76,19 @@ typedef enum {
 		ADD_EQUALS, SUB_EQUALS, MUL_EQUALS, DIV_EQUALS, DIV2_EQUALS
 } token_type ;
 
+/* Checks if sequence is keyword */
 bool is_keyword(char *str, token *t);
+
+/* Checks if sequence is valid identifier sequence*/
 bool is_validID(char *str);
 
+/* Converts number from base 2,8,16 to integer*/
 int base_to_int(char *str, int base);
 
+/* Gets next token*/
 token * get_token(FILE *f, int *err_line, int *err_pos);
+
+/* Saves token*/
 token * save_token(token *t, String *str, int type, int line, int pos);
 
 #endif

@@ -1,3 +1,14 @@
+/*
+ * IFJ17 Compiler Project, FIT VUT Brno 2017
+ *
+ * Authors:
+ * Erik Kelemen    - xkelem01
+ * Attila Lakatos  - xlakat01
+ * Patrik Sober    - xsober00
+ * Tomas Zubrik    - xzubri00
+ *
+ */
+
 #ifndef H_GARBAGE_COLLECTOR
 #define H_GARBAGE_COLLECTOR 42
 

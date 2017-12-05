@@ -1,4 +1,13 @@
-#include "common.h"
+/*
+ * IFJ17 Compiler Project, FIT VUT Brno 2017
+ *
+ * Authors:
+ * Erik Kelemen    - xkelem01
+ * Attila Lakatos  - xlakat01
+ * Patrik Sober    - xsober00
+ * Tomas Zubrik    - xzubri00
+ *
+ */
 
 #include "common.h"
 
@@ -13,11 +22,13 @@ htab_t * initialization(token_buffer * token_buff)
 	while ( state != EOF) {
 		token * t;
 		t = get_token(stdin, &err_line, &err_pos);
+		//print_token(t->type, t);
 		if (t->type == NEW_LINE) {
 			err_line += 1;
 			err_pos = 0;
 		}
-        else if (t->type == LEXICAL_ERROR)
+
+        if (t->type == LEXICAL_ERROR)
         {
             error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
         }
@@ -29,8 +40,6 @@ htab_t * initialization(token_buffer * token_buff)
 
 	return htab_init(((token_buff->len)/16)+8);		//wild guess (one sixteenth of all tokens)
 }
-
-
 
 
 /**********DEBUGGING FUNCTIONS AND STRUCUTRES*****************/

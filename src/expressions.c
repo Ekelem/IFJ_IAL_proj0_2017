@@ -1,3 +1,14 @@
+/*
+ * IFJ17 Compiler Project, FIT VUT Brno 2017
+ *
+ * Authors:
+ * Erik Kelemen    - xkelem01
+ * Attila Lakatos  - xlakat01
+ * Patrik Sober    - xsober00
+ * Tomas Zubrik    - xzubri00
+ *
+ */
+
 #include "expressions.h"
 #include "parser.h"
 
@@ -77,7 +88,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 	else if (actual_token->type == LEXICAL_ERROR)
 		error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 	else {
-		error_msg(ERR_CODE_SYNTAX, "Syntactic error detected1111111111111111\n");
+		error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 	}
 	while (actual_token->type != end_token) {
 		next_token = token_buffer_peek_token(token_buff);
@@ -115,11 +126,11 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 						if(!found)
 							error_msg(ERR_CODE_SEM, "Undeclared variable '%s' in expression\n", actual_tok->attr.string_value);
 						else
-							error_msg(ERR_CODE_SYNTAX, "Syntactic error detected22222222222\n");
+							error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 					break;
 					}
 						else
-							error_msg(ERR_CODE_SYNTAX, "Syntactic error detected22222222222\n");
+							error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 
 				}
 				break;
@@ -135,7 +146,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected33333333333\n");
+					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 				break;
 			case sem_operand:
 				if (next_token->type == LEFT_PARANTHESIS){
@@ -172,7 +183,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 						break;
 					}
 					else
-						error_msg(ERR_CODE_SYNTAX, "Syntactic error detected44444444444444\n");
+						error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 				}
 				break;
 			case sem_RP:
@@ -185,7 +196,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected55555555555555\n");
+					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 				break;
 			case sem_operand_not:
 				if (is_value(next_token))
@@ -199,7 +210,7 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 				else if (next_token->type == LEXICAL_ERROR)
 					error_msg(ERR_CODE_LEXICAL, "Lexical error detected\n");
 				else if (next_token->type != end_token)
-					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected66666666666666\n");
+					error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 				break;
 			default:
 				error_msg(ERR_CODE_TYPE, "Semantic error detected\n");
@@ -211,10 +222,6 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 
 	if ((state != sem_value && state != sem_RP) || (par_count != 0) || (next_token->type != end_token))
 	{
-		//token *actual_tok = token_buffer_peek_token(token_buff);
-		//print_token(actual_tok->type, actual_tok);
-		//printf("type number: %d", next_token->type);
-
 		int counter = 0;
 		token *actual_tok= next_token;
 		//actual_tok->type = end_token;
@@ -229,10 +236,10 @@ void semantic_expr_check_order(token_buffer * token_buff, htab_t * symtable, Str
 		{
 				htab_listitem *found = htab_find(symtable, actual_tok->attr.string_value);
 				if(!found)
-					error_msg(ERR_CODE_SEM, "undeclared\n");
+					error_msg(ERR_CODE_SEM, "Undeclared variable in expression\n");
 		}
 
-		error_msg(ERR_CODE_SYNTAX, "Syntactic error detected777777777777\n");
+		error_msg(ERR_CODE_SYNTAX, "Syntactic error detected\n");
 	}
 
 

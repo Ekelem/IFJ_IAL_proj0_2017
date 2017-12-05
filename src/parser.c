@@ -1,18 +1,29 @@
+/*
+ * IFJ17 Compiler Project, FIT VUT Brno 2017
+ *
+ * Authors:
+ * Erik Kelemen    - xkelem01
+ * Attila Lakatos  - xlakat01
+ * Patrik Sober    - xsober00
+ * Tomas Zubrik    - xzubri00
+ *
+ */
+
 #include "parser.h"
 
-static unsigned inside_if = 0; 					//Helpful variable to check if we are in if statement
-static unsigned inside_while = 0;				// Helpful variable to check if we are in While loop
-static bool inside_fun = false;					// Helpful variable to check if we are in function
-static bool inside_scopeblock = false;			// Helpful variable to check if first parameter was made
-static bool first_par_made = false; 			// Variable to check if first parameter was created
-static bool first_par = true;					// Helpful varaible to check if paramter is first
-static struct fun_par ** actual_param;			// Actual param
-static struct htab_listitem *fun_record_actual;	// Helpful variable to compare variable with parameters
-static struct htab_t *global_symtable;			// Helpful variable to check names of declared and defined functions with newly defined variable
-static bool first_par_taken = false;
-static bool fun_call_param = false;
-static unsigned global_par_count = 0;
-static struct fun_par *global_actual_param;
+static unsigned inside_if = 0; 					// to check if we are in if statement
+static unsigned inside_while = 0;				// to check if we are in While loop
+static bool inside_fun = false;					// to check if we are in function
+static bool inside_scopeblock = false;			// to check if first parameter was made
+static bool first_par_made = false; 			// to block if first parameter was made
+static bool first_par = true;					// to check if paramter is first
+static struct fun_par ** actual_param;			// to change pars in record
+static struct htab_listitem *fun_record_actual;	// to compare variable with parameters
+static struct htab_t *global_symtable;			// to check names of declared and defined functions with newly defined variable
+static bool first_par_taken = false;			// to check if first par was taken
+static bool fun_call_param = false;				// to block if first par was taken
+static unsigned global_par_count = 0;			// to count par count
+static struct fun_par *global_actual_param;		// actual param
 
 
 /*	Starts the translation of IFJ2017 to assembler generating instructions */
@@ -25,7 +36,7 @@ void translate(token_buffer * token_buff, htab_t * symtable, String * primal_cod
 	neterm_start(token_buff, symtable, primal_code);
 }
 
-/* First neterminal function. Calls other neterminals to check syntax*/
+/* First nonterminal function. Calls other neterminals to check syntax*/
 void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	token * actual_token = token_buffer_peek_token(token_buff);
@@ -34,6 +45,7 @@ void neterm_start(token_buffer * token_buff, htab_t * symtable, String * primal_
 	expected_token(token_buff, EOF);
 }
 
+/* Nonterminal function scopeblock*/
 void neterm_scopeblock(token_buffer * token_buff, htab_t * symtable, String *primal_code)
 {
 	struct htab_t * new_symtable;
@@ -61,6 +73,7 @@ void neterm_scopeblock(token_buffer * token_buff, htab_t * symtable, String *pri
 	}
 }
 
+/* Nonterminal function funblock*/
 void neterm_funblock(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 
@@ -190,7 +203,7 @@ void neterm_funblock(token_buffer * token_buff, htab_t * symtable, String * prim
 }
 
 
-
+/* Nonterminal function fundecparams*/
 void neterm_fundecparams(token_buffer * token_buff, htab_t * symtable, htab_listitem *new_fun_record, String * primal_code)
 {
 	if(!first_par_made)
@@ -251,6 +264,7 @@ void neterm_fundecparams(token_buffer * token_buff, htab_t * symtable, htab_list
 	}
 }
 
+/* Nonterminal function fundecparamsnext*/
 void neterm_fundecparamsnext(token_buffer * token_buff, htab_t * symtable, htab_listitem *fun_record, String * primal_code)
 {
 
@@ -273,7 +287,7 @@ void neterm_fundecparamsnext(token_buffer * token_buff, htab_t * symtable, htab_
 	}
 }
 
-
+/* Nonterminal function type*/
 int neterm_type(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 
@@ -300,7 +314,10 @@ int neterm_type(token_buffer * token_buff, htab_t * symtable, String * primal_co
 	}
 }
 
+
 static bool else_statement = false;
+
+/* Nonterminal function statementblock*/
 void neterm_statementblock(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 
@@ -414,8 +431,7 @@ void neterm_statementblock(token_buffer * token_buff, htab_t * symtable, String 
 			token_buffer_get_token(token_buff);
 			inside_while++;
 			expected_token(token_buff, WHILE);
-			/////expression ACHTUNG!!!!!1();
-			/****************************/
+
 			order = generate_if_label_order();
 			append_str_to_str(primal_code, "LABEL ");
 			generate_if_label(primal_code, label_if, order);
@@ -427,10 +443,9 @@ void neterm_statementblock(token_buffer * token_buff, htab_t * symtable, String 
 			append_str_to_str(primal_code, "PUSHS bool@true\n");
 			append_str_to_str(primal_code, "JUMPIFNEQS ");
 			generate_if_label(primal_code, label_else, order);
-			/*****************************/
 
 			expected_token(token_buff, NEW_LINE);
-			neterm_statementblock(token_buff, symtable,primal_code);//, symtable, primal_code);
+			neterm_statementblock(token_buff, symtable,primal_code);
 
 			append_str_to_str(primal_code, "JUMP ");
 			generate_if_label(primal_code, label_if, order);
@@ -439,7 +454,7 @@ void neterm_statementblock(token_buffer * token_buff, htab_t * symtable, String 
 
 			expected_token(token_buff, LOOP);
 			inside_while--;
-			neterm_statementblock(token_buff, symtable,primal_code); //if TRUE statementblock
+			neterm_statementblock(token_buff, symtable,primal_code);
 			break;
 
 		case RETURN:
@@ -467,7 +482,7 @@ void neterm_statementblock(token_buffer * token_buff, htab_t * symtable, String 
 
 		case NEW_LINE:
 			expected_token(token_buff, NEW_LINE);
-			neterm_statementblock(token_buff, symtable,primal_code);//, symtable, primal_code);
+			neterm_statementblock(token_buff, symtable,primal_code);
 			break;
 
 		default:
@@ -476,6 +491,7 @@ void neterm_statementblock(token_buffer * token_buff, htab_t * symtable, String 
 	}
 }
 
+/* Nonterminal function elsestatement*/
 void neterm_elsestatement(token_buffer * token_buff, htab_t * symtable, String * primal_code, int order)
 {
 	token *actual_token = token_buffer_peek_token(token_buff);
@@ -513,6 +529,7 @@ void neterm_elsestatement(token_buffer * token_buff, htab_t * symtable, String *
 	}
 }
 
+/* Nonterminal function decORasign*/
 void neterm_decORasign(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	token *actual_token = token_buffer_get_token(token_buff);
@@ -570,7 +587,7 @@ void neterm_decORasign(token_buffer * token_buff, htab_t * symtable, String * pr
 	}
 }
 
-
+/* Nonterminal function decasign*/
 void neterm_decasign(token_buffer * token_buff, htab_t * symtable, htab_listitem *found, String * primal_code)
 {
 	int variable_type;
@@ -584,7 +601,7 @@ void neterm_decasign(token_buffer * token_buff, htab_t * symtable, htab_listitem
 			variable_type = get_id_type(found);
 			expr_return_type = parse_expression(token_buff, symtable, primal_code, NEW_LINE);
 			parse_semantic_expression(primal_code, found, variable_type, expr_return_type);
-			/*****************************/
+
 			break;
 
 		case NEW_LINE:
@@ -599,107 +616,7 @@ void neterm_decasign(token_buffer * token_buff, htab_t * symtable, htab_listitem
 
 
 
-void fundec_check_param_name(htab_listitem *new_fun_record, htab_t *global_symtable, char *par_name, bool first_par)
-{
-	if(!strcmp(par_name, new_fun_record->key))
-	{
-		error_msg(ERR_CODE_SEM, "Parameter name '%s' is same as its function name '%s' \n", par_name, new_fun_record->key);
-	}
-
-
-
-	//printf("fundec_check_param_name-  ");
-	//htab_print(global_symtable);
-	if(global_symtable)
-	{
-		size_t size = htab_bucket_count(global_symtable);
-		for(unsigned long i = 0; i < size; i++)
-		{
-			struct htab_listitem *help = global_symtable->buckets[i];
-			while(help)
-			{
-				if(!strcmp(par_name, help->key))
-				{
-					error_msg(ERR_CODE_SEM, "Parameter name '%s' has same name as function '%s' defined/declare before\n", par_name, help->key);
-				}
-				help = help->next;
-			}
-		}
-	}
-
-	if(first_par)
-	{
-		return;
-	}
-
-	struct fun_par *tmp_par = new_fun_record->data.first_par;
-	int par_count = new_fun_record->data.par_count;
-
-	while(par_count)
-	{
-		if(!strcmp(tmp_par->par_name, par_name))
-		{
-			error_msg(ERR_CODE_SEM, "Parameters have the same IDENTIFIERS\n");
-		}
-
-		tmp_par = tmp_par->par_next;
-		par_count--;
-	}
-}
-
-
-void funcall_compare_with_functions(htab_t *global_symtable, char *var_name)
-{
-	//if(global_symtable)
-	//{
-		size_t size = htab_bucket_count(global_symtable);
-		for(unsigned long i = 0; i < size; i++)
-		{
-			struct htab_listitem *help = global_symtable->buckets[i];
-			while(help)
-			{
-				if(!strcmp(var_name, help->key))
-				{
-					error_msg(ERR_CODE_SEM, "Function '%s' used for assigning a value\n",var_name);
-				}
-				help = help->next;
-			}
-		}
-	//}
-}
-
-void funcall_compare_with_params(htab_t * global_symtable, htab_listitem *record, char * var_name)
-{
-	struct fun_par *tmp_par = record->data.first_par;
-	int par_count = record->data.par_count;
-
-	if(par_count)
-	{
-		while(par_count)
-		{
-			if(!strcmp(tmp_par->par_name, var_name))
-			{
-				if(!fun_call_param)
-				{
-					error_msg(ERR_CODE_SEM, "Parameter '%s' used for assigning a value.\n", var_name);
-				}
-				break;
-			}
-			tmp_par = tmp_par->par_next;
-			par_count--;
-		}
-		if(!par_count)
-		{
-			funcall_compare_with_functions(global_symtable, var_name);
-			error_msg(ERR_CODE_SEM, "Variable '%s' wasnt declared but it is used\n", var_name);
-
-		}
-	}
-	else
-		error_msg(ERR_CODE_SEM, "Variable '%s' wasnt declared but it is used\n", var_name);
-
-}
-
+/* Nonterminal function funcallORasign*/
 void neterm_funcallORasign(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	htab_listitem *found = NULL;
@@ -711,20 +628,24 @@ void neterm_funcallORasign(token_buffer * token_buff, htab_t * symtable, String 
 			actual_token = token_buffer_get_token(token_buff);
 			found = htab_find(symtable, actual_token->attr.string_value);
 
-			if(!found)
+			if(found)
 			{
+				if(is_function(found))
+					error_msg(ERR_CODE_SEM, "Function identifier '%s' used for assigning a value\n",actual_token->attr.string_value);
+
 				if(inside_fun)
 				{
-											//global_symtable
 					funcall_compare_with_params(global_symtable,fun_record_actual,actual_token->attr.string_value);
 				}
-				else
-				{
-													//global_symtable
-					funcall_compare_with_functions(global_symtable, actual_token->attr.string_value);
-					error_msg(ERR_CODE_SEM, "Variable '%s' wasnt declared but is used\n", actual_token->attr.string_value);
-				}
 			}
+			else
+			{	
+				if(inside_fun)
+					funcall_compare_with_functions(global_symtable, actual_token->attr.string_value);
+
+				error_msg(ERR_CODE_SEM, "Variable '%s' wasnt declared but it is used\n", actual_token->attr.string_value);
+			}
+
 			expected_token(token_buff, EQUALS);
 
 			neterm_funcallORasign2(token_buff, symtable, found,primal_code);
@@ -737,36 +658,9 @@ void neterm_funcallORasign(token_buffer * token_buff, htab_t * symtable, String 
 }
 
 
-int make_type_conversion(int type_1, int type_2)
-{
-
-	if(type_1 == DOUBLE_TYPE && type_2 == INTEGER_TYPE)
-		return DOUBLE_TYPE;
-
-	else if(type_1 == DOUBLE_TYPE && type_2 == STRING_TYPE)
-		return 0;
-
-	else if(type_1 == DOUBLE_TYPE && type_2 == BOOLEAN_TYPE)
-		return 0;
-
-	else if(type_1 == INTEGER_TYPE && type_2 == DOUBLE_TYPE)
-		return INTEGER_TYPE;
-
-	else if(type_1 == INTEGER_TYPE && type_2 == STRING_TYPE)
-		return 0;
-
-	else if(type_1 == INTEGER_TYPE && type_2 == BOOLEAN_TYPE)
-		return 0;
-
-	else if(type_1 == STRING_TYPE && type_2 == BOOLEAN_TYPE)
-		return 0;
-	else
-		return 0;
-}
 
 
-
-
+/* Nonterminal function funcallORasign2*/
 void neterm_funcallORasign2(token_buffer * token_buff, htab_t * symtable, htab_listitem *found_var, String * primal_code)
 {
 
@@ -853,7 +747,7 @@ void neterm_funcallORasign2(token_buffer * token_buff, htab_t * symtable, htab_l
 }
 
 
-
+/* Generate funcall param order*/
 unsigned int generate_funcall_param_order()
 {
 	static unsigned int counter_funcall = 1;
@@ -868,8 +762,7 @@ void generate_funcall_label(String * primal_code, unsigned int order)
 	append_str_to_str(primal_code, buffer);
 }
 
-//static struct fun_par *actual_param =
-
+/* Nonterminal function funcallparams*/
 void neterm_funcallparams(token_buffer * token_buff, htab_t * symtable, htab_listitem *found,String *primal_code)
 {
 	token *actual_token = token_buffer_peek_token(token_buff);
@@ -904,7 +797,7 @@ void neterm_funcallparams(token_buffer * token_buff, htab_t * symtable, htab_lis
 }
 
 
-
+/* Nonterminal function funcallparam*/
 void neterm_funcallparam(token_buffer * token_buff, htab_t * symtable, htab_listitem *found_fun, String * primal_code)
 {
 	if(!first_par_taken)
@@ -989,6 +882,7 @@ void neterm_funcallparam(token_buffer * token_buff, htab_t * symtable, htab_list
 	}
 }
 
+/* Nonterminal function funcallparamsnext*/
 void neterm_funcallparamsnext(token_buffer * token_buff, htab_t * symtable, htab_listitem *found_fun, String * primal_code)
 {
 	token *actual_token = token_buffer_peek_token(token_buff);
@@ -1015,6 +909,7 @@ void neterm_funcallparamsnext(token_buffer * token_buff, htab_t * symtable, htab
 	}
 }
 
+/* Nonterminal function constvalue*/
 void neterm_constvalue(token_buffer * token_buff, htab_t * symtable, htab_listitem *found_fun, String * primal_code)
 {
 	token *actual_token = token_buffer_get_token(token_buff);
@@ -1155,6 +1050,7 @@ void neterm_constvalue(token_buffer * token_buff, htab_t * symtable, htab_listit
 	}
 }
 
+/* Nonterminal function exprnext*/
 void neterm_exprnext(token_buffer * token_buff, htab_t * symtable, String * primal_code)
 {
 	token *actual_token = token_buffer_peek_token(token_buff);
@@ -1220,7 +1116,95 @@ void funblock_rule_continue(token_buffer * token_buff, htab_t * symtable ,int to
 }
 
 
+/* Checks param name with functions and its others params*/
+void fundec_check_param_name(htab_listitem *new_fun_record, htab_t *global_symtable, char *par_name, bool first_par)
+{
+	if(!strcmp(par_name, new_fun_record->key))
+	{
+		error_msg(ERR_CODE_SEM, "Parameter name '%s' is same as its function name '%s' \n", par_name, new_fun_record->key);
+	}
 
+	if(global_symtable)
+	{
+		size_t size = htab_bucket_count(global_symtable);
+		for(unsigned long i = 0; i < size; i++)
+		{
+			struct htab_listitem *help = global_symtable->buckets[i];
+			while(help)
+			{
+				if(!strcmp(par_name, help->key))
+				{
+					error_msg(ERR_CODE_SEM, "Parameter name '%s' has same name as function '%s' defined/declare before\n", par_name, help->key);
+				}
+				help = help->next;
+			}
+		}
+	}
+
+	if(first_par)
+	{
+		return;
+	}
+
+	struct fun_par *tmp_par = new_fun_record->data.first_par;
+	int par_count = new_fun_record->data.par_count;
+
+	while(par_count)
+	{
+		if(!strcmp(tmp_par->par_name, par_name))
+		{
+			error_msg(ERR_CODE_SEM, "Parameters have the same IDENTIFIERS\n");
+		}
+
+		tmp_par = tmp_par->par_next;
+		par_count--;
+	}
+}
+
+/* Compares found identifier with functions*/
+void funcall_compare_with_functions(htab_t *global_symtable, char *var_name)
+{
+	if(global_symtable)
+	{
+		size_t size = htab_bucket_count(global_symtable);
+		for(unsigned long i = 0; i < size; i++)
+		{
+			struct htab_listitem *help = global_symtable->buckets[i];
+			while(help)
+			{
+				if(!strcmp(var_name, help->key))
+				{
+					error_msg(ERR_CODE_SEM, "Function identifier '%s' used for assigning a value\n",var_name);
+				}
+				help = help->next;
+			}
+		}
+	}
+}
+
+/* Compares found identifier with params */
+void funcall_compare_with_params(htab_t * global_symtable, htab_listitem *record, char * var_name)
+{
+	struct fun_par *tmp_par = record->data.first_par;
+	int par_count = record->data.par_count;
+
+	if(par_count)
+	{
+		while(par_count)
+		{
+			if(!strcmp(tmp_par->par_name, var_name))
+			{
+				if(!fun_call_param)
+				{
+					error_msg(ERR_CODE_SEM, "Parameter '%s' used for assigning a value.\n", var_name);
+				}
+				break;
+			}
+			tmp_par = tmp_par->par_next;
+			par_count--;
+		}
+	}
+}
 
 /*	Eats next token and compares with the one we expect */
 void expected_token(token_buffer * token_buff, int tok_type)
@@ -1232,7 +1216,7 @@ void expected_token(token_buffer * token_buff, int tok_type)
 	}
 }
 
-
+/* Checks funcall paramaters */
 void check_funcall_params(htab_t * symtable, htab_listitem *actual_fun, htab_listitem *called_fun, char *var_name, String *primal_code)
 {
 	struct fun_par *actual_fun_par = actual_fun->data.first_par;
@@ -1301,6 +1285,7 @@ void check_funcall_params(htab_t * symtable, htab_listitem *actual_fun, htab_lis
 	}
 }
 
+/* Checks record name and prints error message*/
 void check_variable_name(htab_listitem *record, char * var_name)
 {
 	if(is_function(record) && is_defined(record))
@@ -1311,6 +1296,7 @@ void check_variable_name(htab_listitem *record, char * var_name)
 		error_msg(ERR_CODE_SEM, "IDENTIFIER '%s' was declared before.\n", record->key);
 }
 
+/* Compares variable name with parameters*/
 void compare_with_params(htab_t * symtable, htab_listitem *record, char * var_name)
 {
 	struct fun_par *tmp_par = record->data.first_par;
@@ -1328,6 +1314,7 @@ void compare_with_params(htab_t * symtable, htab_listitem *record, char * var_na
 	}
 }
 
+/* Checks params names*/
 void check_params_names(struct htab_listitem * item, token *token)
 {
 	struct fun_par *actual_param = item->data.first_par;
@@ -1343,8 +1330,7 @@ void check_params_names(struct htab_listitem * item, token *token)
 	}
 }
 
-/*	Checks new lines put after scopeblock till EOF.
-	If somethhing unexpected appears, kills program with lex error*/
+/*	Checks new lines put after scopeblock till EOF.	If somethhing unexpected appears, kills program with lex error*/
 void check_new_lines_after_scopeblock(token_buffer * token_buff)
 {
 	token *actual_token = token_buffer_get_token(token_buff);
@@ -1362,6 +1348,7 @@ void check_new_lines_after_scopeblock(token_buffer * token_buff)
 	token_buffer_unget_token(token_buff);
 }
 
+/* Checks if all declared functions were defined */
 void check_all_functions_definitions(htab_t *symtable)
 {
 	if(symtable)
@@ -1387,6 +1374,7 @@ void check_all_functions_definitions(htab_t *symtable)
 	}
 }
 
+/* Checks function definiciton parameters*/
 void check_fun_definiton_params(token_buffer * token_buff, htab_listitem *record, int par_counter)
 {
 	int counter = 0;
@@ -1410,8 +1398,6 @@ void check_fun_definiton_params(token_buffer * token_buff, htab_listitem *record
 
 
 	int par_count = record->data.par_count;
-
-	//printf("parcount: %d\n", par_count);
 	struct fun_par **pardec = &(record->data.first_par);
 
 	while(actual_token->type != RIGHT_PARANTHESIS)
@@ -1498,6 +1484,7 @@ void check_fun_declaration_params(token_buffer * token_buff, htab_t * symtable, 
 	}
 }
 
+/* Adds built in functions into instructon list*/
 void add_build_in_functions(htab_t * symtable, String * primal_code)
 {
 	struct htab_listitem * record = NULL;
@@ -1720,6 +1707,7 @@ void parse_semantic_expression(String * primal_code, struct htab_listitem *found
 	}
 }
 
+/* Parses semantic expression and generates relevant instructions*/
 void parse_semantic_expression_modified(String * primal_code, char * frame, char * name, int variable_type, int expr_return_type)
 {
 
@@ -1773,26 +1761,57 @@ void parse_semantic_expression_modified(String * primal_code, char * frame, char
 	}
 }
 
+/* Makes implicit type conversion*/
+int make_type_conversion(int type_1, int type_2)
+{
+
+	if(type_1 == DOUBLE_TYPE && type_2 == INTEGER_TYPE)
+		return DOUBLE_TYPE;
+
+	else if(type_1 == DOUBLE_TYPE && type_2 == STRING_TYPE)
+		return 0;
+
+	else if(type_1 == DOUBLE_TYPE && type_2 == BOOLEAN_TYPE)
+		return 0;
+
+	else if(type_1 == INTEGER_TYPE && type_2 == DOUBLE_TYPE)
+		return INTEGER_TYPE;
+
+	else if(type_1 == INTEGER_TYPE && type_2 == STRING_TYPE)
+		return 0;
+
+	else if(type_1 == INTEGER_TYPE && type_2 == BOOLEAN_TYPE)
+		return 0;
+
+	else if(type_1 == STRING_TYPE && type_2 == BOOLEAN_TYPE)
+		return 0;
+	else
+		return 0;
+}
+
+/* Generates chr function */
 void generate_chr(String *primal_code)
 {
 	append_str_to_str(primal_code,  "LABEL chr\n"
-                                    	"DEFVAR LF@%returnval\n");
-    	append_str_to_str(primal_code,  "INT2CHAR LF@%returnval LF@i\n"
-    				    	"PUSHS LF@%returnval\n"
-                                    	"RETURN\n"
-			 		"\n");
+                                    "DEFVAR LF@%returnval\n");
+    append_str_to_str(primal_code,  "INT2CHAR LF@%returnval LF@i\n"
+    				    			"PUSHS LF@%returnval\n"
+                                    "RETURN\n"
+			 						"\n");
 }
 
+/* Generates length function */
 void generate_length(String *primal_code)
 {
 	append_str_to_str(primal_code, 	"LABEL length\n"
-					"DEFVAR LF@%returnval\n"
-					"STRLEN LF@%returnval LF@s\n"
-					"PUSHS LF@%returnval\n"
-					"RETURN\n"
-                                    	"\n");
+									"DEFVAR LF@%returnval\n"
+									"STRLEN LF@%returnval LF@s\n"
+									"PUSHS LF@%returnval\n"
+									"RETURN\n"
+                                    "\n");
 }
 
+/* Generates substr function */
 void generate_substr(String *primal_code)
 {
 	append_str_to_str(primal_code,	"LABEL substr\n");
@@ -1830,33 +1849,34 @@ void generate_substr(String *primal_code)
 	append_str_to_str(primal_code,	"JUMP loop\n");
 }
 
-
+/* Generates asc function */
 void generate_asc(String *primal_code)
 {
 	append_str_to_str(primal_code,  "LABEL asc\n"
-					"DEFVAR LF@%returnval\n"
-					"STRLEN LF@%returnval LF@s\n");
-    append_str_to_str(primal_code,  	"PUSHS LF@i\n"
-					"PUSHS int@0\n"
-					"GTS\nNOTS\n");
-    append_str_to_str(primal_code,  	"PUSHS bool@true\n"
-					"JUMPIFEQS ATrue\n"
-					"PUSHS LF@i\n");
-    append_str_to_str(primal_code,  	"PUSHS LF@%returnval\n"
-					"GTS\n"
-					"PUSHS bool@true\n");
-    append_str_to_str(primal_code,  	"JUMPIFEQS ATrue\n"
-    					"SUB LF@i LF@i int@1\n"
-					"STRI2INT LF@%returnval LF@s LF@i\n"
-					"PUSHS LF@%returnval\n"
-					"RETURN\n");
+									"DEFVAR LF@%returnval\n"
+									"STRLEN LF@%returnval LF@s\n");
+    append_str_to_str(primal_code,  "PUSHS LF@i\n"
+									"PUSHS int@0\n"
+									"GTS\nNOTS\n");
+    append_str_to_str(primal_code,  "PUSHS bool@true\n"
+									"JUMPIFEQS ATrue\n"
+									"PUSHS LF@i\n");
+    append_str_to_str(primal_code,  "PUSHS LF@%returnval\n"
+									"GTS\n"
+									"PUSHS bool@true\n");
+    append_str_to_str(primal_code,  "JUMPIFEQS ATrue\n"
+   									"SUB LF@i LF@i int@1\n"
+									"STRI2INT LF@%returnval LF@s LF@i\n"
+									"PUSHS LF@%returnval\n"
+									"RETURN\n");
     append_str_to_str(primal_code, 	"LABEL ATrue\n"
-					"MOVE LF@%returnval int@0\n"
-					"PUSHS LF@%returnval\n"
-					"RETURN\n"
-                                    	"\n");
+									"MOVE LF@%returnval int@0\n"
+									"PUSHS LF@%returnval\n"
+									"RETURN\n"
+                                    "\n");
 }
 
+/* Creates function record */
 struct htab_listitem *create_fun_record(htab_t * symtable, char *name)
 {
 	struct htab_listitem *record = htab_make_item(name);
@@ -1868,6 +1888,7 @@ struct htab_listitem *create_fun_record(htab_t * symtable, char *name)
 	return record;
 }
 
+/* Creates new param as record */
 void create_param(htab_t * symtable, char *name, int type)
 {
 	struct htab_listitem *record = htab_make_item(name);
@@ -1877,6 +1898,7 @@ void create_param(htab_t * symtable, char *name, int type)
 	set_id_type(record, type);
 }
 
+/* Prints function paramteres types */
 void printf_fun_par_types(htab_listitem *fun)
 {
 	struct fun_par *par = fun->data.first_par;
@@ -1908,10 +1930,13 @@ void printf_fun_par_types(htab_listitem *fun)
 	printf("\n");
 }
 
+
+/* Prints that im here :D */
 void here(){
 	printf("IAM HEEEEEEEEEEEEREEEEEEEEEEEEEEE \n");
 }
 
+/* Converts type as integer into relevant string*/
 char* get_string_from_type(int type){
 
 	switch(type){
@@ -1923,6 +1948,7 @@ char* get_string_from_type(int type){
 	return NULL;
 }
 
+/* Prints record in symtable */
 void print_fun_record(htab_t * symtable, const char *key, char *name){
 	struct htab_listitem *record = htab_find(symtable, key);
 	struct fun_par *tmp_par = record->data.first_par;
