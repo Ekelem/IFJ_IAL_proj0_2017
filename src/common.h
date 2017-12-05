@@ -19,7 +19,6 @@
 #include "tokens.h"
 #include "symtable.h"
 #include "error.h"
-#include "garbage_collector.h"
 
 /*Dynamic structure Garbage collector*/
 extern struct dynamic_stack * GARBAGE_COLLECTOR;

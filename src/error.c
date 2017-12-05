@@ -35,7 +35,7 @@ void warn_msg(const char *fmt, ...)
 }
 
 /* Writes number of line and position of error. Exits program with corresponding error code */
-void syntax_error_unexpexted(int line, int pos, int unexpected_type, int numb, ...)
+void syntax_error_unexpected(int line, int pos, int unexpected_type, int numb, ...)
 {
 	va_list list;
 	va_start(list, numb);

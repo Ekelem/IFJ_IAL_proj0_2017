@@ -17,12 +17,10 @@
 #include "error.h"
 #include "symtable.h"
 #include "stack.h"
-#include "garbage_collector.h"
 #include "tokens.h"
 #include "common.h"
 #include "parser.h"
 
-struct dynamic_stack * GARBAGE_COLLECTOR = NULL;
 
 char * tok_names [] = {"LEXICAL_ERROR", "IDENTIFIER" , "AS", "DECLARE", "DIM", "DO", "DOUBLE", "ELSE", "END", "FUNCTION", "IF", "INPUT",
 		"INTEGER", "LOOP", "PRINT", "RETURN", "SCOPE", "STRING", "THEN", "WHILE", "AND", "BOOLEAN",
@@ -42,7 +40,6 @@ int main(int argc, char const *argv[])
 
 	free_tokens(token_buff);
 	htab_free(symtable);
-	garbage_collect();
 	free_string(&primal_code);
 	return 0;
 }

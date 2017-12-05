@@ -193,8 +193,8 @@ token * get_token(FILE *f, int *err_line, int *err_pos)
                             case '`':  return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
                             case '\"': return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
                             default:
-								if (c >= 127){
-							    		return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
+								if (c >= 127){ //basic ascii characters
+							   		return save_token(t, NULL, LEXICAL_ERROR, *err_line, *err_pos);
 								}
 								break;
 						}

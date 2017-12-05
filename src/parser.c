@@ -68,7 +68,7 @@ void neterm_scopeblock(token_buffer * token_buff, htab_t * symtable, String *pri
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, SCOPE);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 1, SCOPE);
 			break;
 	}
 }
@@ -87,7 +87,7 @@ void neterm_funblock(token_buffer * token_buff, htab_t * symtable, String * prim
 			actual_token = token_buffer_get_token(token_buff);
 			if(actual_token->type != IDENTIFIER)
 			{
-				syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
+				syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			}
 
 			found = htab_find(symtable, actual_token->attr.string_value);
@@ -128,7 +128,7 @@ void neterm_funblock(token_buffer * token_buff, htab_t * symtable, String * prim
 
 			if(actual_token->type != IDENTIFIER)
 			{
-				syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
+				syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			}
 
 			found = htab_find(symtable, actual_token->attr.string_value);
@@ -197,7 +197,7 @@ void neterm_funblock(token_buffer * token_buff, htab_t * symtable, String * prim
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			break;
 	}
 }
@@ -243,7 +243,7 @@ void neterm_fundecparams(token_buffer * token_buff, htab_t * symtable, htab_list
 				actual_token = token_buffer_peek_token(token_buff);
 				if(actual_token->type != IDENTIFIER)
 				{
-					syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
+					syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 				}
 				actual_param = &((*actual_param)->par_next);
 
@@ -259,7 +259,7 @@ void neterm_fundecparams(token_buffer * token_buff, htab_t * symtable, htab_list
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2, IDENTIFIER, RIGHT_PARANTHESIS);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 2, IDENTIFIER, RIGHT_PARANTHESIS);
 			break;
 	}
 }
@@ -282,7 +282,7 @@ void neterm_fundecparamsnext(token_buffer * token_buff, htab_t * symtable, htab_
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2, COMA, RIGHT_PARANTHESIS);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 2, COMA, RIGHT_PARANTHESIS);
 			break;
 	}
 }
@@ -308,7 +308,7 @@ int neterm_type(token_buffer * token_buff, htab_t * symtable, String * primal_co
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 3, INTEGER, DOUBLE, STRING, BOOLEAN);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 3, INTEGER, DOUBLE, STRING, BOOLEAN);
 			return VOID_TYPE;
 			break;
 	}
@@ -390,7 +390,7 @@ void neterm_statementblock(token_buffer * token_buff, htab_t * symtable, String 
 			actual_token = token_buffer_get_token(token_buff);
 			if(actual_token->type != IDENTIFIER)
 			{
-				syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
+				syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			}
 
 			htab_listitem *found_var = htab_find(symtable, actual_token->attr.string_value);
@@ -486,7 +486,7 @@ void neterm_statementblock(token_buffer * token_buff, htab_t * symtable, String 
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type,10,IDENTIFIER,IF,PRINT,INPUT,DO,RETURN,ELSE,LOOP,END,NEW_LINE);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type,10,IDENTIFIER,IF,PRINT,INPUT,DO,RETURN,ELSE,LOOP,END,NEW_LINE);
 			break;
 	}
 }
@@ -524,7 +524,7 @@ void neterm_elsestatement(token_buffer * token_buff, htab_t * symtable, String *
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2,ELSE,END);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 2,ELSE,END);
 			break;
 	}
 }
@@ -542,7 +542,7 @@ void neterm_decORasign(token_buffer * token_buff, htab_t * symtable, String * pr
 			actual_token = token_buffer_get_token(token_buff);
 			if(actual_token->type != IDENTIFIER)
 			{
-				syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
+				syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			}
 
 			if(!inside_scopeblock)
@@ -581,7 +581,7 @@ void neterm_decORasign(token_buffer * token_buff, htab_t * symtable, String * pr
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, DIM);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 1, DIM);
 			break;
 
 	}
@@ -609,7 +609,7 @@ void neterm_decasign(token_buffer * token_buff, htab_t * symtable, htab_listitem
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2,EQUALS, NEW_LINE);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 2,EQUALS, NEW_LINE);
 			break;
 	}
 }
@@ -652,7 +652,7 @@ void neterm_funcallORasign(token_buffer * token_buff, htab_t * symtable, String 
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1,IDENTIFIER);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 1,IDENTIFIER);
 			break;
 	}
 }
@@ -741,7 +741,7 @@ void neterm_funcallORasign2(token_buffer * token_buff, htab_t * symtable, htab_l
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2, INT_VALUE, IDENTIFIER);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 2, INT_VALUE, IDENTIFIER);
 			break;
 	}
 }
@@ -791,7 +791,7 @@ void neterm_funcallparams(token_buffer * token_buff, htab_t * symtable, htab_lis
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 3,IDENTIFIER, RIGHT_PARANTHESIS, INT_VALUE);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 3,IDENTIFIER, RIGHT_PARANTHESIS, INT_VALUE);
 			break;
 	}
 }
@@ -877,7 +877,7 @@ void neterm_funcallparam(token_buffer * token_buff, htab_t * symtable, htab_list
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 3,IDENTIFIER, RIGHT_PARANTHESIS, INT_VALUE);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 3,IDENTIFIER, RIGHT_PARANTHESIS, INT_VALUE);
 			break;
 	}
 }
@@ -904,7 +904,7 @@ void neterm_funcallparamsnext(token_buffer * token_buff, htab_t * symtable, htab
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2,COMA, RIGHT_PARANTHESIS);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 2,COMA, RIGHT_PARANTHESIS);
 			break;
 	}
 }
@@ -1045,7 +1045,7 @@ void neterm_constvalue(token_buffer * token_buff, htab_t * symtable, htab_listit
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1,INT_VALUE);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 1,INT_VALUE);
 			break;
 	}
 }
@@ -1077,7 +1077,7 @@ void neterm_exprnext(token_buffer * token_buff, htab_t * symtable, String * prim
 			break;
 
 		default:
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type,2, DOUBLEE,NEW_LINE);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type,2, DOUBLEE,NEW_LINE);
 			break;
 	}
 }
@@ -1110,7 +1110,7 @@ void funblock_rule_continue(token_buffer * token_buff, htab_t * symtable ,int to
 			break;
 
 		default :
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 4, SCOPE, DECLARE, FUNCTION, NEW_LINE);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 4, SCOPE, DECLARE, FUNCTION, NEW_LINE);
 			break;
 	}
 }
@@ -1212,7 +1212,7 @@ void expected_token(token_buffer * token_buff, int tok_type)
 	token * actual_token = token_buffer_get_token(token_buff);
 	if (actual_token->type != tok_type)
 	{
-		syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, tok_type);
+		syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 1, tok_type);
 	}
 }
 
@@ -1471,7 +1471,7 @@ void check_fun_declaration_params(token_buffer * token_buff, htab_t * symtable, 
 			token_buffer_get_token(token_buff);
 			if(token_buffer_peek_token(token_buff)->type != IDENTIFIER)
 			{
-				syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
+				syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 1, IDENTIFIER);
 			}
 
 			param = param->par_next;
@@ -1479,7 +1479,7 @@ void check_fun_declaration_params(token_buffer * token_buff, htab_t * symtable, 
 		}
 		else
 		{
-			syntax_error_unexpexted(actual_token->line, actual_token->pos ,actual_token->type, 2, LEFT_PARANTHESIS, COMA);
+			syntax_error_unexpected(actual_token->line, actual_token->pos ,actual_token->type, 2, LEFT_PARANTHESIS, COMA);
 		}
 	}
 }
@@ -1569,27 +1569,30 @@ unsigned int generate_if_label_order()
 		return counter++;
 }
 
+
 /* Generates relevant instructions of if label */
 void generate_if_label(String * primal_code, enum_label_names prefix, unsigned int order)
 {
-	char buffer[4] = "0000";
-	//append_str_to_str(primal_code, "LABEL %");
+	char buffer[8] = "00000000";
+	if(order > 999999999)
+		error_msg(ERR_CODE_INTERN, "Buffer overflow\n");
+
 	switch (prefix)
 	{
 		case label_if:
-			snprintf(buffer, 4, "%d", order);
+			snprintf(buffer, 8, "%d", order);
 			append_char_to_str(primal_code, '%');
 			append_str_to_str(primal_code, buffer);
 			append_str_to_str(primal_code, "IF\n");
 			break;
 		case label_else:
-			snprintf(buffer, 4, "%d", order);
+			snprintf(buffer, 8, "%d", order);
 			append_char_to_str(primal_code, '%');
 			append_str_to_str(primal_code, buffer);
 			append_str_to_str(primal_code, "ELSE\n");
 			break;
 		case label_end_if:
-			snprintf(buffer, 4, "%d", order);
+			snprintf(buffer, 8, "%d", order);
 			append_char_to_str(primal_code, '%');
 			append_str_to_str(primal_code, buffer);
 			append_str_to_str(primal_code, "ENDIF\n");
@@ -1602,22 +1605,25 @@ void generate_if_label(String * primal_code, enum_label_names prefix, unsigned i
 /* Generates relevant instructions for jumps */
 void generate_if_jump(String * primal_code, enum_label_names prefix, unsigned int order)
 {
-	char buffer[4] = "0000";
+	char buffer[8] = "00000000";
+	if(order > 999999999)
+		error_msg(ERR_CODE_INTERN, "Buffer overflow\n");
+
 	append_str_to_str(primal_code, "JUMP ");
 	switch (prefix)
 	{
 		case label_if:
-			snprintf(buffer, 4, "%d", order);
+			snprintf(buffer, 8, "%d", order);
 			append_str_to_str(primal_code, buffer);
 			append_str_to_str(primal_code, "IF\n");
 			break;
 		case label_else:
-			snprintf(buffer, 4, "%d", order);
+			snprintf(buffer, 8, "%d", order);
 			append_str_to_str(primal_code, buffer);
 			append_str_to_str(primal_code, "ELSE\n");
 			break;
 		case label_end_if:
-			snprintf(buffer, 4, "%d", order);
+			snprintf(buffer, 8, "%d", order);
 			append_str_to_str(primal_code, buffer);
 			append_str_to_str(primal_code, "ENDIF\n");
 			break;

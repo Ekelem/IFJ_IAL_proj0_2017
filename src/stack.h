@@ -13,7 +13,6 @@
 #define STACK_H 42
 
 #include "error.h"
-#include "garbage_collector.h"
 #include "scanner.h"
 
 #include <stdint.h>

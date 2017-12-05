@@ -16,8 +16,6 @@ htab_t * initialization(token_buffer * token_buff)
 {
 	int err_line = 1, err_pos = 0;
 
-	init_garbage_collector();
-
 	int state = 0, prev_state = 0;
 	while ( state != EOF) {
 		token * t;
