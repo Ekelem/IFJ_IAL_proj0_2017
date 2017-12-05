@@ -9,7 +9,7 @@ CC=gcc
 
 CFLAGS=-O2 -std=c11 -Wall -pedantic -lm
 
-MODULES=error string scanner symtable tokens parser garbage_collector stack common expressions
+MODULES=error string scanner symtable tokens parser stack common expressions
 
 OBJS = $(addprefix obj/, $(addsuffix .o,$(MODULES)))
 
